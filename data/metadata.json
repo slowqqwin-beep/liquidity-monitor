@@ -1,0 +1,168 @@
+{
+  "generated_at": "2026-05-05T00:00:00+00:00",
+  "lookback_years": 3,
+  "is_demo": true,
+  "note": "Synthetic seed data. Real data populated after first GitHub Actions run.",
+  "series": [
+    {
+      "id": "BAMLC0A0CM",
+      "n_obs": 782,
+      "label": "BAMLC0A0CM"
+    },
+    {
+      "id": "BAMLEMCBPIOAS",
+      "n_obs": 782,
+      "label": "BAMLEMCBPIOAS"
+    },
+    {
+      "id": "BAMLH0A0HYM2",
+      "n_obs": 782,
+      "label": "BAMLH0A0HYM2"
+    },
+    {
+      "id": "BTC_USD",
+      "n_obs": 782,
+      "label": "BTC_USD"
+    },
+    {
+      "id": "DFEDTARL",
+      "n_obs": 782,
+      "label": "DFEDTARL"
+    },
+    {
+      "id": "DFEDTARU",
+      "n_obs": 782,
+      "label": "DFEDTARU"
+    },
+    {
+      "id": "DFII10",
+      "n_obs": 782,
+      "label": "DFII10"
+    },
+    {
+      "id": "DGS10",
+      "n_obs": 782,
+      "label": "DGS10"
+    },
+    {
+      "id": "DGS2",
+      "n_obs": 782,
+      "label": "DGS2"
+    },
+    {
+      "id": "DGS30",
+      "n_obs": 782,
+      "label": "DGS30"
+    },
+    {
+      "id": "DGS5",
+      "n_obs": 782,
+      "label": "DGS5"
+    },
+    {
+      "id": "DTWEXBGS",
+      "n_obs": 782,
+      "label": "DTWEXBGS"
+    },
+    {
+      "id": "EFFR",
+      "n_obs": 782,
+      "label": "EFFR"
+    },
+    {
+      "id": "EFFR_IORB",
+      "n_obs": 782,
+      "label": "EFFR_IORB"
+    },
+    {
+      "id": "GOLDAMGBD228NLBM",
+      "n_obs": 782,
+      "label": "GOLDAMGBD228NLBM"
+    },
+    {
+      "id": "GOLD_10Y_RATIO",
+      "n_obs": 782,
+      "label": "GOLD_10Y_RATIO"
+    },
+    {
+      "id": "HY_IG_RATIO",
+      "n_obs": 782,
+      "label": "HY_IG_RATIO"
+    },
+    {
+      "id": "IORB",
+      "n_obs": 782,
+      "label": "IORB"
+    },
+    {
+      "id": "MORTGAGE30US",
+      "n_obs": 782,
+      "label": "MORTGAGE30US"
+    },
+    {
+      "id": "MORTGAGE_SPREAD",
+      "n_obs": 782,
+      "label": "MORTGAGE_SPREAD"
+    },
+    {
+      "id": "MOVE",
+      "n_obs": 782,
+      "label": "MOVE"
+    },
+    {
+      "id": "RRPONTSYD",
+      "n_obs": 782,
+      "label": "RRPONTSYD"
+    },
+    {
+      "id": "SOFR",
+      "n_obs": 782,
+      "label": "SOFR"
+    },
+    {
+      "id": "SOFR_IORB",
+      "n_obs": 782,
+      "label": "SOFR_IORB"
+    },
+    {
+      "id": "STABLECOIN_MCAP_B",
+      "n_obs": 782,
+      "label": "STABLECOIN_MCAP_B"
+    },
+    {
+      "id": "T10YIE",
+      "n_obs": 782,
+      "label": "T10YIE"
+    },
+    {
+      "id": "T5YIFR",
+      "n_obs": 782,
+      "label": "T5YIFR"
+    },
+    {
+      "id": "THREEFYTP10",
+      "n_obs": 782,
+      "label": "THREEFYTP10"
+    },
+    {
+      "id": "VIXCLS",
+      "n_obs": 782,
+      "label": "VIXCLS"
+    },
+    {
+      "id": "WALCL",
+      "n_obs": 782,
+      "label": "WALCL"
+    },
+    {
+      "id": "WRESBAL",
+      "n_obs": 782,
+      "label": "WRESBAL"
+    },
+    {
+      "id": "WTREGEN",
+      "n_obs": 782,
+      "label": "WTREGEN"
+    }
+  ]
+}
