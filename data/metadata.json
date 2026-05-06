@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-06T03:02:04.530345+00:00",
+  "generated_at": "2026-05-06T03:17:02.619025+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -184,7 +184,7 @@
       "layer": "L3",
       "unit": "$/oz",
       "desc": "London Bullion Market AM Fix",
-      "n_obs": 0
+      "n_obs": 754
     },
     {
       "id": "MORTGAGE30US",
@@ -232,7 +232,7 @@
       "layer": "L3",
       "unit": "$/% ",
       "desc": "Gold price divided by 10Y yield - framework switch indicator",
-      "n_obs": 0
+      "n_obs": 746
     },
     {
       "id": "SOFR_IORB",
