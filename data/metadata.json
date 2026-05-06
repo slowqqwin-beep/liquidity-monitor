@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-06T03:17:02.619025+00:00",
+  "generated_at": "2026-05-06T03:25:15.447651+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -224,7 +224,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "Bond market implied volatility",
-      "n_obs": 0
+      "n_obs": 746
     },
     {
       "id": "GOLD_10Y_RATIO",
