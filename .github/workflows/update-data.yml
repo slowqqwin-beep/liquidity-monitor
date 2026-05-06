@@ -40,11 +40,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          mv data /tmp/fresh-data
+          git fetch origin main
+          git reset --hard origin/main
+          rm -rf data
+          mv /tmp/fresh-data data
           git add data/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
             git commit -m "data: update $(date -u +%Y-%m-%d)"
-            git pull --rebase origin main
             git push
           fi
