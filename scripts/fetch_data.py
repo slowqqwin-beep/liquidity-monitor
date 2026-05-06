@@ -211,13 +211,36 @@ def fetch_move_index() -> list[dict[str, Any]]:
 
 
 def fetch_gold_stooq() -> list[dict[str, Any]]:
-    """XAU/USD from stooq — replaces FRED's discontinued GOLDAMGBD228NLBM."""
-    return fetch_stooq_csv("xauusd", "Gold")
-
-
-# ------------------------------------------------------------------
-# Series math: derive computed indicators
-# ------------------------------------------------------------------
+    """Gold via Yahoo Finance GC=F (Gold Futures continuous).
+    Function name kept for backward compatibility — actually fetches from Yahoo now."""
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/GC=F"
+    params = {"interval": "1d", "range": "5y"}
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+    }
+    try:
+        r = requests.get(url, params=params, headers=headers, timeout=30)
+        r.raise_for_status()
+        result = r.json()["chart"]["result"][0]
+        timestamps = result["timestamp"]
+        closes = result["indicators"]["quote"][0]["close"]
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=365 * LOOKBACK_YEARS)).strftime("%Y-%m-%d")
+        out = []
+        for ts, close in zip(timestamps, closes):
+            if close is None:
+                continue
+            d = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
+            if d < cutoff:
+                continue
+            out.append({"date": d, "value": float(close)})
+        print(f"[INFO] Gold from Yahoo: {len(out)} obs")
+        return out
+    except Exception as e:
+        print(f"[WARN] Yahoo gold fetch failed: {e}", file=sys.stderr)
+        return []
 
 def to_dict(series: list[dict[str, Any]]) -> dict[str, float]:
     return {row["date"]: row["value"] for row in series}
