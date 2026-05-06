@@ -178,9 +178,9 @@ def fetch_btc_price() -> list[dict[str, Any]]:
 # MOVE index - try Yahoo via stooq fallback
 # ------------------------------------------------------------------
 
-def fetch_move_index() -> list[dict[str, Any]]:
-    """MOVE index from stooq (CSV, no key, CORS-friendly)."""
-    url = "https://stooq.com/q/d/l/?s=^move&i=d"
+def fetch_stooq_csv(symbol: str, label: str) -> list[dict[str, Any]]:
+    """Generic stooq CSV fetcher. No API key required."""
+    url = f"https://stooq.com/q/d/l/?s={symbol}&i=d"
     try:
         r = requests.get(url, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
         r.raise_for_status()
@@ -193,8 +193,7 @@ def fetch_move_index() -> list[dict[str, Any]]:
             parts = line.split(",")
             if len(parts) < 5:
                 continue
-            d = parts[0]
-            close = parts[4]
+            d, close = parts[0], parts[4]
             if d < cutoff:
                 continue
             try:
@@ -203,8 +202,17 @@ def fetch_move_index() -> list[dict[str, Any]]:
                 continue
         return out
     except Exception as e:
-        print(f"[WARN] MOVE fetch failed: {e}", file=sys.stderr)
+        print(f"[WARN] {label} fetch from stooq failed: {e}", file=sys.stderr)
         return []
+
+
+def fetch_move_index() -> list[dict[str, Any]]:
+    return fetch_stooq_csv("^move", "MOVE")
+
+
+def fetch_gold_stooq() -> list[dict[str, Any]]:
+    """XAU/USD from stooq — replaces FRED's discontinued GOLDAMGBD228NLBM."""
+    return fetch_stooq_csv("xauusd", "Gold")
 
 
 # ------------------------------------------------------------------
