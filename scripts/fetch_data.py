@@ -297,6 +297,9 @@ def main() -> int:
     print("[INFO] MOVE index (stooq)")
     all_series["MOVE"] = fetch_move_index()
 
+    print("[INFO] Gold (stooq)")
+    all_series["GOLDAMGBD228NLBM"] = fetch_gold_stooq()
+
     # Derived
     print("[INFO] Computing derived series")
     all_series.update(compute_derived(all_series))
