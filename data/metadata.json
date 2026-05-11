@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-10T07:50:02.040480+00:00",
+  "generated_at": "2026-05-11T22:58:14.509223+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -32,7 +32,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target upper bound",
-      "n_obs": 1095
+      "n_obs": 1096
     },
     {
       "id": "DFEDTARL",
@@ -40,7 +40,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target lower bound",
-      "n_obs": 1095
+      "n_obs": 1096
     },
     {
       "id": "RRPONTSYD",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 743
+      "n_obs": 742
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -192,7 +192,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Freddie Mac 30Y fixed mortgage",
-      "n_obs": 157
+      "n_obs": 156
     },
     {
       "id": "DTWEXBGS",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 744
+      "n_obs": 748
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -256,7 +256,7 @@
       "layer": "L3",
       "unit": "bp",
       "desc": "Real-economy credit transmission",
-      "n_obs": 157
+      "n_obs": 156
     },
     {
       "id": "HY_IG_RATIO",
