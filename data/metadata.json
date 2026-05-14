@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-13T23:07:29.430240+00:00",
+  "generated_at": "2026-05-14T03:06:10.251270+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1097
+      "n_obs": 1096
     },
     {
       "id": "EFFR",
@@ -32,7 +32,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target upper bound",
-      "n_obs": 1096
+      "n_obs": 1095
     },
     {
       "id": "DFEDTARL",
@@ -40,7 +40,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target lower bound",
-      "n_obs": 1096
+      "n_obs": 1095
     },
     {
       "id": "RRPONTSYD",
@@ -184,7 +184,7 @@
       "layer": "L3",
       "unit": "$/oz",
       "desc": "London Bullion Market AM Fix",
-      "n_obs": 754
+      "n_obs": 755
     },
     {
       "id": "MORTGAGE30US",
