@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-25T13:31:47.187637+00:00",
+  "generated_at": "2026-05-25T23:07:27.438147+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -208,7 +208,7 @@
       "layer": "L3",
       "unit": "$B",
       "desc": "Aggregate non-sovereign dollar liquidity",
-      "n_obs": 366
+      "n_obs": 365
     },
     {
       "id": "BTC_USD",
