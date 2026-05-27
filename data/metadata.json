@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-27T09:52:37.092890+00:00",
+  "generated_at": "2026-05-27T10:16:24.082506+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -184,7 +184,7 @@
       "layer": "L3",
       "unit": "$/oz",
       "desc": "London Bullion Market AM Fix",
-      "n_obs": 753
+      "n_obs": 0
     },
     {
       "id": "MORTGAGE30US",
@@ -224,7 +224,31 @@
       "layer": "L2",
       "unit": "",
       "desc": "Bond market implied volatility",
-      "n_obs": 745
+      "n_obs": 0
+    },
+    {
+      "id": "SPY",
+      "label": "SPY Close",
+      "layer": "L2",
+      "unit": "$",
+      "desc": "S&P 500 ETF price - equity risk signal",
+      "n_obs": 750
+    },
+    {
+      "id": "HYG",
+      "label": "HYG Close",
+      "layer": "L2",
+      "unit": "$",
+      "desc": "High Yield Bond ETF price - credit risk signal",
+      "n_obs": 750
+    },
+    {
+      "id": "FXY",
+      "label": "FXY Close",
+      "layer": "D",
+      "unit": "$",
+      "desc": "Japanese Yen ETF price - FX risk signal",
+      "n_obs": 750
     },
     {
       "id": "GOLD_10Y_RATIO",
@@ -232,7 +256,7 @@
       "layer": "L3",
       "unit": "$/% ",
       "desc": "Gold price divided by 10Y yield - framework switch indicator",
-      "n_obs": 745
+      "n_obs": 0
     },
     {
       "id": "SOFR_IORB",
