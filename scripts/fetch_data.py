@@ -178,9 +178,9 @@ def fetch_btc_price() -> list[dict[str, Any]]:
 # MOVE index - try Yahoo via stooq fallback
 # ------------------------------------------------------------------
 
-def fetch_stooq_csv(symbol: str, label: str) -> list[dict[str, Any]]:
-    """Generic stooq CSV fetcher. No API key required."""
-    url = f"https://stooq.com/q/d/l/?s={symbol}&i=d"
+def fetch_move_index() -> list[dict[str, Any]]:
+    """MOVE index from stooq (CSV, no key, CORS-friendly)."""
+    url = "https://stooq.com/q/d/l/?s=^move&i=d"
     try:
         r = requests.get(url, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
         r.raise_for_status()
@@ -193,7 +193,8 @@ def fetch_stooq_csv(symbol: str, label: str) -> list[dict[str, Any]]:
             parts = line.split(",")
             if len(parts) < 5:
                 continue
-            d, close = parts[0], parts[4]
+            d = parts[0]
+            close = parts[4]
             if d < cutoff:
                 continue
             try:
@@ -202,73 +203,44 @@ def fetch_stooq_csv(symbol: str, label: str) -> list[dict[str, Any]]:
                 continue
         return out
     except Exception as e:
-        print(f"[WARN] {label} fetch from stooq failed: {e}", file=sys.stderr)
+        print(f"[WARN] MOVE fetch failed: {e}", file=sys.stderr)
         return []
 
 
-def fetch_move_index() -> list[dict[str, Any]]:
-    """MOVE index via Yahoo Finance (^MOVE)."""
-    url = "https://query1.finance.yahoo.com/v8/finance/chart/^MOVE"
-    params = {"interval": "1d", "range": "5y"}
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
-    }
+# ------------------------------------------------------------------
+# Yahoo Finance data (Layer 2 & D - equity/ETF signals)
+# ------------------------------------------------------------------
+
+YAHOO_TICKERS = ["SPY", "HYG", "FXY"]
+
+
+def fetch_yahoo(ticker: str) -> list[dict[str, Any]]:
+    """Fetch daily close prices from Yahoo Finance. No API key needed."""
     try:
-        r = requests.get(url, params=params, headers=headers, timeout=30)
-        r.raise_for_status()
-        result = r.json()["chart"]["result"][0]
-        timestamps = result["timestamp"]
-        closes = result["indicators"]["quote"][0]["close"]
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=365 * LOOKBACK_YEARS)).strftime("%Y-%m-%d")
-        out = []
-        for ts, close in zip(timestamps, closes):
-            if close is None:
-                continue
-            d = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
-            if d < cutoff:
-                continue
-            out.append({"date": d, "value": float(close)})
-        print(f"[INFO] MOVE from Yahoo: {len(out)} obs")
-        return out
-    except Exception as e:
-        print(f"[WARN] Yahoo MOVE fetch failed: {e}", file=sys.stderr)
+        import yfinance as yf
+    except ImportError:
+        print(f"[WARN] yfinance not installed; skipping {ticker}", file=sys.stderr)
         return []
-
-
-def fetch_gold_stooq() -> list[dict[str, Any]]:
-    """Gold via Yahoo Finance GC=F (Gold Futures continuous).
-    Function name kept for backward compatibility — actually fetches from Yahoo now."""
-    url = "https://query1.finance.yahoo.com/v8/finance/chart/GC=F"
-    params = {"interval": "1d", "range": "5y"}
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
-    }
+    end = datetime.now(timezone.utc)
+    start = end - timedelta(days=365 * LOOKBACK_YEARS)
     try:
-        r = requests.get(url, params=params, headers=headers, timeout=30)
-        r.raise_for_status()
-        result = r.json()["chart"]["result"][0]
-        timestamps = result["timestamp"]
-        closes = result["indicators"]["quote"][0]["close"]
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=365 * LOOKBACK_YEARS)).strftime("%Y-%m-%d")
-        out = []
-        for ts, close in zip(timestamps, closes):
-            if close is None:
-                continue
-            d = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
-            if d < cutoff:
-                continue
-            out.append({"date": d, "value": float(close)})
-        print(f"[INFO] Gold from Yahoo: {len(out)} obs")
-        return out
+        df = yf.download(ticker, start=start.strftime("%Y-%m-%d"),
+                         end=end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
+        if df.empty:
+            print(f"[WARN] yfinance returned empty for {ticker}", file=sys.stderr)
+            return []
+        return [
+            {"date": str(d.date()), "value": float(row["Close"])}
+            for d, row in df.iterrows()
+        ]
     except Exception as e:
-        print(f"[WARN] Yahoo gold fetch failed: {e}", file=sys.stderr)
+        print(f"[WARN] yfinance fetch failed for {ticker}: {e}", file=sys.stderr)
         return []
+
+
+# ------------------------------------------------------------------
+# Series math: derive computed indicators
+# ------------------------------------------------------------------
 
 def to_dict(series: list[dict[str, Any]]) -> dict[str, float]:
     return {row["date"]: row["value"] for row in series}
@@ -348,8 +320,31 @@ def main() -> int:
     print("[INFO] MOVE index (stooq)")
     all_series["MOVE"] = fetch_move_index()
 
-    print("[INFO] Gold (stooq)")
-    all_series["GOLDAMGBD228NLBM"] = fetch_gold_stooq()
+    # Yahoo Finance ETFs — try live, fallback to local yahoo_series.json
+    yahoo_fallback: dict[str, list[dict[str, Any]]] = {}
+    yahoo_fallback_path = OUT_DIR / "yahoo_series.json"
+    if yahoo_fallback_path.exists():
+        try:
+            with yahoo_fallback_path.open() as f:
+                yahoo_fallback = json.load(f)
+            print(f"[INFO] Loaded Yahoo fallback: {list(yahoo_fallback.keys())} "
+                  f"(sizes: { {k: len(v) for k, v in yahoo_fallback.items()} })")
+        except Exception as e:
+            print(f"[WARN] Failed to load Yahoo fallback: {e}")
+
+    for ticker in YAHOO_TICKERS:
+        print(f"[INFO] Yahoo Finance: {ticker}")
+        live = fetch_yahoo(ticker)
+        if live and len(live) > 0:
+            all_series[ticker] = live
+            print(f"[INFO]   → {len(live)} rows (live)")
+        elif ticker in yahoo_fallback and len(yahoo_fallback[ticker]) > 0:
+            all_series[ticker] = yahoo_fallback[ticker]
+            print(f"[INFO]   → {len(yahoo_fallback[ticker])} rows (fallback from yahoo_series.json)")
+        else:
+            all_series[ticker] = []
+            print(f"[WARN]   → 0 rows (no live data, no fallback)")
+        time.sleep(0.5)
 
     # Derived
     print("[INFO] Computing derived series")
@@ -370,6 +365,12 @@ def main() -> int:
              "desc": "Alternative monetary asset", "n_obs": len(all_series.get("BTC_USD", []))},
             {"id": "MOVE", "label": "MOVE Index", "layer": "L2", "unit": "",
              "desc": "Bond market implied volatility", "n_obs": len(all_series.get("MOVE", []))},
+            {"id": "SPY", "label": "SPY Close", "layer": "L2", "unit": "$",
+             "desc": "S&P 500 ETF price - equity risk signal", "n_obs": len(all_series.get("SPY", []))},
+            {"id": "HYG", "label": "HYG Close", "layer": "L2", "unit": "$",
+             "desc": "High Yield Bond ETF price - credit risk signal", "n_obs": len(all_series.get("HYG", []))},
+            {"id": "FXY", "label": "FXY Close", "layer": "D", "unit": "$",
+             "desc": "Japanese Yen ETF price - FX risk signal", "n_obs": len(all_series.get("FXY", []))},
         ] + COMPUTED_SERIES,
     }
     # Add n_obs for computed
