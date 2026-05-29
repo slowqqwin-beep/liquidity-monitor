@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liquidity Monitor — Three Layer Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..700;1,6..72,200..700&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="mast-inner">
+    <div class="mast-title">
+      <span class="eyebrow">Three-Layer Framework</span>
+      <h1>Liquidity Monitor</h1>
+      <p class="kicker">
+        Reading capital conditions when long-bond yields no longer price liquidity alone —
+        a regime tracker for the fiscal-dominance era.
+      </p>
+    </div>
+    <div class="mast-meta">
+      <div class="meta-row"><span>updated</span><strong id="updated-at">—</strong></div>
+      <div class="meta-row"><span>lookback</span><strong id="lookback">—</strong></div>
+      <div class="meta-row"><span>series</span><strong id="series-count">—</strong></div>
+    </div>
+  </div>
+  <nav class="mast-nav">
+    <a href="#layer1"><em>I.</em> System Plumbing</a>
+    <a href="#layer2"><em>II.</em> Risk Appetite</a>
+    <a href="#layer3"><em>III.</em> Framework</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============================================================ -->
+<!-- LAYER 1 -->
+<!-- ============================================================ -->
+<section class="layer" id="layer1" data-layer="L1">
+  <div class="layer-header">
+    <div class="layer-num">I.</div>
+    <div class="layer-title">
+      <h2>System Plumbing Liquidity</h2>
+      <p>
+        The pipes. Whether short-term funding markets are clearing — repo, reserves,
+        cross-border dollar funding. This layer is regime-agnostic: tail risk lives here,
+        and a blockage here breaks every other thesis.
+      </p>
+    </div>
+  </div>
+
+  <div class="card-grid" id="l1-cards"></div>
+
+  <div class="chart-block">
+    <header>
+      <h3>Money market spreads</h3>
+      <p>SOFR–IORB and EFFR–IORB. Sustained positive drift = banks lending into repo, reserves becoming scarce. Spikes = stress events (SVB Mar-23, year-end pressure).</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-mm-spreads"></canvas></div>
+  </div>
+
+  <div class="chart-block">
+    <header>
+      <h3>Reserve balances · ON RRP · Treasury General Account</h3>
+      <p>Stock view of liquidity in the system. RRP drain has historically funded duration absorption; TGA rebuild pulls liquidity out.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-balances"></canvas></div>
+  </div>
+
+  <div class="chart-block">
+    <header>
+      <h3>Overnight rates layered</h3>
+      <p>Where SOFR sits in the corridor — between IORB ceiling and ON RRP floor. Excursions outside the corridor = pressure.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-on-rates"></canvas></div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- LAYER 2 -->
+<!-- ============================================================ -->
+<section class="layer" id="layer2" data-layer="L2">
+  <div class="layer-header">
+    <div class="layer-num">II.</div>
+    <div class="layer-title">
+      <h2>Risk Appetite Liquidity</h2>
+      <p>
+        Whether risk assets can fund themselves. Credit spreads and implied vol — this is
+        where beta-trade conditions live. MOVE typically moves before HY spread; HY widening
+        is the predictive signal for equity drawdowns.
+      </p>
+    </div>
+  </div>
+
+  <div class="card-grid" id="l2-cards"></div>
+
+  <div class="chart-block">
+    <header>
+      <h3>Credit OAS — IG · HY · EM Corp</h3>
+      <p>The hierarchy of risk premia. HY widening from current floor levels is the first signal that the AI-capex / hyperscaler funding cycle is hitting credit constraints.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-credit"></canvas></div>
+  </div>
+
+  <div class="chart-block">
+    <header>
+      <h3>Volatility regime — MOVE · VIX</h3>
+      <p>MOVE leads HY by weeks. Persistent MOVE above 120 historically precedes credit stress; MOVE/VIX divergence reveals which market sees risk first.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-vol"></canvas></div>
+  </div>
+
+  <div class="chart-block">
+    <header>
+      <h3>HY / IG spread ratio</h3>
+      <p>Risk-tier divergence. Rising ratio = junk underperforming investment grade = credit-cycle late-stage.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-hyig"></canvas></div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- LAYER 3 -->
+<!-- ============================================================ -->
+<section class="layer" id="layer3" data-layer="L3">
+  <div class="layer-header">
+    <div class="layer-num">III.</div>
+    <div class="layer-title">
+      <h2>Framework Liquidity</h2>
+      <p>
+        Whether the sovereign-pricing framework itself is being repriced. Gold, term premium,
+        stablecoin growth — signals invisible in traditional rate-credit dashboards but central
+        to the post-2022 regime where high yields can coexist with rising risk assets.
+      </p>
+    </div>
+  </div>
+
+  <div class="card-grid" id="l3-cards"></div>
+
+  <div class="chart-block accent">
+    <header>
+      <h3>Gold / 10Y yield ratio<span class="badge gold">Framework switch indicator</span></h3>
+      <p>The cleanest single signal of regime change. Inverse pre-2022, co-moving since. A rising ratio = market discounting sovereign claims.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-gold-ratio"></canvas></div>
+  </div>
+
+  <div class="chart-block">
+    <header>
+      <h3>10Y nominal · TIPS real · Term premium decomposition</h3>
+      <p>The yield's components. Nominal up + breakevens flat + term premium up = pure fiscal/credit risk repricing, not inflation or growth.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-yield-decomp"></canvas></div>
+  </div>
+
+  <div class="chart-block">
+    <header>
+      <h3>5Y5Y forward inflation expectation</h3>
+      <p>The cleanest long-term inflation signal — strips out near-term noise. Anchoring above 2.5% would mean the Fed has lost the long end.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-5y5y"></canvas></div>
+  </div>
+
+  <div class="chart-block accent">
+    <header>
+      <h3>Stablecoin aggregate market cap<span class="badge gold">Non-sovereign dollar gauge</span></h3>
+      <p>USDT + USDC + DAI + FDUSD. Real-time measure of dollars choosing to exit the banking system. Growth rate maps to "framework flight" intensity.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-stables"></canvas></div>
+  </div>
+
+  <div class="chart-block">
+    <header>
+      <h3>Bitcoin · Gold (rebased)</h3>
+      <p>Two non-sovereign monetary assets. Co-movement = framework repricing; divergence = idiosyncratic flow.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-btc-gold"></canvas></div>
+  </div>
+
+  <div class="chart-block">
+    <header>
+      <h3>30Y Mortgage – 10Y spread</h3>
+      <p>Real-economy credit transmission. Wide spreads = MBS investors demanding compensation for prepayment + duration risk = housing market under pressure.</p>
+    </header>
+    <div class="chart-wrap"><canvas id="chart-mortgage"></canvas></div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- READING GUIDE -->
+<!-- ============================================================ -->
+<section class="layer reading-guide">
+  <div class="layer-header">
+    <div class="layer-num">§</div>
+    <div class="layer-title">
+      <h2>Reading the matrix</h2>
+      <p>How to combine the three layers into a single regime read.</p>
+    </div>
+  </div>
+
+  <div class="matrix-grid">
+    <div class="matrix-cell">
+      <div class="cell-header"><span class="dot l1"></span>Layer 1 healthy + Layer 2 tight + Layer 3 framework switch</div>
+      <p>Current regime since late 2023. Plumbing fine, risk appetite high, but sovereign repricing underway. Consistent with risk-on in real assets / equities while gold grinds higher. <strong>Sustainable until L1 or L2 breaks.</strong></p>
+    </div>
+    <div class="matrix-cell">
+      <div class="cell-header"><span class="dot l2"></span>Layer 1 healthy + Layer 2 widens + Layer 3 framework switch</div>
+      <p>The inflection. HY spread breaks above 4% from a sub-3% floor; MOVE persistent above 120. <strong>This is where AI/hyperscaler capex thesis meets its credit constraint.</strong> 6-12 month signal for risk drawdown.</p>
+    </div>
+    <div class="matrix-cell">
+      <div class="cell-header"><span class="dot l3"></span>Layer 1 stress + anything else</div>
+      <p>Pipe blockage. SOFR–IORB persistently positive, RRP drained, TGA volatile, cross-currency basis widens. <strong>All bets off — every framework loses to liquidity flight.</strong> 2008, 2020, 2023 March all started here.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="colophon">
+  <div>
+    <strong>Sources.</strong> FRED (Federal Reserve Economic Data) for rates, spreads, OAS,
+    treasuries, term premium, gold. CoinGecko for stablecoin and BTC market caps. Stooq for MOVE.
+    All data refreshed via GitHub Actions.
+  </div>
+  <div>
+    <strong>Notes.</strong> Cross-currency basis swaps and CDS indices require paid feeds and are
+    omitted; their proxies (banking-sector OAS, EM corp spreads) are included.
+    Historical depth limited to 3 years by default. Term premium uses NY Fed ACM model (FRED THREEFYTP10).
+  </div>
+  <div class="cite">
+    Built for the regime where bonds, gold, and equities can rally together —
+    where the question shifted from "is liquidity tight" to
+    "<em>which</em> liquidity, and against <em>which</em> claim."
+  </div>
+</footer>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+{
+  "generated_at": "2026-05-28T23:42:48.733664+00:00",
+  "lookback_years": 3,
+  "series": [
+    {
+      "id": "SOFR",
+      "label": "SOFR",
+      "layer": "L1",
+      "unit": "%",
+      "desc": "Secured Overnight Financing Rate",
+      "n_obs": 0
+    },
+    {
+      "id": "IORB",
+      "label": "IORB",
+      "layer": "L1",
+      "unit": "%",
+      "desc": "Interest On Reserve Balances",
+      "n_obs": 0
+    },
+    {
+      "id": "EFFR",
+      "label": "EFFR",
+      "layer": "L1",
+      "unit": "%",
+      "desc": "Effective Federal Funds Rate",
+      "n_obs": 0
+    },
+    {
+      "id": "DFEDTARU",
+      "label": "Fed Funds Target (Upper)",
+      "layer": "L1",
+      "unit": "%",
+      "desc": "Fed funds target upper bound",
+      "n_obs": 0
+    },
+    {
+      "id": "DFEDTARL",
+      "label": "Fed Funds Target (Lower)",
+      "layer": "L1",
+      "unit": "%",
+      "desc": "Fed funds target lower bound",
+      "n_obs": 0
+    },
+    {
+      "id": "RRPONTSYD",
+      "label": "ON RRP Balance",
+      "layer": "L1",
+      "unit": "$B",
+      "desc": "Overnight Reverse Repo balance ($B)",
+      "n_obs": 0
+    },
+    {
+      "id": "WRESBAL",
+      "label": "Reserve Balances",
+      "layer": "L1",
+      "unit": "$B",
+      "desc": "Reserves with Fed Reserve Banks ($B)",
+      "n_obs": 0
+    },
+    {
+      "id": "WTREGEN",
+      "label": "Treasury General Account",
+      "layer": "L1",
+      "unit": "$B",
+      "desc": "TGA balance at Fed ($B)",
+      "n_obs": 0
+    },
+    {
+      "id": "WALCL",
+      "label": "Fed Total Assets",
+      "layer": "L1",
+      "unit": "$M",
+      "desc": "Total Fed balance sheet",
+      "n_obs": 0
+    },
+    {
+      "id": "BAMLH0A0HYM2",
+      "label": "HY OAS",
+      "layer": "L2",
+      "unit": "%",
+      "desc": "ICE BofA US High Yield OAS",
+      "n_obs": 0
+    },
+    {
+      "id": "BAMLC0A0CM",
+      "label": "IG OAS",
+      "layer": "L2",
+      "unit": "%",
+      "desc": "ICE BofA US Corp OAS",
+      "n_obs": 0
+    },
+    {
+      "id": "BAMLEMCBPIOAS",
+      "label": "EM Corp OAS",
+      "layer": "L2",
+      "unit": "%",
+      "desc": "ICE BofA EM Corporate OAS",
+      "n_obs": 0
+    },
+    {
+      "id": "VIXCLS",
+      "label": "VIX",
+      "layer": "L2",
+      "unit": "",
+      "desc": "CBOE Volatility Index",
+      "n_obs": 0
+    },
+    {
+      "id": "TEDRATE",
+      "label": "TED Spread (legacy)",
+      "layer": "L2",
+      "unit": "%",
+      "desc": "Discontinued but historical reference",
+      "n_obs": 0
+    },
+    {
+      "id": "DGS2",
+      "label": "2Y Treasury",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "2-Year Treasury constant maturity",
+      "n_obs": 0
+    },
+    {
+      "id": "DGS5",
+      "label": "5Y Treasury",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "5-Year Treasury",
+      "n_obs": 0
+    },
+    {
+      "id": "DGS10",
+      "label": "10Y Treasury",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "10-Year Treasury",
+      "n_obs": 0
+    },
+    {
+      "id": "DGS30",
+      "label": "30Y Treasury",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "30-Year Treasury",
+      "n_obs": 0
+    },
+    {
+      "id": "DFII10",
+      "label": "10Y TIPS Yield",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "10-Year inflation-indexed (real yield)",
+      "n_obs": 0
+    },
+    {
+      "id": "T10YIE",
+      "label": "10Y Breakeven",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "10Y breakeven inflation",
+      "n_obs": 0
+    },
+    {
+      "id": "T5YIFR",
+      "label": "5Y5Y Forward Inflation",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "Cleanest long-term inflation expectation",
+      "n_obs": 0
+    },
+    {
+      "id": "THREEFYTP10",
+      "label": "10Y Term Premium (ACM)",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "NY Fed ACM term premium estimate",
+      "n_obs": 0
+    },
+    {
+      "id": "GOLDAMGBD228NLBM",
+      "label": "Gold (LBMA AM)",
+      "layer": "L3",
+      "unit": "$/oz",
+      "desc": "London Bullion Market AM Fix",
+      "n_obs": 0
+    },
+    {
+      "id": "MORTGAGE30US",
+      "label": "30Y Mortgage",
+      "layer": "L3",
+      "unit": "%",
+      "desc": "Freddie Mac 30Y fixed mortgage",
+      "n_obs": 0
+    },
+    {
+      "id": "DTWEXBGS",
+      "label": "Broad Dollar Index",
+      "layer": "L3",
+      "unit": "Idx",
+      "desc": "Trade-weighted broad dollar",
+      "n_obs": 0
+    },
+    {
+      "id": "STABLECOIN_MCAP_B",
+      "label": "Stablecoin Market Cap (USDT+USDC+DAI+FDUSD)",
+      "layer": "L3",
+      "unit": "$B",
+      "desc": "Aggregate non-sovereign dollar liquidity",
+      "n_obs": 365
+    },
+    {
+      "id": "BTC_USD",
+      "label": "Bitcoin",
+      "layer": "L3",
+      "unit": "$",
+      "desc": "Alternative monetary asset",
+      "n_obs": 366
+    },
+    {
+      "id": "MOVE",
+      "label": "MOVE Index",
+      "layer": "L2",
+      "unit": "",
+      "desc": "Bond market implied volatility",
+      "n_obs": 0
+    },
+    {
+      "id": "SPY",
+      "label": "SPY Close",
+      "layer": "L2",
+      "unit": "$",
+      "desc": "S&P 500 ETF price - equity risk signal",
+      "n_obs": 750
+    },
+    {
+      "id": "HYG",
+      "label": "HYG Close",
+      "layer": "L2",
+      "unit": "$",
+      "desc": "High Yield Bond ETF price - credit risk signal",
+      "n_obs": 750
+    },
+    {
+      "id": "FXY",
+      "label": "FXY Close",
+      "layer": "D",
+      "unit": "$",
+      "desc": "Japanese Yen ETF price - FX risk signal",
+      "n_obs": 750
+    },
+    {
+      "id": "GOLD_10Y_RATIO",
+      "label": "Gold / 10Y Yield",
+      "layer": "L3",
+      "unit": "$/% ",
+      "desc": "Gold price divided by 10Y yield - framework switch indicator",
+      "n_obs": 0
+    },
+    {
+      "id": "SOFR_IORB",
+      "label": "SOFR \u2013 IORB",
+      "layer": "L1",
+      "unit": "bp",
+      "desc": "Plumbing stress: positive = banks lending into repo",
+      "n_obs": 0
+    },
+    {
+      "id": "EFFR_IORB",
+      "label": "EFFR \u2013 IORB",
+      "layer": "L1",
+      "unit": "bp",
+      "desc": "Reserve scarcity: positive = reserves scarce",
+      "n_obs": 0
+    },
+    {
+      "id": "MORTGAGE_SPREAD",
+      "label": "30Y Mortgage \u2013 10Y",
+      "layer": "L3",
+      "unit": "bp",
+      "desc": "Real-economy credit transmission",
+      "n_obs": 0
+    },
+    {
+      "id": "HY_IG_RATIO",
+      "label": "HY / IG Spread Ratio",
+      "layer": "L2",
+      "unit": "x",
+      "desc": "Risk-tier divergence",
+      "n_obs": 0
+    }
+  ]
+}
