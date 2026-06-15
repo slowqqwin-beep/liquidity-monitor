@@ -1,0 +1,119 @@
+[INFO] Fetching data since 2023-06-09
+[INFO] FRED: SOFR
+[WARN] FRED fetch failed for SOFR (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for SOFR (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for SOFR (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: IORB
+[WARN] FRED fetch failed for IORB (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=IORB&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for IORB (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=IORB&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for IORB (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=IORB&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: EFFR
+[WARN] FRED fetch failed for EFFR (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=EFFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for EFFR (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=EFFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for EFFR (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=EFFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: DFEDTARU
+[WARN] FRED fetch failed for DFEDTARU (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFEDTARU&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DFEDTARU (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFEDTARU&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DFEDTARU (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFEDTARU&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: DFEDTARL
+[WARN] FRED fetch failed for DFEDTARL (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFEDTARL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DFEDTARL (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFEDTARL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DFEDTARL (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFEDTARL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: RRPONTSYD
+[WARN] FRED fetch failed for RRPONTSYD (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=RRPONTSYD&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for RRPONTSYD (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=RRPONTSYD&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for RRPONTSYD (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=RRPONTSYD&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: WRESBAL
+[WARN] FRED fetch failed for WRESBAL (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WRESBAL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for WRESBAL (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WRESBAL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for WRESBAL (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WRESBAL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: WTREGEN
+[WARN] FRED fetch failed for WTREGEN (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WTREGEN&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for WTREGEN (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WTREGEN&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for WTREGEN (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WTREGEN&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: WALCL
+[WARN] FRED fetch failed for WALCL (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WALCL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for WALCL (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WALCL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for WALCL (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=WALCL&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: BAMLH0A0HYM2
+[WARN] FRED fetch failed for BAMLH0A0HYM2 (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for BAMLH0A0HYM2 (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for BAMLH0A0HYM2 (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: BAMLC0A0CM
+[WARN] FRED fetch failed for BAMLC0A0CM (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLC0A0CM&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for BAMLC0A0CM (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLC0A0CM&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for BAMLC0A0CM (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLC0A0CM&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: BAMLEMCBPIOAS
+[WARN] FRED fetch failed for BAMLEMCBPIOAS (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLEMCBPIOAS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for BAMLEMCBPIOAS (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLEMCBPIOAS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for BAMLEMCBPIOAS (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=BAMLEMCBPIOAS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: VIXCLS
+[WARN] FRED fetch failed for VIXCLS (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for VIXCLS (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for VIXCLS (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: TEDRATE
+[WARN] FRED fetch failed for TEDRATE (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=TEDRATE&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for TEDRATE (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=TEDRATE&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for TEDRATE (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=TEDRATE&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: DGS2
+[WARN] FRED fetch failed for DGS2 (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS2&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DGS2 (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS2&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DGS2 (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS2&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: DGS5
+[WARN] FRED fetch failed for DGS5 (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS5&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DGS5 (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS5&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DGS5 (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS5&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: DGS10
+[WARN] FRED fetch failed for DGS10 (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DGS10 (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DGS10 (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: DGS30
+[WARN] FRED fetch failed for DGS30 (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS30&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DGS30 (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS30&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DGS30 (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS30&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: DFII10
+[WARN] FRED fetch failed for DFII10 (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFII10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DFII10 (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFII10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DFII10 (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DFII10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: T10YIE
+[WARN] FRED fetch failed for T10YIE (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=T10YIE&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for T10YIE (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=T10YIE&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for T10YIE (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=T10YIE&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: T5YIFR
+[WARN] FRED fetch failed for T5YIFR (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=T5YIFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for T5YIFR (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=T5YIFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for T5YIFR (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=T5YIFR&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: THREEFYTP10
+[WARN] FRED fetch failed for THREEFYTP10 (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=THREEFYTP10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for THREEFYTP10 (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=THREEFYTP10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for THREEFYTP10 (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=THREEFYTP10&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: MORTGAGE30US
+[WARN] FRED fetch failed for MORTGAGE30US (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=MORTGAGE30US&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for MORTGAGE30US (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=MORTGAGE30US&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for MORTGAGE30US (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=MORTGAGE30US&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] FRED: DTWEXBGS
+[WARN] FRED fetch failed for DTWEXBGS (attempt 1): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DTWEXBGS (attempt 2): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[WARN] FRED fetch failed for DTWEXBGS (attempt 3): 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&api_key=6b3a6e4c44a2e709c6e60feb17ef3401+&file_type=json&observation_start=2023-06-09
+[INFO] Stablecoin aggregate (CoinGecko)
+[WARN] CoinGecko fetch failed for usd-coin: 429 Client Error: Too Many Requests for url: https://api.coingecko.com/api/v3/coins/usd-coin/market_chart?vs_currency=usd&days=365&interval=daily
+[WARN] CoinGecko fetch failed for dai: 429 Client Error: Too Many Requests for url: https://api.coingecko.com/api/v3/coins/dai/market_chart?vs_currency=usd&days=365&interval=daily
+[INFO] BTC price (CoinGecko)
+[WARN] BTC fetch failed: 429 Client Error: Too Many Requests for url: https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily
+[INFO] Loaded Yahoo fallback: ['FXY', 'HYG', 'SPY'] (sizes: {'FXY': 750, 'HYG': 750, 'SPY': 750})
+[INFO] Yahoo Finance: SPY
+[INFO]   → 750 rows (live)
+[INFO] Yahoo Finance: HYG
+[INFO]   → 750 rows (live)
+[INFO] Yahoo Finance: FXY
+[INFO]   → 750 rows (live)
+[INFO] Yahoo Finance: GLD
+[INFO]   → 750 rows (live)
+[INFO] Yahoo Finance: ^MOVE
+[INFO]   → 745 rows (live)
+[INFO] Gold   → GLD (Yahoo) mapped to GOLDAMGBD228NLBM
+[INFO] MOVE   → ^MOVE (Yahoo) mapped to MOVE
+[INFO] Computing derived series
+[DONE] 38 series, 5605 observations
+[DONE] Wrote D:\liquidity-dashboard\liquidity-dashboard\data\series.json (262.4 KB)
+[DONE] Wrote D:\liquidity-dashboard\liquidity-dashboard\data\metadata.json

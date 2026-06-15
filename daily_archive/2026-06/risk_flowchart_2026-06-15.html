@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前端风险与系统性风险演化流程</title>
+<style>
+:root {
+    --text-main: #222;  --text-sub: #555;  --bg-page: #f4f6f9;
+    --c-orange: #f06a25;  --c-orange-light: #fef0ea;  --c-orange-border: #fad4c4;
+    --c-yellow: #f8a81d;  --c-yellow-light: #fffaf0;  --c-yellow-border: #fce1ad;
+    --c-red: #da3832;  --c-red-light: #fbecec;  --c-red-border: #f3c2c0;
+    --c-blue: #2457a6;  --c-blue-light: #eaf1fa;  --c-green: #3ab54a;  --c-green-light: #eaf6eb;
+}
+* { box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background-color: var(--bg-page); color: var(--text-main); margin: 0; padding: 40px 20px; display: flex; justify-content: center;
+}
+.container { width: 100%; max-width: 960px; background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+.header { text-align: center; margin-bottom: 30px; }
+.header h1 { font-size: 32px; font-weight: 800; color: #111; margin: 0 0 12px 0; letter-spacing: 1px; }
+.header p { font-size: 15px; color: var(--text-sub); margin: 0; font-weight: 500; }
+.section { border-radius: 10px; padding: 24px; margin-bottom: 0; position: relative; background: #fff; }
+.section-title { display: flex; align-items: center; font-size: 20px; font-weight: 800; margin-bottom: 20px; letter-spacing: .5px; }
+.circle-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: white; margin-right: 12px; font-size: 18px; font-weight: bold; }
+.block-arrow { width: 30px; height: 35px; margin: 15px auto; clip-path: polygon(30% 0%, 70% 0%, 70% 55%, 100% 55%, 50% 100%, 0% 55%, 30% 55%); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.box { background: white; border-radius: 8px; overflow: hidden; border: 2px solid; }
+.box-header { text-align: center; padding: 10px; font-weight: bold; font-size: 16px; border-bottom: 2px solid; }
+.box-content { padding: 16px 20px; font-size: 15px; line-height: 1.6; font-weight: 500; }
+.box-content ul { margin: 0; padding-left: 20px; }
+.box-content li { margin-bottom: 6px; }
+.border-orange-thick { border: 3px solid var(--c-orange); }
+.text-orange { color: var(--c-orange); }
+.bg-orange { background-color: var(--c-orange); }
+.box.theme-orange { border-color: var(--c-orange-border); }
+.box.theme-orange .box-header { background: var(--c-orange-light); border-bottom-color: var(--c-orange-border); color: var(--c-orange); }
+.box.theme-red { border-color: var(--c-red-border); }
+.box.theme-red .box-header { background: var(--c-red-light); border-bottom-color: var(--c-red-border); color: var(--c-red); }
+.border-red-thick { border: 3px solid var(--c-red); }
+.text-red { color: var(--c-red); }
+.bg-red { background-color: var(--c-red); }
+.border-blue-thick { border: 3px solid var(--c-blue); background: var(--c-blue-light); }
+.text-blue { color: var(--c-blue); }
+.bg-blue { background-color: var(--c-blue); }
+.border-yellow-thick { border: 3px solid var(--c-yellow); background: var(--c-yellow-light); }
+.text-yellow { color: #d68700; }
+.bg-yellow { background-color: var(--c-yellow); }
+.box-3 { background: white; border: 2px solid var(--c-yellow-border); border-radius: 8px; padding: 16px; font-size: 14px; font-weight: 500; }
+.box-3-header { font-weight: bold; font-size: 15px; color: var(--c-orange); margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+.box-3 ul { margin: 0 0 15px 0; padding-left: 18px; line-height: 1.6; }
+.box-3 li { margin-bottom: 5px; }
+.tag-center { display: flex; justify-content: center; align-items: center; margin: 20px auto 0 auto; padding: 8px 24px; border-radius: 30px; font-size: 15px; font-weight: bold; width: fit-content; }
+.tag-orange { background: var(--c-orange-light); color: var(--c-orange); border: 2px solid var(--c-orange); }
+.tag-red { background: var(--c-red); color: white; border: 2px solid var(--c-red); }
+.tag-neutral { background: #fff9f6; color: #444; border: 1px solid #e0e0e0; }
+.status-badge { display: block; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; width: 100%; }
+.badge-green { background: var(--c-green-light); color: var(--c-green); border: 1px solid #bce8c1; }
+.badge-orange { background: var(--c-orange-light); color: var(--c-orange); border: 1px solid var(--c-orange-border); }
+.badge-red { background: var(--c-red-light); color: var(--c-red); border: 1px solid var(--c-red-border); }
+.footer-note { text-align: center; font-size: 15px; font-weight: bold; margin-top: 20px; padding-top: 15px; border-top: 2px dashed #e0e0e0; color: #886514; }
+.step-4-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin-top: 25px; }
+.bottom-banner { background: var(--c-blue); color: white; padding: 16px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 18px; margin-top: 25px; letter-spacing: .5px; box-shadow: 0 4px 10px rgba(36,87,166,.2); }
+.check-list { font-size: 15px; line-height: 2.2; list-style: none; padding-left: 0; font-weight: 600; color: #111; }
+.check-list li { display: flex; align-items: flex-start; }
+.check-list li::before { content: '\2714'; color: white; background: var(--c-blue); border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; font-size: 12px; margin-right: 10px; margin-top: 6px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>前端风险会如何演化成系统性风险？</h1>
+        <p>基于 2026-06-15 ABCD 日报 · 当前结论：R3 警惕 ⚡ / 仓位 35% Primary · 35% Hedge · 30% Cash</p>
+    </div>
+
+    <!-- ====== Step 1 ====== -->
+    <div class="section border-orange-thick">
+        <div class="section-title text-orange">
+            <span class="circle-num bg-orange">1</span> 近端事件风险（当前已确认）
+        </div>
+        <div class="grid-2">
+            <div class="box theme-orange">
+                <div class="box-header">事件窗</div>
+                <div class="box-content"><ul>
+                    <li>CPI / PPI</li>
+                    <li>10Y / 30Y 美债拍卖</li>
+                    <li>FOMC / 点阵图</li>
+                </ul></div>
+            </div>
+            <div class="box theme-red">
+                <div class="box-header">市场信号</div>
+                <div class="box-content"><ul>
+                    <li>VTS 背端=contango(0.862) · 前端=前端紧张(0.976)</li>
+                    <li>MOVE=— / RCV=front = front-tilt</li>
+                    <li>结论：评估中</li>
+                </ul></div>
+            </div>
+        </div>
+        <div class="tag-center tag-orange">当前性质：事件驱动，尚非系统性</div>
+    </div>
+
+    <div class="block-arrow bg-orange"></div>
+
+    <!-- ====== Step 2 ====== -->
+    <div class="section border-orange-thick">
+        <div class="section-title text-orange">
+            <span class="circle-num bg-orange">2</span> 第一层传导：估值压缩 / 利率冲击
+        </div>
+        <div class="grid-2">
+            <div class="box theme-red" style="border: 2px solid var(--c-orange);">
+                <div class="box-header" style="background:#fff;color:var(--c-red);border-bottom:2px solid var(--c-orange);">
+                    C 端：长端利率定价
+                </div>
+                <div class="box-content"><ul>
+                    <li>DFII10 = 2.16%</li>
+                    <li>状态：🔴</li>
+                    <li>DUR5 = 5/5 ✅</li>
+                </ul></div>
+            </div>
+            <div class="box theme-orange" style="border: 2px solid var(--c-orange);">
+                <div class="box-header" style="background:#fff;border-bottom:2px solid var(--c-orange);">
+                    A 端：资金管道
+                </div>
+                <div class="box-content"><ul>
+                    <li>EFFR-IORB = -3bp</li>
+                    <li>状态：🟠</li>
+                    <li>DUR5 = 5/5 ✅</li>
+                </ul></div>
+            </div>
+        </div>
+        <div class="tag-center tag-neutral">
+            含义：先压估值、伤久期、增波动；但此时仍可能只是「利率冲击」。
+        </div>
+    </div>
+
+    <div class="block-arrow bg-yellow"></div>
+
+    <!-- ====== Step 3 ====== -->
+    <div class="section border-yellow-thick">
+        <div class="section-title text-yellow">
+            <span class="circle-num bg-yellow">3</span> 是否升级为系统性风险？看 3 个触发器
+        </div>
+        <div class="grid-3">
+            <div class="box-3">
+                <div class="box-3-header">触发器 T1：信用开始恶化</div>
+                <ul>
+                    <li>HY OAS 脱离自满区: &gt; 300bp</li>
+                    <li>IG OAS 脱离自满区: &gt; 85bp</li>
+                    <li>若继续走阔 → B 端转坏</li>
+                </ul>
+                <div class="status-badge badge-green">当前：未触发 (HY 278bp / IG 75bp)</div>
+            </div>
+            <div class="box-3">
+                <div class="box-3-header">触发器 T2：流动性继续收紧</div>
+                <ul>
+                    <li>EFFR-IORB 继续上行至 🔴</li>
+                    <li>SOFR-IORB 接近或升破 0bp</li>
+                    <li>A 端从偏紧走向真正压力</li>
+                </ul>
+                <div class="status-badge badge-orange">当前：部分压力，但未到系统性阈值</div>
+            </div>
+            <div class="box-3">
+                <div class="box-3-header">触发器 T3：跨资产 / 跨境扩散</div>
+                <ul>
+                    <li>D 端启动 (如 FXY 5d &gt; +2.5%)</li>
+                    <li>CASC 从 0/4 升至 1/4 以上</li>
+                    <li>风险从利率扩散到外汇与多资产</li>
+                </ul>
+                <div class="status-badge badge-green">当前：未触发 (D端 🟢 / CASC 0/4)</div>
+            </div>
+        </div>
+        <div class="footer-note">
+            只有当信用恶化 + 流动性恶化 + 跨资产扩散逐步出现，前端风险才可能演化成系统性风险。
+        </div>
+    </div>
+
+    <!-- ====== Step 4 ====== -->
+    <div class="step-4-container">
+        <div class="section border-red-thick">
+            <div class="section-title text-red">
+                <span class="circle-num bg-red">4</span> 系统性风险阶段 (未到)
+            </div>
+            <ul style="font-size:15px;line-height:1.8;font-weight:500;margin-bottom:25px;">
+                <li><b>B 端转坏</b>：信用利差明显走阔</li>
+                <li><b>A 端红灯</b>：资金管道受压</li>
+                <li><b>D 端启动</b>：跨境 / FX 风险扩散</li>
+                <li style="color:var(--c-red);font-weight:bold;margin-top:10px;">市场结果：去杠杆、全面相关性上升、系统性下跌</li>
+            </ul>
+            <div class="tag-center tag-red" style="width:100%;">这时才从「近端风险」升级为「系统性风险」</div>
+        </div>
+
+        <div class="section border-blue-thick" style="padding:0;">
+            <div style="background:var(--c-blue);color:white;padding:12px;font-size:18px;font-weight:bold;text-align:center;border-radius:6px 6px 0 0;">
+                📋 当前判断
+            </div>
+            <div style="padding:20px;">
+                <ul class="check-list">
+                    <li>A橙 / B绿 / C红 / D绿 — A紧 + C红 + B自满(未走阔) → 估值压缩，尚未进入信用主导。</li>
+                    <li>仓位：35% Pri · 35% Hdg · 30% Cash，等待事件出清与触发器变化</li>
+                    <li>因此当前仍是：<span style="color: var(--c-red); font-weight: 800;">R3 警惕 ⚡</span>，而非危机模式</li>
+                    <li>B 端、A 端、D 端尚未同时恶化</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-banner">
+        💡 R3 警惕，跨域信号=0，🔴=1个域
+    </div>
+
+</div>
+</body>
+</html>
