@@ -2,3 +2,11 @@ __pycache__/
 *.pyc
 generated-images/
 .env
+daily_archive/*/risk_flowchart_*.png
+daily_archive/*/*.png
+report/event_state_*.json
+!docs/risk/assets/event_state.json
+*.png
+!前端风险与系统性风险演化流程.png
+!财经市场风险诊断报告.png
+!四端快照信号逻辑示意图.png

@@ -3614,11 +3614,34 @@ def main():
                        capture_output=True, timeout=60)
         print(f"[Generated risk dashboard (MD + PNG)]")
 
-        # Auto-generate risk evolution flowchart HTML -> daily_archive
+        # Auto-generate risk evolution flowchart HTML -> daily_archive (legacy)
         flowchart_script = Path(__file__).resolve().parent / "generate_risk_flowchart.py"
         subprocess.run([sys.executable, "-X", "utf8", str(flowchart_script), "--date", run_date],
                        capture_output=True, timeout=30)
         print(f"[Generated risk flowchart -> daily_archive]")
+
+        # ── New: Event-driven flowchart PNG (white-background) ──
+        tools_dir = Path(__file__).resolve().parent / "tools"
+        # Step A: Extract event_state from risk_dashboard MD
+        extract_script = tools_dir / "extract_risk_events.py"
+        r = subprocess.run(
+            [sys.executable, "-X", "utf8", str(extract_script), "--date", run_date],
+            capture_output=True, timeout=30,
+        )
+        if r.returncode == 0:
+            print(f"[Extracted risk event_state]")
+            # Step B: Generate white-background flowchart PNG
+            png_script = tools_dir / "generate_flowchart_png.py"
+            r2 = subprocess.run(
+                [sys.executable, "-X", "utf8", str(png_script), "--date", run_date],
+                capture_output=True, timeout=30,
+            )
+            if r2.returncode == 0:
+                print(f"[Generated risk flowchart PNG]")
+            else:
+                print(f"[WARN] Flowchart PNG failed: {r2.stderr.decode(errors='replace')[:200]}")
+        else:
+            print(f"[WARN] Event extraction failed: {r.stderr.decode(errors='replace')[:200]}")
 
         return 0
 

@@ -1,0 +1,78 @@
+{
+  "date": "2026-06-15",
+  "regime": "R3 警惕",
+  "positions": {
+    "primary": "35%",
+    "hedge": "35%",
+    "cash": "30%"
+  },
+  "cross_domain_signals": 2,
+  "red_count": 1,
+  "event_state": {
+    "near_event_active": true,
+    "near_event_type": "rate_event",
+    "event_sources": [
+      "VIX9D/VIX=0.976 前端紧张",
+      "DGS2−IORB=40.0bp 降息被price out / 加息风险",
+      "CPI"
+    ],
+    "front_risk_label": "前端紧张",
+    "front_risk_intensity": "orange",
+    "systemic_confirmed": false,
+    "evidence": {
+      "vix9d_vix_ratio": 0.976,
+      "vix": 17.7,
+      "dgs2_iorb_bp": 40.0,
+      "cross_asset_confirm": 0
+    }
+  },
+  "transmission_state": {
+    "rate_shock_active": true,
+    "valuation_compression_active": true,
+    "real_yield_pressure": true,
+    "liquidity_buffer_thinning": true,
+    "main_path": "C先红 → A偏紧 → B未坏 → D未动",
+    "summary": "当前是利率/实际利率冲击造成的估值压缩，不是信用主导的系统性风险。",
+    "evidence": {
+      "dfii10_pct": 2.16,
+      "real_yield_nowcast": 2.19,
+      "effr_iorb_bp": -3.0
+    }
+  },
+  "trigger_state": {
+    "credit_trigger": {
+      "active": false,
+      "label": "未触发（自满区）",
+      "evidence": "| **T1 信用(B端)** | HY/IG OAS走阔脱离自满 | 🟢 未触发 (HY/IG ⚠️自满) |"
+    },
+    "liquidity_trigger": {
+      "active": true,
+      "partial": true,
+      "label": "部分触发",
+      "evidence": "| **T2 流动性(A端)** | EFFR-IORB 🟠/🔴+DUR5≥5 | 🟠 已触发·部分压力 (EFFR-IORB=-3.0bp DUR5=5/5) |"
+    },
+    "cross_asset_trigger": {
+      "active": false,
+      "label": "未触发",
+      "evidence": "| **T3 跨资产/跨境** | CASC≥2+VTS+RCV互锁 | 🟢 未触发 (CASC0/4·VTS=contango·互锁=agree-front) |"
+    },
+    "any_triggered": true,
+    "all_triggered": false
+  },
+  "stage_assessment": {
+    "current_stage": "前端事件风险 + 第一层利率冲击",
+    "not_yet_stage": "系统性风险",
+    "final_judgement": "双探针前端一致·近端事件非系统性。等CPI/Fed落地看前端是fade还是扩散。要盯的翻转点：RCV→long-led/acute-broad叠VTS倒挂→agree-systemic。",
+    "next_watch": [
+      "RCV 是否从 front-tilt 变成 long-led / acute-broad",
+      "VTS 是否从 contango 变成倒挂",
+      "HY/IG OAS 是否脱离自满并走阔",
+      "D端 FX / 跨境风险是否启动"
+    ],
+    "evidence": {
+      "rcv_tilt": "front",
+      "rcv_sev": "elevated",
+      "interlock": "front"
+    }
+  }
+}
