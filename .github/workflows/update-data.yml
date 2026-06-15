@@ -43,6 +43,12 @@ jobs:
         run: |
           python scripts/daily_report.py --md
 
+      - name: Extract risk event state (for docs/risk dashboard)
+        run: |
+          # Only if risk_dashboard MD exists (from local pipeline or manual run)
+          TODAY=$(date -u +%Y-%m-%d)
+          python tools/extract_risk_events.py --date "$TODAY" || echo "[SKIP] risk_dashboard not available"
+
       - name: Auto-fill daily xlsx
         run: |
           python scripts/fill_xlsx_daily.py
@@ -51,7 +57,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ report/ daily_logs/ template_cleaned_v2.xlsx
+          git add data/ report/ daily_logs/ docs/risk/assets/event_state.json template_cleaned_v2.xlsx
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

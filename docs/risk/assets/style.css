@@ -603,6 +603,32 @@ main {
   color: var(--accent-stress);
 }
 
+/* Fallback card when data is missing */
+.fallback-card {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elev);
+  border: 1px dashed var(--line-strong);
+}
+
+.fallback-card:hover {
+  background: var(--bg-elev);
+}
+
+.fallback-label {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--ink-mute);
+  text-transform: none;
+  letter-spacing: 0;
+  text-align: center;
+  line-height: 1.5;
+  padding: 12px;
+}
+
 
 /* =====================================================
    Responsive

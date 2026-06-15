@@ -8,12 +8,13 @@ on:
     # Also run at Singapore market hours: 08:00 & 20:00 SGT (00:00 & 12:00 UTC)
     - cron: "0 0,12 * * *"
   push:
-    branches: [main]
+    branches: [main, master]
     paths:
       - "fed_reaction_dashboard.md"
       - "risk_dashboard_latest.md"
       - "data/**"
       - "scripts/**"
+      - "docs/risk/**"
       - ".github/workflows/build-pages.yml"
 
 permissions:
@@ -51,6 +52,11 @@ jobs:
 
       - name: Build Site
         run: python scripts/build_site.py
+
+      - name: Refresh Risk Event State
+        run: |
+          TODAY=$(date -u +%Y-%m-%d)
+          python tools/extract_risk_events.py --date "$TODAY" || echo "[SKIP] extract_risk_events not available"
 
       - name: Commit changes
         run: |
