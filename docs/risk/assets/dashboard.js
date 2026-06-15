@@ -150,8 +150,15 @@ function renderMasthead(es) {
   // Append systemic classification badge
   const sysEl = document.getElementById('mast-systemic');
   if (sysEl) {
-    let sysColor = sysCls === 'SYSTEMIC' ? C.stress : sysCls === 'WATCH' ? C.orange : C.good;
-    sysEl.textContent = sysCls;
+    let sysLabel = sysCls;
+    let sysColor = C.good;
+    if (sysCls === 'SYSTEMIC') {
+      sysColor = C.stress;
+    } else if (sysCls === 'WATCH') {
+      sysColor = C.orange;
+      sysLabel = 'WATCH (NON-SYSTEMIC)';
+    }
+    sysEl.textContent = sysLabel;
     sysEl.style.color = sysColor;
   }
   document.getElementById('mast-cross').textContent   = cross;
@@ -249,12 +256,16 @@ function renderCoreCards(es) {
   });
 
   // 4 — 系统性风险触发器
-  const triggered = [
+  const t2Partial = tg.liquidity?.partial || tg.liquidity?.credit_partial;
+  const t2Status = tg.liquidity?.active
+    ? (t2Partial ? 'T2 已触发·部分压力' : 'T2 已触发')
+    : 'T2 未触发';
+  const triggeredBits = [
     tg.credit?.active ? 'T1' : null,
-    tg.liquidity?.active ? 'T2' : null,
+    tg.liquidity?.active ? (t2Partial ? 'T2(部分)' : 'T2') : null,
     tg.cross_asset?.active ? 'T3' : null,
   ].filter(Boolean);
-  const trigSummary = triggered.length > 0 ? `${triggered.join('+')} 已触发` : '三重皆未触发';
+  const trigSummary = triggeredBits.length > 0 ? `${triggeredBits.join('+')} 已触发` : '三重皆未触发';
   const trigColor = tg.all_triggered ? 'stress' : tg.any_triggered ? 'orange' : 'good';
   buildCard(grid, {
     accent: trigColor === 'stress' ? 'stress-left glow-stress'
@@ -263,7 +274,7 @@ function renderCoreCards(es) {
     label:  '系统性风险触发器',
     status: trigSummary,
     statusColor: trigColor,
-    detail: `T1信用:${tg.credit?.label || '—'} / T2流动:${tg.liquidity?.label || '—'} / T3跨资产:${tg.cross_asset?.label || '—'}`,
+    detail: `T1信用:${tg.credit?.label || '—'} / T2流动:${t2Status} / T3跨资产:${tg.cross_asset?.label || '—'}`,
   });
 
   // 5 — 当前阶段判断
@@ -349,10 +360,17 @@ function renderAuxCards(es) {
   } else if (!tg.any_triggered) {
     dipText = '✅ 三重触发器全灭 — 结构性支撑完好，逢低可考虑';
   } else {
-    const t2Partial = tg.liquidity?.credit_partial;
-    dipText = t2Partial
-      ? '⚠️ 部分触发 — T2流动性已触发但T1信用未确认，仅轻仓'
-      : '⚠️ 部分触发 — 仅轻仓试探，等T1信用转绿';
+    const t2Active = tg.liquidity?.active;
+    const t2Partial = tg.liquidity?.partial || tg.liquidity?.credit_partial;
+    const t1Active = tg.credit?.active;
+    const t3Active = tg.cross_asset?.active;
+    if (t2Active && t2Partial && !t1Active && !t3Active) {
+      dipText = '⚠️ T2 流动性已触发·部分压力 — 但 T1 信用未确认、T3 跨资产未共振，仅轻仓试探';
+    } else if (t2Active && !t2Partial && !t1Active) {
+      dipText = '⚠️ T2 流动性已触发 — 但 T1 信用未确认，仅轻仓试探';
+    } else {
+      dipText = '⚠️ 部分触发 — 仅轻仓试探，等 T1 信用转绿';
+    }
   }
   buildCard(grid, {
     label: '重新考虑抄底的条件',
@@ -397,12 +415,13 @@ function renderTriggerCards(es) {
   });
 
   const t2 = tg.liquidity || {};
+  const t2Partial = t2.partial || t2.credit_partial;
   buildTriggerCard(grid, {
     id: 'T2', name: 'T2 流动性 (A端)',
     condition: 'EFFR–IORB ≥ −3bp + DUR5 ≥ 3',
     active: t2.active || false,
-    partial: t2.partial || false,
-    label: t2.label || '未触发',
+    partial: t2Partial,
+    label: t2.active && t2Partial ? '已触发·部分压力' : (t2.label || '未触发'),
     evidence: t2.evidence || '—',
   });
 
@@ -501,11 +520,16 @@ function _whyNearEvent(fe, rs) {
 function _whyNotSystemic(fe, tg) {
   const creditOk  = !tg.credit?.active;
   const crossOk   = !tg.cross_asset?.active;
+  const t2Active  = tg.liquidity?.active;
+  const t2Partial = tg.liquidity?.partial || tg.liquidity?.credit_partial;
   if (creditOk && crossOk) {
-    const t2Info = tg.liquidity?.active
-      ? `流动性端（T2）已触发（${tg.liquidity?.evidence || '—'}），但因信用未走阔（T1）且无跨资产共振（T3），不符合系统性风险"三端同亮"定义。`
-      : '三重触发器全未触发。';
-    return `${t2Info} HY OAS 仍在自满区，需等待信用端确认扩散。`;
+    if (t2Active) {
+      const t2Detail = t2Partial
+        ? `T2 流动性：已触发·部分压力（${tg.liquidity?.evidence || '—'}）`
+        : `T2 流动性：已触发（${tg.liquidity?.evidence || '—'}）`;
+      return `${t2Detail}，但 T1 信用未触发、T3 跨资产未触发，不满足系统性风险"三端共振"定义。当前仅为单端（流动性）部分压力，尚非系统性风险。`;
+    }
+    return 'T1 信用未触发、T2 流动性未触发、T3 跨资产未触发，三重触发器全灭，无系统性风险迹象。';
   }
   return `当前触发信号不足以确认系统性风险转换。`;
 }
