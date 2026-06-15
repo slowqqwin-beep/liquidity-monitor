@@ -151,7 +151,15 @@ function renderMasthead(es) {
   document.getElementById('pos-cash').textContent    = pos.cash    || '—';
 
   const conclusion = document.getElementById('hero-conclusion');
-  conclusion.textContent = `${regime}：${stage.current_stage || ''}，${stage.not_yet_stage || '—'}。`;
+
+  // ── NOT-SYSTEMIC guard: if final_judgement or risk_character says "非系统性",
+  //     never output "系统性风险" as the current conclusion ──
+  let notYet = stage.not_yet_stage || '—';
+  const fj = (stage.final_judgement || '') + (stage.risk_character || '');
+  if (/非系统/.test(fj) && /系统/.test(notYet)) {
+    notYet = '尚未进入系统性风险';
+  }
+  conclusion.textContent = `${regime}：${stage.current_stage || ''}，${notYet}。`;
 }
 
 /* ==================================================================
@@ -494,8 +502,14 @@ function renderConclusion(es) {
   const st      = es.stage_assessment || {};
 
   document.getElementById('conclusion-judgement').textContent = st.final_judgement || '—';
+
+  let notYetBottom = st.not_yet_stage || '—';
+  const fj2 = (st.final_judgement || '') + (st.risk_character || '');
+  if (/非系统/.test(fj2) && /系统/.test(notYetBottom)) {
+    notYetBottom = '尚未进入系统性风险';
+  }
   document.getElementById('conclusion-stage').textContent =
-    `${regime} · ${st.current_stage || '—'} · ${st.not_yet_stage || '—'}`;
+    `${regime} · ${st.current_stage || '—'} · ${notYetBottom}`;
 
   const watchList = document.getElementById('conclusion-watch');
   if (watchList) {
