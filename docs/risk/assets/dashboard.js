@@ -1,6 +1,7 @@
 /* =====================================================
-   Risk Evolution Dashboard — Event-Driven Logic  v2
-   Data source: event_state.json (from risk_dashboard MD)
+   Risk Evolution Dashboard — Event-Driven Logic  v3
+   Data source: event_state.json (from Risk OS State Machine — SSoT)
+   Schema: front_event_risk / rate_shock / first_layer_transmission / systemic_triggers
    Fixes: clear placeholders, GH Pages paths, field validation, fallback
    ===================================================== */
 
@@ -63,15 +64,17 @@ async function loadEventState() {
 function validateEventState(es) {
   if (!es) return { valid: false, missing: ['root: null/undefined'] };
 
-  const topRequired = ['date', 'regime', 'event_state', 'transmission_state', 'trigger_state', 'stage_assessment'];
+  const topRequired = ['date', 'regime', 'regime_key', 'systemic_classification',
+    'front_event_risk', 'rate_shock', 'first_layer_transmission', 'systemic_triggers', 'stage_assessment'];
   const missing = topRequired.filter(k => es[k] === undefined || es[k] === null);
 
   // Substructure checks
   const subChecks = {
-    'event_state':        ['near_event_active', 'front_risk_label', 'front_risk_intensity'],
-    'transmission_state': ['rate_shock_active', 'real_yield_pressure'],
-    'trigger_state':      ['credit_trigger', 'liquidity_trigger', 'cross_asset_trigger', 'any_triggered', 'all_triggered'],
-    'stage_assessment':   ['current_stage', 'final_judgement'],
+    'front_event_risk':        ['active', 'label', 'intensity'],
+    'rate_shock':              ['active', 'dfii10_official', 'dfii10_nowcast'],
+    'first_layer_transmission':['active', 'real_yield_pressure', 'main_path'],
+    'systemic_triggers':       ['credit', 'liquidity', 'cross_asset', 'any_triggered', 'all_triggered'],
+    'stage_assessment':        ['current_stage', 'final_judgement'],
   };
 
   for (const [key, subs] of Object.entries(subChecks)) {
@@ -134,15 +137,23 @@ function showFallback(elId, msg) {
    ================================================================== */
 
 function renderMasthead(es) {
-  const regime = es.regime || '—';
-  const date   = es.date   || '—';
-  const pos    = es.positions || {};
-  const stage  = es.stage_assessment || {};
-  const cross  = es.cross_domain_signals ?? '—';
-  const red    = es.red_count ?? '—';
+  const regime  = es.regime || '—';
+  const date    = es.date   || '—';
+  const pos     = es.positions || {};
+  const stage   = es.stage_assessment || {};
+  const cross   = es.cross_domain_signals ?? '—';
+  const red     = es.red_count ?? '—';
+  const sysCls  = es.systemic_classification || '—';
 
-  document.getElementById('mast-date').textContent   = date;
+  document.getElementById('mast-date').textContent    = date;
   document.getElementById('mast-regime').textContent  = regime;
+  // Append systemic classification badge
+  const sysEl = document.getElementById('mast-systemic');
+  if (sysEl) {
+    let sysColor = sysCls === 'SYSTEMIC' ? C.stress : sysCls === 'WATCH' ? C.orange : C.good;
+    sysEl.textContent = sysCls;
+    sysEl.style.color = sysColor;
+  }
   document.getElementById('mast-cross').textContent   = cross;
   document.getElementById('mast-red').textContent     = red;
 
@@ -152,11 +163,10 @@ function renderMasthead(es) {
 
   const conclusion = document.getElementById('hero-conclusion');
 
-  // ── NOT-SYSTEMIC guard: if final_judgement or risk_character says "非系统性",
+  // ── NOT-SYSTEMIC guard: if final_judgement says "非系统性",
   //     never output "系统性风险" as the current conclusion ──
   let notYet = stage.not_yet_stage || '—';
-  const fj = (stage.final_judgement || '') + (stage.risk_character || '');
-  if (/非系统/.test(fj) && /系统/.test(notYet)) {
+  if (/非系统/.test(stage.final_judgement || '') && /系统/.test(notYet)) {
     notYet = '尚未进入系统性风险';
   }
   conclusion.textContent = `${regime}：${stage.current_stage || ''}，${notYet}。`;
@@ -172,75 +182,77 @@ function renderCoreCards(es) {
   clearGrid('core-cards');
 
   const v = validateEventState(es);
-  if (!es.event_state || !es.transmission_state) {
+  if (!es.front_event_risk || !es.rate_shock) {
     showGridFallback('core-cards',
-      v.valid ? '—' : `核心信号数据缺失：${v.missing.filter(m => m.startsWith('event_state') || m.startsWith('transmission_state')).join('，') || 'event_state / transmission_state 不可用'}`);
+      v.valid ? '—' : `核心信号数据缺失：${v.missing.filter(m => /front_event|rate_shock|first_layer/.test(m)).join('，') || 'front_event_risk / rate_shock 不可用'}`);
     return;
   }
 
-  const ev = es.event_state || {};
-  const tr = es.transmission_state || {};
-  const tg = es.trigger_state || {};
+  const fe = es.front_event_risk || {};
+  const rs = es.rate_shock || {};
+  const tx = es.first_layer_transmission || {};
+  const tg = es.systemic_triggers || {};
   const st = es.stage_assessment || {};
 
   // 1 — 近端事件风险
+  const feIntensity = fe.intensity || 'green';
   buildCard(grid, {
-    accent: ev.front_risk_intensity === 'orange' ? 'stress-left glow-stress' : 'good-left',
-    light:  ev.front_risk_intensity === 'orange' ? 'red' : 'green',
+    accent: feIntensity === 'red' ? 'stress-left glow-stress' : feIntensity === 'orange' ? 'orange-left glow-orange' : 'good-left',
+    light:  feIntensity,
     label:  '近端事件风险',
-    status: ev.front_risk_label || '—',
-    statusColor: ev.front_risk_intensity === 'orange' ? 'stress' : 'good',
-    detail: ev.near_event_active
-      ? `VIX9D/VIX=${ev.evidence?.vix9d_vix_ratio || '—'}，${(ev.event_sources || []).join('；')}`
-      : '无近端事件信号',
+    status: fe.label || '前端平稳',
+    statusColor: feIntensity === 'red' ? 'stress' : feIntensity === 'orange' ? 'orange' : 'good',
+    detail: fe.active
+      ? `DGS2−IORB=${fe.evidence?.dgs2_iorb_bp || '—'}bp，VIX=${fe.evidence?.vix || '—'}。${(fe.sources || []).join('；')}`
+      : '无近端事件信号。DGS2−IORB 未倒挂，VIX 处于低位。',
   });
 
   // 2 — 实际利率 / 估值挤压（独立卡片）
-  const dfii10   = tr.evidence?.dfii10_pct;
-  const nowcast  = tr.evidence?.real_yield_nowcast;
-  const realActive = tr.real_yield_pressure;
+  const dfii10   = rs.dfii10_official;
+  const nowcast  = rs.dfii10_nowcast;
+  const realActive = rs.active;
 
   // ── build detail with method, spread, direction, quality note ──
-  let realDetail = `官方 DFII10 ${dfii10 != null ? dfii10 + '%' : '—'}`;
+  let realDetail = `官方 DFII10 ${dfii10 != null ? dfii10.toFixed(2) + '%' : '—'}`;
   if (dfii10 != null && nowcast != null) {
-    const spreadBp = ((nowcast - dfii10) * 100).toFixed(0);
+    const spreadBp = rs.gap_bp != null ? rs.gap_bp : Math.round((nowcast - dfii10) * 100);
     const sign = spreadBp >= 0 ? '+' : '';
-    let direction = '基本持平';
-    if (Math.abs(spreadBp) >= 10) direction = spreadBp > 0 ? 'Nowcast 偏高' : 'Nowcast 偏低';
-    realDetail += `\nReal Yield Nowcast ${nowcast}%（DGS10 − 10Y BEI）`;
+    const direction = rs.direction || 'N/A';
+    realDetail += `\nReal Yield Nowcast ${nowcast.toFixed(2)}%（DGS10 − 10Y BEI）`;
     realDetail += `\n差值 ${sign}${spreadBp}bp，${direction}`;
   } else if (nowcast != null) {
-    realDetail += `\nReal Yield Nowcast ${nowcast}%（DGS10 − 10Y BEI）`;
+    realDetail += `\nReal Yield Nowcast ${nowcast.toFixed(2)}%（DGS10 − 10Y BEI）`;
   }
   realDetail += `\n⚠️ 官方 DFII10 滞后修正，Nowcast 更实时`;
+  if (rs.dur5_confirmed) realDetail += `\nDUR5=${rs.dur5_dfii}/5 已确认`;
   if (realActive) realDetail += `\n— 贴现率持续压制估值`;
 
   buildCard(grid, {
     accent: realActive ? 'stress-left glow-stress' : 'good-left',
     light:  realActive ? 'red' : 'green',
     label:  '实际利率 / 估值挤压',
-    value:  dfii10 != null ? `DFII10 ${dfii10}%` : (nowcast != null ? `Nowcast ${nowcast}%` : '—'),
-    status: realActive ? '🔴 高压 · 估值压缩' : '○ 正常区间',
+    value:  rs.level_label || (dfii10 != null ? `DFII10 ${dfii10.toFixed(2)}%` : '—'),
+    status: rs.level_light ? `${rs.level_light} ${rs.level_label || ''}` : (realActive ? '🔴 高压 · 估值压缩' : '○ 正常区间'),
     statusColor: realActive ? 'stress' : 'good',
     detail: realDetail,
   });
 
   // 3 — 第一层传导
-  const mainPath = tr.main_path || '';
+  const mainPath = tx.main_path || '';
   buildCard(grid, {
-    accent: tr.rate_shock_active ? 'orange-left glow-orange' : '',
-    light:  tr.rate_shock_active ? 'orange' : 'green',
+    accent: tx.active ? 'orange-left glow-orange' : '',
+    light:  tx.active ? 'orange' : 'green',
     label:  '第一层传导',
-    status: tr.rate_shock_active ? '活跃传导' : '无显著传导',
-    statusColor: tr.rate_shock_active ? 'orange' : 'mute',
-    detail: mainPath ? `${mainPath}\n${tr.summary || ''}` : '四端无显著传导压力',
+    status: tx.active ? '活跃传导' : '无显著传导',
+    statusColor: tx.active ? 'orange' : 'mute',
+    detail: mainPath ? `${mainPath}\n${tx.summary || ''}` : '四端无显著传导压力',
   });
 
   // 4 — 系统性风险触发器
   const triggered = [
-    tg.credit_trigger?.active ? 'T1' : null,
-    tg.liquidity_trigger?.active ? 'T2' : null,
-    tg.cross_asset_trigger?.active ? 'T3' : null,
+    tg.credit?.active ? 'T1' : null,
+    tg.liquidity?.active ? 'T2' : null,
+    tg.cross_asset?.active ? 'T3' : null,
   ].filter(Boolean);
   const trigSummary = triggered.length > 0 ? `${triggered.join('+')} 已触发` : '三重皆未触发';
   const trigColor = tg.all_triggered ? 'stress' : tg.any_triggered ? 'orange' : 'good';
@@ -251,7 +263,7 @@ function renderCoreCards(es) {
     label:  '系统性风险触发器',
     status: trigSummary,
     statusColor: trigColor,
-    detail: `T1信用:${tg.credit_trigger?.label || '—'} / T2流动:${tg.liquidity_trigger?.label || '—'} / T3跨资产:${tg.cross_asset_trigger?.label || '—'}`,
+    detail: `T1信用:${tg.credit?.label || '—'} / T2流动:${tg.liquidity?.label || '—'} / T3跨资产:${tg.cross_asset?.label || '—'}`,
   });
 
   // 5 — 当前阶段判断
@@ -295,36 +307,39 @@ function renderAuxCards(es) {
   if (!grid) return;
   clearGrid('aux-cards');
 
-  if (!es.transmission_state || !es.trigger_state) {
-    showGridFallback('aux-cards', '辅助判断数据缺失：transmission_state / trigger_state 不可用');
+  if (!es.first_layer_transmission || !es.systemic_triggers) {
+    showGridFallback('aux-cards', '辅助判断数据缺失：first_layer_transmission / systemic_triggers 不可用');
     return;
   }
 
-  const tr = es.transmission_state || {};
-  const tg = es.trigger_state || {};
+  const tx = es.first_layer_transmission || {};
+  const tg = es.systemic_triggers || {};
+  const st = es.stage_assessment || {};
+  const rs = es.rate_shock || {};
 
   // Fed鸽派 / 流动性缓冲
-  const buffText = tr.rate_shock_active
+  const buffText = rs.active
     ? '鸽派缓冲存在，但不能抵消实际利率高压'
     : '流动性缓冲充裕，Fed尚有空间';
   buildCard(grid, {
-    accent: tr.rate_shock_active ? 'orange-left' : 'good-left',
+    accent: rs.active ? 'orange-left' : 'good-left',
     label: 'Fed鸽派 / 流动性缓冲',
-    status: tr.rate_shock_active ? '缓冲存在·被高压盖过' : '缓冲充裕',
-    statusColor: tr.rate_shock_active ? 'orange' : 'good',
+    status: rs.active ? '缓冲存在·被高压盖过' : '缓冲充裕',
+    statusColor: rs.active ? 'orange' : 'good',
     detail: buffText,
   });
 
   // 资产反应链
-  const vts = (es.stage_assessment?.evidence?.vts_regime) || 'contango';
-  const rcv = es.stage_assessment?.evidence?.rcv_tilt || '—';
+  const cascCnt = tg.casc_count ?? 0;
   buildCard(grid, {
     label: '资产反应链',
-    status: `VTS=${vts} · RCV tilt=${rcv}`,
-    statusColor: vts === 'backwardated' ? 'stress' : 'mute',
-    detail: vts === 'backwardated'
-      ? '⚠️ VTS倒挂 — 远期对冲成本急剧上升'
-      : '近端事件主导，远期结构正常',
+    status: `${cascCnt}/4 跨资产信号`,
+    statusColor: cascCnt >= 2 ? 'stress' : 'mute',
+    detail: cascCnt >= 2
+      ? '⚠️ 多资产共振 — 跨市场压力扩散'
+      : cascCnt === 1
+        ? '单一资产信号，未形成跨市场共振'
+        : '各资产端平静，无跨资产共振',
   });
 
   // 抄底条件
@@ -334,7 +349,10 @@ function renderAuxCards(es) {
   } else if (!tg.any_triggered) {
     dipText = '✅ 三重触发器全灭 — 结构性支撑完好，逢低可考虑';
   } else {
-    dipText = '⚠️ 部分触发 — 仅轻仓试探，等T1信用转绿';
+    const t2Partial = tg.liquidity?.credit_partial;
+    dipText = t2Partial
+      ? '⚠️ 部分触发 — T2流动性已触发但T1信用未确认，仅轻仓'
+      : '⚠️ 部分触发 — 仅轻仓试探，等T1信用转绿';
   }
   buildCard(grid, {
     label: '重新考虑抄底的条件',
@@ -344,7 +362,7 @@ function renderAuxCards(es) {
   });
 
   // 下一步观察点
-  const watches = (es.stage_assessment?.next_watch || []).slice(0, 3);
+  const watches = (st.next_watch || []).slice(0, 3);
   const watchLines = watches.length > 0
     ? watches.map((w, i) => `${i + 1}. ${w}`).join('\n')
     : '等待新信号';
@@ -364,24 +382,24 @@ function renderTriggerCards(es) {
   if (!grid) return;
   clearGrid('trigger-cards');
 
-  const tg = es.trigger_state;
-  if (!tg || !tg.credit_trigger) {
-    showGridFallback('trigger-cards', '触发器数据缺失：trigger_state 不可用');
+  const tg = es.systemic_triggers;
+  if (!tg || !tg.credit) {
+    showGridFallback('trigger-cards', '触发器数据缺失：systemic_triggers 不可用');
     return;
   }
 
   buildTriggerCard(grid, {
     id: 'T1', name: 'T1 信用 (B端)',
-    condition: 'HY OAS > 300bp 或 IG OAS > 85bp',
-    active: tg.credit_trigger?.active || false,
-    label: tg.credit_trigger?.label || '未触发',
-    evidence: tg.credit_trigger?.evidence || '—',
+    condition: 'HY OAS > 300bp',
+    active: tg.credit?.active || false,
+    label: tg.credit?.label || '未触发',
+    evidence: tg.credit?.evidence || '—',
   });
 
-  const t2 = tg.liquidity_trigger || {};
+  const t2 = tg.liquidity || {};
   buildTriggerCard(grid, {
     id: 'T2', name: 'T2 流动性 (A端)',
-    condition: 'EFFR–IORB > −3bp + DUR5 ≥ 5',
+    condition: 'EFFR–IORB ≥ −3bp + DUR5 ≥ 3',
     active: t2.active || false,
     partial: t2.partial || false,
     label: t2.label || '未触发',
@@ -390,10 +408,10 @@ function renderTriggerCards(es) {
 
   buildTriggerCard(grid, {
     id: 'T3', name: 'T3 跨资产 / 跨境',
-    condition: 'CASC ≥ 2 + VTS + RCV 互锁',
-    active: tg.cross_asset_trigger?.active || false,
-    label: tg.cross_asset_trigger?.label || '未触发',
-    evidence: tg.cross_asset_trigger?.evidence || '—',
+    condition: 'CASC ≥ 2/4 (VIX>25 + MOVE>120 + HY 20dΔ>20bp + FXY 5d>2.5%)',
+    active: tg.cross_asset?.active || false,
+    label: tg.cross_asset?.label || '未触发',
+    evidence: tg.cross_asset?.evidence || '—',
   });
 }
 
@@ -426,33 +444,35 @@ function renderInterpretation(es) {
   clearGrid('interp-cards');
 
   // ── Validate required fields ──
-  const ev = es.event_state;
-  const tr = es.transmission_state;
-  const tg = es.trigger_state;
+  const fe = es.front_event_risk;
+  const rs = es.rate_shock;
+  const tx = es.first_layer_transmission;
+  const tg = es.systemic_triggers;
   const st = es.stage_assessment;
 
-  if (!ev || !tr || !tg || !st) {
+  if (!fe || !rs || !tx || !tg || !st) {
     const missing = [];
-    if (!ev) missing.push('event_state');
-    if (!tr) missing.push('transmission_state');
-    if (!tg) missing.push('trigger_state');
+    if (!fe) missing.push('front_event_risk');
+    if (!rs) missing.push('rate_shock');
+    if (!tx) missing.push('first_layer_transmission');
+    if (!tg) missing.push('systemic_triggers');
     if (!st) missing.push('stage_assessment');
     showGridFallback('interp-cards',
-      `解读数据缺失：缺少 ${missing.join('、')}。请检查 event_state.json 是否由 extract_risk_events.py 生成。`);
+      `解读数据缺失：缺少 ${missing.join('、')}。请检查 event_state.json 是否由 risk_os_state_machine.py 生成。`);
     return;
   }
 
-  if (ev.near_event_active === undefined && !st.current_stage) {
+  if (fe.active === undefined && !st.current_stage) {
     showGridFallback('interp-cards',
-      '解读数据缺失：near_event_active 和 current_stage 均为空。请检查 event_state.json 是否生成。');
+      '解读数据缺失：front_event_risk.active 和 current_stage 均为空。请检查 event_state.json 是否生成。');
     return;
   }
 
   const items = [
-    { title: '为什么当前是近端事件风险？',   body: _whyNearEvent(ev, st) },
-    { title: '为什么尚非系统性？',           body: _whyNotSystemic(ev, tg, st) },
-    { title: '实际利率为何是主矛盾？',       body: _whyRealYield(tr) },
-    { title: '哪些变化会推动升级？',         body: _whatUpgrades(st) },
+    { title: '为什么当前是近端事件风险？',   body: _whyNearEvent(fe, rs) },
+    { title: '为什么尚非系统性？',           body: _whyNotSystemic(fe, tg) },
+    { title: '实际利率为何是主矛盾？',       body: _whyRealYield(rs) },
+    { title: '哪些变化会推动升级？',         body: _whatUpgrades(st, tg) },
   ];
 
   items.forEach((item, i) => {
@@ -469,41 +489,56 @@ function renderInterpretation(es) {
   });
 }
 
-function _whyNearEvent(ev, st) {
-  const ratio   = ev.evidence?.vix9d_vix_ratio;
-  const confirm = ev.evidence?.cross_asset_confirm;
-  const dgs2    = ev.evidence?.dgs2_iorb_bp;
-  if (ratio != null && ratio > 0.95 && confirm === 0) {
-    return `前端VIX9D/VIX=${ratio}偏紧，VIX曲线前端陡峭，但跨资产确认=${confirm}/4 — 无广泛传染信号。${dgs2 != null ? `DGS2−IORB=${dgs2}bp，市场在定价具体近端利率事件而非系统性恐慌。` : ''}`;
+function _whyNearEvent(fe, rs) {
+  const dgs2 = fe.evidence?.dgs2_iorb_bp;
+  const vix  = fe.evidence?.vix;
+  if (fe.active && dgs2 != null && dgs2 > 0) {
+    return `前端DGS2−IORB=${dgs2}bp，市场在定价具体近端利率事件（FOMC/CPI）而非系统性恐慌。VIX=${vix || '—'}，波动率未扩散至远期结构。${rs.active && rs.dfii10_official ? `实际利率DFII10=${rs.dfii10_official}%，估值端承压但非信用主导。` : ''}`;
   }
   return `当前市场信号集中在前端利率预期调整上，近端事件（FOMC/CPI）是主要定价因素，尚未扩散为广泛风险规避。`;
 }
 
-function _whyNotSystemic(ev, tg, st) {
-  const creditOk  = !tg.credit_trigger?.active;
-  const crossOk   = !tg.cross_asset_trigger?.active;
-  const vts       = st.evidence?.vts_regime || 'contango';
+function _whyNotSystemic(fe, tg) {
+  const creditOk  = !tg.credit?.active;
+  const crossOk   = !tg.cross_asset?.active;
   if (creditOk && crossOk) {
-    return `三重触发器中，信用端（T1）仍在自满区，跨资产端（T3）未触发。仅流动性端（T2）出现部分压力，不符合系统性风险"三端同亮"的定义。VTS=${vts}，远期结构正常，非危机定价。`;
+    const t2Info = tg.liquidity?.active
+      ? `流动性端（T2）已触发（${tg.liquidity?.evidence || '—'}），但因信用未走阔（T1）且无跨资产共振（T3），不符合系统性风险"三端同亮"定义。`
+      : '三重触发器全未触发。';
+    return `${t2Info} HY OAS 仍在自满区，需等待信用端确认扩散。`;
   }
   return `当前触发信号不足以确认系统性风险转换。`;
 }
 
-function _whyRealYield(tr) {
-  const dfii = tr.evidence?.dfii10_pct;
-  const nc   = tr.evidence?.real_yield_nowcast;
-  if (dfii != null && dfii > 2.0) {
-    return `DFII10=${dfii}%远高于2.0%舒适区，实际利率直接压制定价模型分母端。${nc != null ? `Real Yield Nowcast=${nc}%确认这一趋势。` : ''}在高实际利率环境下，所有风险资产的现值都被系统性压缩，这是当前最核心的传导机制。`;
+function _whyRealYield(rs) {
+  const dfii = rs.dfii10_official;
+  const nc   = rs.dfii10_nowcast;
+  if (dfii != null && dfii >= 2.0) {
+    return `DFII10=${dfii}%远高于2.0%舒适区，实际利率直接压制定价模型分母端。${nc != null ? `Real Yield Nowcast=${nc}%确认这一趋势。` : ''}在高实际利率环境下，所有风险资产的现值都被系统性压缩，这是当前最核心的传导机制。${rs.dur5_confirmed ? `DUR5=${rs.dur5_dfii}/5已确认持续高压。` : ''}`;
   }
   return `实际利率仍在正常区间，非当前主矛盾。`;
 }
 
-function _whatUpgrades(st) {
+function _whatUpgrades(st, tg) {
   const watches = st.next_watch || [];
-  if (watches.length > 0) {
-    return watches.slice(0, 4).map(w => `→ ${w}`).join('<br>');
+  const conds = st.systemic_upgrade_conditions || {};
+  let summary = '';
+  if (conds.all_met) {
+    summary = '⚠️ 三条件已全部满足，系统已进入系统性风险。\n';
+  } else {
+    const flags = [];
+    if (conds.credit_widening) flags.push('✅ 信用已走阔');
+    else flags.push('❌ 信用未走阔（HY OAS需>300bp）');
+    if (conds.liquidity_sustained) flags.push('✅ 流动性压力持续');
+    else flags.push('❌ 流动性压力未持续');
+    if (conds.cross_asset_resonance) flags.push('✅ 跨资产共振');
+    else flags.push('❌ 跨资产未共振（CASC需≥2/4）');
+    summary = flags.join(' | ') + '\n';
   }
-  return `→ 监控 RCV / VTS / OAS / FX 四条路径的联动变化`;
+  if (watches.length > 0) {
+    return summary + watches.slice(0, 4).map(w => `→ ${w}`).join('<br>');
+  }
+  return summary + `→ 监控 RCV / VTS / OAS / FX 四条路径的联动变化`;
 }
 
 /* ==================================================================
@@ -520,8 +555,7 @@ function renderConclusion(es) {
   document.getElementById('conclusion-judgement').textContent = st.final_judgement || '—';
 
   let notYetBottom = st.not_yet_stage || '—';
-  const fj2 = (st.final_judgement || '') + (st.risk_character || '');
-  if (/非系统/.test(fj2) && /系统/.test(notYetBottom)) {
+  if (/非系统/.test(st.final_judgement || '') && /系统/.test(notYetBottom)) {
     notYetBottom = '尚未进入系统性风险';
   }
   document.getElementById('conclusion-stage').textContent =
@@ -548,7 +582,7 @@ async function main() {
 
   // ── Step 2: If completely missing, show banner + fallbacks everywhere ──
   if (!es) {
-    const msg = '解读数据缺失：无法加载 event_state.json。请确认已执行 daily_report.py --md。';
+    const msg = '解读数据缺失：无法加载 event_state.json。请确认已执行 risk_os_state_machine.py。';
     showError(msg);
     showGridFallback('core-cards', msg);
     showGridFallback('aux-cards', msg);
@@ -565,6 +599,12 @@ async function main() {
   if (!v.valid) {
     console.warn('[dashboard] Field validation warnings:', v.missing);
     // Don't block rendering — just log warnings and let each section handle its own fallbacks
+  }
+
+  // ── Step 3.5: Detect signal conflicts ──
+  if (es.signal_conflicts && es.signal_conflicts.length > 0) {
+    const msgs = es.signal_conflicts.map(c => c.detail).join('；');
+    showError(`⚠️ 信号冲突：${msgs}`);
   }
 
   // ── Step 4: Render all sections ──

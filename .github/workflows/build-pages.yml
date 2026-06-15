@@ -53,10 +53,10 @@ jobs:
       - name: Build Site
         run: python scripts/build_site.py
 
-      - name: Refresh Risk Event State
+      - name: Run Risk OS State Machine (SSoT)
         run: |
           TODAY=$(date -u +%Y-%m-%d)
-          python tools/extract_risk_events.py --date "$TODAY" || echo "[SKIP] extract_risk_events not available"
+          python tools/risk_os_state_machine.py --date "$TODAY"
 
       - name: Commit changes
         run: |

@@ -43,11 +43,10 @@ jobs:
         run: |
           python scripts/daily_report.py --md
 
-      - name: Extract risk event state (for docs/risk dashboard)
+      - name: Run Risk OS State Machine (SSoT — replaces extract_risk_events.py)
         run: |
-          # Only if risk_dashboard MD exists (from local pipeline or manual run)
           TODAY=$(date -u +%Y-%m-%d)
-          python tools/extract_risk_events.py --date "$TODAY" || echo "[SKIP] risk_dashboard not available"
+          python tools/risk_os_state_machine.py --date "$TODAY"
 
       - name: Auto-fill daily xlsx
         run: |
