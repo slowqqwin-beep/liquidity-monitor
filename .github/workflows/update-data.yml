@@ -1,0 +1,60 @@
+name: Update Liquidity Data
+
+on:
+  schedule:
+    # Runs at 22:00 UTC daily (~6pm ET, after US market close)
+    - cron: '0 22 * * 1-5'
+  workflow_dispatch:  # Allow manual trigger
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fetch_data.py'
+      - '.github/workflows/update-data.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/requirements.txt
+
+      - name: Fetch data
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          LOOKBACK_YEARS: '3'
+        run: |
+          python scripts/fetch_data.py
+
+      - name: Generate daily regime report
+        run: |
+          python scripts/daily_report.py --md
+
+      - name: Auto-fill daily xlsx
+        run: |
+          python scripts/fill_xlsx_daily.py
+
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ report/ daily_logs/ template_cleaned_v2.xlsx
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "data: update $(date -u +%Y-%m-%d) [reports+xlsx]"
+            git push
+          fi
