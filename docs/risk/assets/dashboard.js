@@ -199,14 +199,30 @@ function renderCoreCards(es) {
   const dfii10   = tr.evidence?.dfii10_pct;
   const nowcast  = tr.evidence?.real_yield_nowcast;
   const realActive = tr.real_yield_pressure;
+
+  // ── build detail with method, spread, direction, quality note ──
+  let realDetail = `官方 DFII10 ${dfii10 != null ? dfii10 + '%' : '—'}`;
+  if (dfii10 != null && nowcast != null) {
+    const spreadBp = ((nowcast - dfii10) * 100).toFixed(0);
+    const sign = spreadBp >= 0 ? '+' : '';
+    let direction = '基本持平';
+    if (Math.abs(spreadBp) >= 10) direction = spreadBp > 0 ? 'Nowcast 偏高' : 'Nowcast 偏低';
+    realDetail += `\nReal Yield Nowcast ${nowcast}%（DGS10 − 10Y BEI）`;
+    realDetail += `\n差值 ${sign}${spreadBp}bp，${direction}`;
+  } else if (nowcast != null) {
+    realDetail += `\nReal Yield Nowcast ${nowcast}%（DGS10 − 10Y BEI）`;
+  }
+  realDetail += `\n⚠️ 官方 DFII10 滞后修正，Nowcast 更实时`;
+  if (realActive) realDetail += `\n— 贴现率持续压制估值`;
+
   buildCard(grid, {
     accent: realActive ? 'stress-left glow-stress' : 'good-left',
     light:  realActive ? 'red' : 'green',
     label:  '实际利率 / 估值挤压',
-    value:  dfii10 != null ? `DFII10 ${dfii10}%` : '—',
+    value:  dfii10 != null ? `DFII10 ${dfii10}%` : (nowcast != null ? `Nowcast ${nowcast}%` : '—'),
     status: realActive ? '🔴 高压 · 估值压缩' : '○ 正常区间',
     statusColor: realActive ? 'stress' : 'good',
-    detail: `Real Yield Nowcast ${nowcast != null ? nowcast + '%' : '—'}${realActive ? ' — 贴现率持续压制估值' : ''}`,
+    detail: realDetail,
   });
 
   // 3 — 第一层传导
