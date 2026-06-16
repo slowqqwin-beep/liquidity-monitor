@@ -76,6 +76,9 @@ COMPUTED_SERIES = [
     {"id": "EFFR_IORB", "label": "EFFR – IORB", "layer": "L1", "unit": "bp", "desc": "Reserve scarcity: positive = reserves scarce"},
     {"id": "MORTGAGE_SPREAD", "label": "30Y Mortgage – 10Y", "layer": "L3", "unit": "bp", "desc": "Real-economy credit transmission"},
     {"id": "HY_IG_RATIO", "label": "HY / IG Spread Ratio", "layer": "L2", "unit": "x", "desc": "Risk-tier divergence"},
+    # §0.7 MOVE fallback: realized rate vol proxy (blended DGS2+DGS10, FRED-native)
+    {"id": "MOVE_PROXY", "label": "MOVE Proxy (2y+10y realized vol)", "layer": "L2", "unit": "bp",
+     "desc": "20d rolling std of daily DGS2/DGS10 bp changes (33/67 blend), annualized — fallback when MOVE index unavailable"},
 ]
 
 
@@ -289,6 +292,33 @@ def compute_derived(all_series: dict[str, list[dict[str, Any]]]) -> dict[str, li
         for d in sorted(gold.keys() & dgs10.keys())
         if dgs10[d] > 0
     ]
+
+    # ── §0.7 MOVE fallback: realized rate vol proxy (DGS2+DGS10 blended, 20d rolling std annualized) ──
+    # MOVE is curve-weighted ≈ 2y:20 / 5y:20 / 10y:40 / 30y:20.
+    # Proxy blends 2y+10y at 1:2 (≈ MOVE's internal 2y:10y ratio) to capture both
+    # front-end (2y — where Fed/rate-path shocks first hit) and belly (10y — largest weight).
+    dgs2 = to_dict(all_series.get("DGS2", []))
+    dgs10_vol = dgs10  # reuse, already loaded above
+    common_dates_vol = sorted(set(dgs2.keys()) & set(dgs10_vol.keys()))
+    if len(common_dates_vol) >= 22:  # need ≥ 21 deltas for 20d window
+        w2, w10 = 1/3, 2/3  # DGS2 33% / DGS10 67% (MOVE internal 2y:10y ≈ 20:40)
+        daily_bp_blend = []  # (date, blended bp change)
+        for i in range(1, len(common_dates_vol)):
+            d_cur, d_prev = common_dates_vol[i], common_dates_vol[i - 1]
+            delta2  = (dgs2[d_cur]  - dgs2[d_prev])  * 100  # % → bp
+            delta10 = (dgs10_vol[d_cur] - dgs10_vol[d_prev]) * 100
+            daily_bp_blend.append((d_cur, w2 * delta2 + w10 * delta10))
+        # Rolling 20-day std of blended daily bp changes, annualized
+        window = 20
+        proxy = []
+        import math as _m
+        for i in range(window - 1, len(daily_bp_blend)):
+            window_bps = [bp for _, bp in daily_bp_blend[i - window + 1:i + 1]]
+            mean = sum(window_bps) / window
+            variance = sum((x - mean) ** 2 for x in window_bps) / (window - 1)  # sample std (de-meaned, not RMS)
+            std_annual = _m.sqrt(variance * 252)  # annualized bp
+            proxy.append({"date": daily_bp_blend[i][0], "value": round(std_annual, 1)})
+        derived["MOVE_PROXY"] = proxy
 
     return derived
 

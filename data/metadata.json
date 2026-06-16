@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-16T13:00:04.983514+00:00",
+  "generated_at": "2026-06-16T13:23:28.689204+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -24,7 +24,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Effective Federal Funds Rate",
-      "n_obs": 748
+      "n_obs": 749
     },
     {
       "id": "DFEDTARU",
@@ -272,7 +272,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Reserve scarcity: positive = reserves scarce",
-      "n_obs": 748
+      "n_obs": 749
     },
     {
       "id": "MORTGAGE_SPREAD",
@@ -289,6 +289,14 @@
       "unit": "x",
       "desc": "Risk-tier divergence",
       "n_obs": 783
+    },
+    {
+      "id": "MOVE_PROXY",
+      "label": "MOVE Proxy (2y+10y realized vol)",
+      "layer": "L2",
+      "unit": "bp",
+      "desc": "20d rolling std of daily DGS2/DGS10 bp changes (33/67 blend), annualized \u2014 fallback when MOVE index unavailable",
+      "n_obs": 726
     }
   ]
 }
