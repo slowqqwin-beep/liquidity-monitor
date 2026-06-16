@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-15T13:52:16.729345+00:00",
+  "generated_at": "2026-06-16T12:29:59.043342+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -24,7 +24,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Effective Federal Funds Rate",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "DFEDTARU",
@@ -104,7 +104,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 772
+      "n_obs": 771
     },
     {
       "id": "TEDRATE",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 742
+      "n_obs": 741
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 743
+      "n_obs": 747
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -216,7 +216,7 @@
       "layer": "L3",
       "unit": "$",
       "desc": "Alternative monetary asset",
-      "n_obs": 366
+      "n_obs": 0
     },
     {
       "id": "MOVE",
@@ -272,7 +272,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Reserve scarcity: positive = reserves scarce",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "MORTGAGE_SPREAD",

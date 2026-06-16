@@ -1,5 +1,5 @@
 {
-  "date": "2026-06-15",
+  "date": "2026-06-16",
   "source": "Risk OS State Machine v1.0 — Single Source of Truth",
   "_note": "此为唯一权威状态输出。Fed reaction/ABCD 仅作信号输入层，不得输出最终结论。",
   "regime": "R3 警惕",
@@ -16,20 +16,20 @@
     "active": true,
     "type": "rate_event",
     "sources": [
-      "DGS2−IORB=40.0bp 降息被price out"
+      "DGS2−IORB=44.0bp 降息被price out"
     ],
     "intensity": "red",
     "label": "前端急性",
     "evidence": {
       "vix": 17.7,
-      "dgs2_iorb_bp": 40.0
+      "dgs2_iorb_bp": 44.0
     }
   },
   "rate_shock": {
     "active": true,
-    "dfii10_official": 2.16,
-    "dfii10_nowcast": 2.14,
-    "gap_bp": -2,
+    "dfii10_official": 2.17,
+    "dfii10_nowcast": 2.16,
+    "gap_bp": -1,
     "direction": "基本持平",
     "method": "DGS10 − 10Y BEI",
     "quality_note": "官方DFII10滞后修正，Nowcast更实时",
@@ -43,7 +43,7 @@
     "real_yield_pressure": true,
     "liquidity_buffer_thinning": true,
     "effr_iorb_bp": -3.0,
-    "sofr_iorb_bp": 0.0,
+    "sofr_iorb_bp": 4.0,
     "dur5_effr_iorb": 3,
     "dur5_confirmed": true,
     "main_path": "C先红 → A偏紧 → B未坏 → D未动",
@@ -53,7 +53,7 @@
     "credit": {
       "active": false,
       "label": "未触发（自满区）",
-      "evidence": "HY OAS=278bp，仍在自满区"
+      "evidence": "HY OAS=271bp，仍在自满区"
     },
     "liquidity": {
       "active": true,
