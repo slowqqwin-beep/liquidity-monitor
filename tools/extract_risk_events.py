@@ -442,12 +442,9 @@ def main():
     out.write_text(json.dumps(event_state, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[OK] Event state → {out}")
 
-    # Also write to docs/risk/assets/event_state.json for GH Pages
-    docs_assets = Path(__file__).resolve().parent.parent / "docs" / "risk" / "assets"
-    docs_assets.mkdir(parents=True, exist_ok=True)
-    docs_out = docs_assets / "event_state.json"
-    docs_out.write_text(json.dumps(event_state, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"[OK] Event state → {docs_out} (for docs)")
+    # NO LONGER write to docs/risk/assets/event_state.json.
+    # The sole authority is risk_os_state_machine.py (Risk OS Orchestrator).
+    # This tool only writes report/event_state_{date}.json for flowchart generation.
 
     if args.json:
         print(json.dumps(event_state, ensure_ascii=False, indent=2))

@@ -1,8 +1,8 @@
 /* =====================================================
-   Risk Evolution Dashboard — Event-Driven Logic  v3
-   Data source: event_state.json (from Risk OS State Machine — SSoT)
-   Schema: front_event_risk / rate_shock / first_layer_transmission / systemic_triggers
-   Fixes: clear placeholders, GH Pages paths, field validation, fallback
+   Risk Evolution Dashboard — Event-Driven Logic  v4
+   Data source: event_state.json (from Risk OS Orchestrator v2.0 — SSoT)
+   Schema: risk_os_final + _detail_inputs
+   Rules: all final values read from risk_os_final; detail layers are inputs only
    ===================================================== */
 
 // ── BASE path for GH Pages subdirectory compatibility ──
@@ -64,28 +64,40 @@ async function loadEventState() {
 function validateEventState(es) {
   if (!es) return { valid: false, missing: ['root: null/undefined'] };
 
-  const topRequired = ['date', 'regime', 'regime_key', 'systemic_classification',
-    'front_event_risk', 'rate_shock', 'first_layer_transmission', 'systemic_triggers', 'stage_assessment'];
+  // v2 schema: detail layers live under _detail_inputs; top-level always has risk_os_final
+  const topRequired = ['date', 'regime', 'regime_key', 'systemic_classification', 'stage_assessment'];
   const missing = topRequired.filter(k => es[k] === undefined || es[k] === null);
 
-  // Substructure checks
+  // Check detail layers — accept either top-level or _detail_inputs
+  const detailSrc = (es._detail_inputs && Object.keys(es._detail_inputs).length > 0)
+    ? es._detail_inputs : es;
   const subChecks = {
     'front_event_risk':        ['active', 'label', 'intensity'],
     'rate_shock':              ['active', 'dfii10_official', 'dfii10_nowcast'],
     'first_layer_transmission':['active', 'real_yield_pressure', 'main_path'],
     'systemic_triggers':       ['credit', 'liquidity', 'cross_asset', 'any_triggered', 'all_triggered'],
-    'stage_assessment':        ['current_stage', 'final_judgement'],
   };
 
   for (const [key, subs] of Object.entries(subChecks)) {
-    const obj = es[key];
-    if (obj === undefined || obj === null) continue;
+    const obj = detailSrc[key];
+    if (obj === undefined || obj === null) { missing.push(`${key} (missing)`); continue; }
     for (const sub of subs) {
       if (obj[sub] === undefined) missing.push(`${key}.${sub}`);
     }
   }
 
   return { valid: missing.length === 0, missing };
+}
+
+/** Read detail layers from _detail_inputs (v2) or top-level (v1 fallback). */
+function _details(es) {
+  return (es._detail_inputs && Object.keys(es._detail_inputs).length > 0)
+    ? es._detail_inputs : es;
+}
+
+/** Read risk_os_final if present (v2); fallback to top-level aliases. */
+function _final(es) {
+  return es.risk_os_final || es;
 }
 
 /* ==================================================================
@@ -137,26 +149,32 @@ function showFallback(elId, msg) {
    ================================================================== */
 
 function renderMasthead(es) {
-  const regime  = es.regime || '—';
-  const date    = es.date   || '—';
-  const pos     = es.positions || {};
-  const stage   = es.stage_assessment || {};
-  const cross   = es.cross_domain_signals ?? '—';
-  const red     = es.red_count ?? '—';
-  const sysCls  = es.systemic_classification || '—';
+  const rf     = _final(es);
+  const regime = rf.final_regime || es.regime || '—';
+  const date   = es.date || '—';
+  const pos    = rf.final_position || es.positions || {};
+  const stage  = es.stage_assessment || {};
+  const cross  = es.cross_domain_signals ?? '—';
+  const red    = es.red_count ?? '—';
+  const sysCls = rf.final_systemic_classification || es.systemic_classification || '—';
+  const hero   = rf.final_hero || '';
 
   document.getElementById('mast-date').textContent    = date;
   document.getElementById('mast-regime').textContent  = regime;
-  // Append systemic classification badge
+
+  // Systemic badge: 4-level mapping
   const sysEl = document.getElementById('mast-systemic');
   if (sysEl) {
     let sysLabel = sysCls;
     let sysColor = C.good;
-    if (sysCls === 'SYSTEMIC') {
+    if (/SYSTEMIC CONFIRMED/i.test(sysCls)) {
       sysColor = C.stress;
-    } else if (sysCls === 'WATCH') {
+    } else if (/SYSTEMIC WATCH/i.test(sysCls)) {
+      sysColor = C.stress;
+      sysLabel = sysCls;
+    } else if (/NON-SYSTEMIC WATCH|WATCH/i.test(sysCls)) {
       sysColor = C.orange;
-      sysLabel = 'WATCH (NON-SYSTEMIC)';
+      sysLabel = 'NON-SYSTEMIC WATCH';
     }
     sysEl.textContent = sysLabel;
     sysEl.style.color = sysColor;
@@ -169,14 +187,16 @@ function renderMasthead(es) {
   document.getElementById('pos-cash').textContent    = pos.cash    || '—';
 
   const conclusion = document.getElementById('hero-conclusion');
-
-  // ── NOT-SYSTEMIC guard: if final_judgement says "非系统性",
-  //     never output "系统性风险" as the current conclusion ──
-  let notYet = stage.not_yet_stage || '—';
-  if (/非系统/.test(stage.final_judgement || '') && /系统/.test(notYet)) {
-    notYet = '尚未进入系统性风险';
+  // Use risk_os_final hero if available, else construct from stage
+  if (hero) {
+    conclusion.textContent = hero;
+  } else {
+    let notYet = stage.not_yet_stage || '—';
+    if (/非系统/.test(stage.final_judgement || '') && /系统/.test(notYet)) {
+      notYet = '尚未进入系统性风险';
+    }
+    conclusion.textContent = `${regime}：${stage.current_stage || ''}，${notYet}。`;
   }
-  conclusion.textContent = `${regime}：${stage.current_stage || ''}，${notYet}。`;
 }
 
 /* ==================================================================
@@ -188,17 +208,18 @@ function renderCoreCards(es) {
   if (!grid) return;
   clearGrid('core-cards');
 
+  const d = _details(es);
   const v = validateEventState(es);
-  if (!es.front_event_risk || !es.rate_shock) {
+  if (!d.front_event_risk || !d.rate_shock) {
     showGridFallback('core-cards',
       v.valid ? '—' : `核心信号数据缺失：${v.missing.filter(m => /front_event|rate_shock|first_layer/.test(m)).join('，') || 'front_event_risk / rate_shock 不可用'}`);
     return;
   }
 
-  const fe = es.front_event_risk || {};
-  const rs = es.rate_shock || {};
-  const tx = es.first_layer_transmission || {};
-  const tg = es.systemic_triggers || {};
+  const fe = d.front_event_risk || {};
+  const rs = d.rate_shock || {};
+  const tx = d.first_layer_transmission || {};
+  const tg = d.systemic_triggers || {};
   const st = es.stage_assessment || {};
 
   // 1 — 近端事件风险
@@ -318,15 +339,16 @@ function renderAuxCards(es) {
   if (!grid) return;
   clearGrid('aux-cards');
 
-  if (!es.first_layer_transmission || !es.systemic_triggers) {
+  const d = _details(es);
+  if (!d.first_layer_transmission || !d.systemic_triggers) {
     showGridFallback('aux-cards', '辅助判断数据缺失：first_layer_transmission / systemic_triggers 不可用');
     return;
   }
 
-  const tx = es.first_layer_transmission || {};
-  const tg = es.systemic_triggers || {};
+  const tx = d.first_layer_transmission || {};
+  const tg = d.systemic_triggers || {};
   const st = es.stage_assessment || {};
-  const rs = es.rate_shock || {};
+  const rs = d.rate_shock || {};
 
   // Fed鸽派 / 流动性缓冲
   const buffText = rs.active
@@ -400,7 +422,8 @@ function renderTriggerCards(es) {
   if (!grid) return;
   clearGrid('trigger-cards');
 
-  const tg = es.systemic_triggers;
+  const d = _details(es);
+  const tg = d.systemic_triggers;
   if (!tg || !tg.credit) {
     showGridFallback('trigger-cards', '触发器数据缺失：systemic_triggers 不可用');
     return;
@@ -463,10 +486,11 @@ function renderInterpretation(es) {
   clearGrid('interp-cards');
 
   // ── Validate required fields ──
-  const fe = es.front_event_risk;
-  const rs = es.rate_shock;
-  const tx = es.first_layer_transmission;
-  const tg = es.systemic_triggers;
+  const d = _details(es);
+  const fe = d.front_event_risk;
+  const rs = d.rate_shock;
+  const tx = d.first_layer_transmission;
+  const tg = d.systemic_triggers;
   const st = es.stage_assessment;
 
   if (!fe || !rs || !tx || !tg || !st) {
@@ -573,10 +597,12 @@ function renderConclusion(es) {
   const el = document.getElementById('conclusion');
   if (!el) return;
 
-  const regime  = es.regime || '—';
-  const st      = es.stage_assessment || {};
+  const rf     = _final(es);
+  const regime = rf.final_regime || es.regime || '—';
+  const st     = es.stage_assessment || {};
 
-  document.getElementById('conclusion-judgement').textContent = st.final_judgement || '—';
+  document.getElementById('conclusion-judgement').textContent =
+    rf.final_judgement || st.final_judgement || '—';
 
   let notYetBottom = st.not_yet_stage || '—';
   if (/非系统/.test(st.final_judgement || '') && /系统/.test(notYetBottom)) {
