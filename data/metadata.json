@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-16T12:29:59.043342+00:00",
+  "generated_at": "2026-06-16T13:00:04.983514+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -216,7 +216,7 @@
       "layer": "L3",
       "unit": "$",
       "desc": "Alternative monetary asset",
-      "n_obs": 0
+      "n_obs": 366
     },
     {
       "id": "MOVE",

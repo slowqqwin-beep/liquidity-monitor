@@ -26,8 +26,9 @@ from typing import Any
 # Config
 # ---------------------------------------------------------------------------
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "liquidity-dashboard" / "data"
-REPORT_DIR = Path(__file__).resolve().parent.parent / "liquidity-dashboard" / "report"
+DATA_DIR = Path(__file__).resolve().parent / "data"
+REPORT_DIR = Path(__file__).resolve().parent / "report"
+ARCHIVE_DIR = Path(__file__).resolve().parent / "daily_archive"
 SERIES_PATH = DATA_DIR / "series.json"
 
 # FRED series IDs we use for regime computation
@@ -3606,6 +3607,12 @@ def main():
         fname = f"daily_{run_date}.md"
         (REPORT_DIR / fname).write_text(md, encoding="utf-8")
         print(f"\n[Saved to report/{fname}]")
+        # Also archive
+        ym = run_date[:7]  # YYYY-MM
+        arch_dir = ARCHIVE_DIR / ym
+        arch_dir.mkdir(parents=True, exist_ok=True)
+        (arch_dir / fname).write_text(md, encoding="utf-8")
+        print(f"[Archived to daily_archive/{ym}/{fname}]")
 
         # Auto-generate risk dashboard (MD + PNG)
         import subprocess
