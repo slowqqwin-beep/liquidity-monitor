@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-16T13:23:28.689204+00:00",
+  "generated_at": "2026-06-17T12:02:26.894955+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -32,7 +32,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target upper bound",
-      "n_obs": 1096
+      "n_obs": 1095
     },
     {
       "id": "DFEDTARL",
@@ -40,7 +40,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target lower bound",
-      "n_obs": 1096
+      "n_obs": 1095
     },
     {
       "id": "RRPONTSYD",
@@ -48,7 +48,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "Overnight Reverse Repo balance ($B)",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "WRESBAL",
@@ -80,7 +80,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US High Yield OAS",
-      "n_obs": 784
+      "n_obs": 786
     },
     {
       "id": "BAMLC0A0CM",
@@ -88,7 +88,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US Corp OAS",
-      "n_obs": 783
+      "n_obs": 784
     },
     {
       "id": "BAMLEMCBPIOAS",
@@ -96,7 +96,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA EM Corporate OAS",
-      "n_obs": 784
+      "n_obs": 785
     },
     {
       "id": "VIXCLS",
@@ -104,7 +104,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 771
+      "n_obs": 772
     },
     {
       "id": "TEDRATE",
@@ -120,7 +120,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "2-Year Treasury constant maturity",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "DGS5",
@@ -128,7 +128,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "5-Year Treasury",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "DGS10",
@@ -136,7 +136,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10-Year Treasury",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "DGS30",
@@ -144,7 +144,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "30-Year Treasury",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "DFII10",
@@ -152,7 +152,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10-Year inflation-indexed (real yield)",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "T10YIE",
@@ -160,7 +160,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10Y breakeven inflation",
-      "n_obs": 747
+      "n_obs": 748
     },
     {
       "id": "T5YIFR",
@@ -168,7 +168,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Cleanest long-term inflation expectation",
-      "n_obs": 747
+      "n_obs": 748
     },
     {
       "id": "THREEFYTP10",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 741
+      "n_obs": 746
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -288,7 +288,7 @@
       "layer": "L2",
       "unit": "x",
       "desc": "Risk-tier divergence",
-      "n_obs": 783
+      "n_obs": 784
     },
     {
       "id": "MOVE_PROXY",
@@ -296,7 +296,7 @@
       "layer": "L2",
       "unit": "bp",
       "desc": "20d rolling std of daily DGS2/DGS10 bp changes (33/67 blend), annualized \u2014 fallback when MOVE index unavailable",
-      "n_obs": 726
+      "n_obs": 727
     }
   ]
 }
