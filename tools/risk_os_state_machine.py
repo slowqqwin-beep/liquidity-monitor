@@ -348,7 +348,7 @@ def run_orchestrator(raw, fe, rs, tx, tg, dq):
     # ──── SOURCE VOTES ────
     source_votes = {
         "fed_reaction": _infer_fed_reaction_signal(raw, fe, tg),
-        "abcd": _infer_abcd_signal(red_c, red_a, red_b, red_d, tg),
+        "abcd": _infer_abcd_signal(red_c, red_a, red_b, red_d, tg, tx),
         "risk_dashboard": _infer_dashboard_signal(fe, rs, tx, tg),
     }
 
@@ -402,17 +402,29 @@ def _infer_fed_reaction_signal(raw, fe, tg):
     return " | ".join(parts)
 
 
-def _infer_abcd_signal(red_c, red_a, red_b, red_d, tg):
-    """ABCD 结构信号。"""
+def _infer_abcd_signal(red_c, red_a, red_b, red_d, tg, tx):
+    """ABCD 结构信号。—— A端用实际 EFFR-IORB 值映射 ABCD 阈值灯色，而非 T2 触发器。"""
+    # ABCD A端灯色阈值：🟢<-7 | 🟡-7~-3 | 🟠-3~0 | 🔴≥0
+    ei = tx.get("effr_iorb_bp")
+    if ei is not None and ei >= 0:
+        a_color = "🔴"
+    elif ei is not None and ei >= -3:
+        a_color = "🟠"
+    elif ei is not None and ei >= -7:
+        a_color = "🟡"
+    else:
+        a_color = "🟢" if ei is not None else "?端"
     parts = []
     parts.append(f"C端={'🔴' if red_c else '🟢'}")
-    parts.append(f"A端={'🔴' if red_a else '🟢' if not tg['liquidity'].get('credit_partial') else '🟠'}")
+    parts.append(f"A端={a_color}")
     parts.append(f"B端={'🔴' if red_b else '🟢'}")
     parts.append(f"D端={'🔴' if red_d else '🟢'}")
     regime_hint = ""
-    if red_c and red_a and not red_b:
+    a_red_abcd = (ei is not None and ei >= 0)
+    c_red_abcd = red_c  # DFII10 >= 2.00%
+    if c_red_abcd and a_red_abcd and not red_b:
         regime_hint = " → A/C双红→R4防御模式"
-    elif red_c or red_a:
+    elif c_red_abcd or a_red_abcd:
         regime_hint = " → R3警惕"
     return " ".join(parts) + regime_hint
 

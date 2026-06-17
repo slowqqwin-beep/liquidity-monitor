@@ -22,6 +22,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 import requests
 
 # ------------------------------------------------------------------
@@ -232,10 +233,20 @@ def fetch_yahoo(ticker: str) -> list[dict[str, Any]]:
         if df.empty:
             print(f"[WARN] yfinance returned empty for {ticker}", file=sys.stderr)
             return []
-        return [
-            {"date": str(d.date()), "value": float(row["Close"])}
-            for d, row in df.iterrows()
-        ]
+
+        # — fix: yfinance 1.4+ with pandas 3.x may return MultiIndex columns,
+        #   causing row["Close"] to be a Series instead of a scalar.
+        #   Flatten columns and use safe scalar extraction. —
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.droplevel(1)  # drop ticker level, keep OHLCV
+
+        results = []
+        for d, row in df.iterrows():
+            val = row.get("Close")
+            if isinstance(val, (pd.Series,)):
+                val = val.iloc[0]
+            results.append({"date": str(d.date()), "value": float(val)})
+        return results
     except Exception as e:
         print(f"[WARN] yfinance fetch failed for {ticker}: {e}", file=sys.stderr)
         return []

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-17T12:02:26.894955+00:00",
+  "generated_at": "2026-06-17T12:11:09.170964+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -8,7 +8,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Secured Overnight Financing Rate",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "IORB",
@@ -88,7 +88,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US Corp OAS",
-      "n_obs": 784
+      "n_obs": 785
     },
     {
       "id": "BAMLEMCBPIOAS",
@@ -96,7 +96,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA EM Corporate OAS",
-      "n_obs": 785
+      "n_obs": 786
     },
     {
       "id": "VIXCLS",
@@ -232,7 +232,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "S&P 500 ETF price - equity risk signal",
-      "n_obs": 750
+      "n_obs": 751
     },
     {
       "id": "HYG",
@@ -240,7 +240,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 750
+      "n_obs": 751
     },
     {
       "id": "FXY",
@@ -248,7 +248,7 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
-      "n_obs": 750
+      "n_obs": 751
     },
     {
       "id": "GOLD_10Y_RATIO",
@@ -264,7 +264,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Plumbing stress: positive = banks lending into repo",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "EFFR_IORB",
@@ -288,7 +288,7 @@
       "layer": "L2",
       "unit": "x",
       "desc": "Risk-tier divergence",
-      "n_obs": 784
+      "n_obs": 785
     },
     {
       "id": "MOVE_PROXY",
