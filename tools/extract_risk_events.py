@@ -33,11 +33,11 @@ def _infer_near_event(txt: str) -> dict:
     - 跨资产确认=0 → 非系统性
     """
     result: dict[str, Any] = {
-        "near_event_active": True,
+        "near_event_active": False,      # v3.5.1: default false — only set true when signal detected
         "near_event_type": "unknown",
         "event_sources": [],
-        "front_risk_label": "",
-        "front_risk_intensity": "unknown",
+        "front_risk_label": "前端平稳",   # v3.5.1: default calm, not empty
+        "front_risk_intensity": "green", # v3.5.1: default green, not unknown
         "systemic_confirmed": False,
         "evidence": {},
     }
@@ -94,28 +94,38 @@ def _infer_near_event(txt: str) -> dict:
             if result["near_event_type"] == "unknown":
                 result["near_event_type"] = "soft_landing_event"
 
-    # ── 风险性质 ──
-    if "非系统性" in txt:
-        result["systemic_confirmed"] = False
-        if result["near_event_type"] != "rate_event":
-            result["near_event_type"] = "near_term_event"
-
-    if "系统性" in txt and "非系统性" not in txt:
-        result["systemic_confirmed"] = True
-        result["near_event_type"] = "systemic_event"
-
-    # ── 事件窗口 ──
-    for kw in ["CPI", "PPI", "FOMC", "美债拍卖", "点阵图"]:
-        if kw in txt:
-            result["event_sources"].append(kw)
-
-    # ── 跨资产确认 ──
+    # ── 跨资产确认 (CASC) — must be parsed BEFORE systemic gate ──
     if "无跨资产确认" in txt or "CASC 0/" in txt:
         result["evidence"]["cross_asset_confirm"] = 0
     else:
         m_casc = re.search(r'CASC\s*(\d+)/4', txt)
         if m_casc:
             result["evidence"]["cross_asset_confirm"] = int(m_casc.group(1))
+
+    # ── 风险性质 ──
+    if "非系统性" in txt:
+        result["systemic_confirmed"] = False
+        if result["near_event_type"] != "rate_event":
+            result["near_event_type"] = "near_term_event"
+
+    # v3.5.1: systemic_confirmed only when cross_asset_confirm ≥ 2 AND not self-contradicting
+    cross_confirm = result["evidence"].get("cross_asset_confirm")
+    if cross_confirm is not None and cross_confirm >= 2:
+        if "系统性" in txt and "非系统性" not in txt:
+            result["systemic_confirmed"] = True
+            result["near_event_type"] = "systemic_event"
+    # (if cross_confirm < 2, systemic_confirmed stays False regardless of text match)
+
+    # v3.5.1: near_event_active gated on actual signal detection (was: hardcoded True)
+    has_rate_event = any("DGS2" in s for s in result.get("event_sources", []))
+    has_vol_event  = any("VIX" in s or "前端" in s for s in result.get("event_sources", []))
+    if has_rate_event or has_vol_event or cross_confirm is not None:
+        result["near_event_active"] = True
+
+    # ── 事件窗口 ──
+    for kw in ["CPI", "PPI", "FOMC", "美债拍卖", "点阵图"]:
+        if kw in txt:
+            result["event_sources"].append(kw)
 
     return result
 

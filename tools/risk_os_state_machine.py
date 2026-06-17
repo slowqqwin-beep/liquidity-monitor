@@ -114,12 +114,20 @@ def compute_front_event(raw):
     vix = _lv(raw.get("VIXCLS", []))
     d2, io = _lv(raw.get("DGS2", [])), _lv(raw.get("IORB", []))
     d2_io = round((d2 - io) * 100, 1) if (d2 and io) else None
+    # 5d delta for direction context (avoid static template mislabeling)
+    d2_5d = _n_chg(raw.get("DGS2", []), 5)
+    d2_5d_bp = round(d2_5d * 100, 1) if d2_5d is not None else None
     r = {"active": False, "type": "unknown", "sources": [], "intensity": "green",
          "label": "前端平稳", "evidence": {"vix": round(vix, 1) if vix else None,
          "dgs2_iorb_bp": d2_io}}
     if d2_io and d2_io > 0:
         r["active"], r["type"] = True, "rate_event"
-        r["sources"].append(f"DGS2−IORB={d2_io}bp 降息被price out / 加息风险")
+        # v3.5.1: include direction (level vs change) — avoids "降息被price out" static template
+        # when 5d delta is moving dovish (negative)
+        dir_note = ""
+        if d2_5d_bp is not None:
+            dir_note = f" · 5d{d2_5d_bp:+.1f}bp" + ("(方向背离：短期下行)" if d2_5d_bp < 0 else "(方向一致：短期上行)")
+        r["sources"].append(f"DGS2−IORB={d2_io}bp 前端利率事件{dir_note}")
     if vix and vix > 20:
         r["active"] = True
         r["type"] = "mixed_event" if r["type"] == "rate_event" else "vol_event"

@@ -20,7 +20,7 @@ from pathlib import Path
 
 import yfinance as yf
 
-ROOT = Path(__file__).resolve().parent.parent / "liquidity-dashboard"
+ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data"
 OUT_PATH = DATA_DIR / "yahoo_series.json"
 

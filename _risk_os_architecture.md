@@ -199,3 +199,5 @@ fetch_mm_calendar.py → update_event_window.py → build_site.py → risk_os_st
 - [ ] 修改 R1-R4 规则 → 更新 `run_state_machine()`
 - [ ] 新增输出字段 → 更新 `assemble()` + `dashboard.js`
 - [ ] 数据异常 → 检查 `data/series.json` 中对应序列的 len
+- [ ] **门控/判定依赖的输入必须在判定之前完成解析** → 任何 `if cross_confirm >= N` 式的门控，其输入变量必须在当前函数中先于该行赋值。含解析逻辑的函数需有正向（该触发时触发）+ 负向（该拦时拦住）+ 边界（恰好等于阈值-1）三层回放用例。`tests/test_systemic_gate.py` 含顺序不变性静态断言作为保护。**教训：v3.5.1 中 CASC 解析初版在门控之后执行，`cross_confirm` 读到 None 导致门控形同虚设——负向测试无法暴露（因为 False 的结果碰巧正确），只有正向用例才能发现。**
+- [ ] **判定依赖的输入缺失时，必须区分"未触发"和"无法判定"（三态原则）** → 缺数据 ≠ 条件不满足。判定函数收到 N/A 输入时，不能默默折叠为"未触发/calm/false"，必须显式输出缺数据状态（`vts_missing`、`N/A`、`⚪`），并在上游显示层标注 `⚠️缺数据`。**两个实例：(1) CASC 门控 — `cross_confirm=None` 时形同虚设，`systemic` 碰巧 false 的假阴性；(2) VTS/RCV 互锁 — `compute_vts_rcv_interlock()` 做成三态分流（双缺/仅VTS缺/仅RCV缺），缺任一侧都不能声称"双探针共振"也不能声称"无共振"，只能说"无法确认"。补一个分支时对称检查对侧是否也有同样盲点。**

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Fed Reaction Dashboard v2</title>
+<link rel="stylesheet" href="assets/style.css"/>
+</head>
+<body>
+<div class="app-shell">
+<header class="hero">
+  <div class="hero-glow"></div>
+  <nav class="topbar">
+    <div class="brand"><span class="brand-dot"></span>Fed Reaction Dashboard v2</div>
+    <div class="timestamp">2026-06-17 20:47:02 · GitHub Actions</div>
+  </nav>
+  <section class="hero-grid">
+    <div class="hero-main card glass">
+      
+      <div class="eyebrow">Decision Pipeline</div>
+      <div class="status-row">
+        <span class="status-pill gray">OBSERVE</span>
+        <h1>No trigger B=1 C=0 E=1</h1>
+      </div>
+      <div class="state-bar"><span class="state-day gray">Day 4</span><span class="state-needs">To upgrade: B>=3 (now 1/4)</span></div>
+      <div class="hero-tags"><span>VIX 16.32</span>
+<span>VIX/VIX3M 0.796</span>
+<span>10Y 4.443%</span>
+<span>B(Dovish) 1/4</span>
+<span>C(Liq) 0/3</span>
+<span>混合信号</span></div>
+    </div>
+    <aside class="decision card">
+      <div class="card-title">Pipeline Status</div>
+      <div class="decision-line ok"><span>State</span><strong>Observe (Day 4)</strong></div>
+<div class="decision-line warn"><span>Attribution</span><strong>混合信号</strong></div>
+<div class="decision-line ok"><span>Gates</span><strong>ALL PASS</strong></div>
+<div class="decision-line warn"><span>Missing</span><strong>B>=3 (now 1/4)</strong></div>
+    </aside>
+  </section>
+</header>
+<main>
+  <section class="attribution card ok"><div class="card-title">Driver Attribution</div><p><strong>混合信号</strong></p><p>13W+1.2bp(1.0σ) / 5Y-3.7bp(0.8σ) / 10Y-4.4bp(1.1σ) / 30Y-3.9bp</p></section>
+  <section class="gate-section"><div class="section-head"><h2>Gates</h2></div><div class="gate-grid"><div class="gate-card ok"><b>vix_contango</b><span>VIX/VIX3M=0.796 ok</span></div>
+<div class="gate-card ok"><b>casc</b><span>CASC ok</span></div>
+<div class="gate-card ok"><b>credit</b><span>HYG z=+1.57(20d:up) LQD z=+0.91: ok</span></div></div></section>
+  <section class="score-section">
+    <div class="section-head"><div><div class="eyebrow">Signal Modules (sigma-normalized)</div><h2>Five-Module Scores</h2></div><p>0.5sigma ~ 1.5sigma = 1pt, >1.5sigma = 1pt + STRONG tag</p></div>
+    <div class="score-grid"><article class="score-card calm"><div class="score-top"><span>A. Hawkish</span><b>1/4</b></div><div class="meter"><span style="width:25%"></span></div><p>Nasdaq_weak -1.90% z=1.1; — 以下未达阈值 —; SHY_down=2Y_up +0.02% (thresh -0.05%, z=0.2); DXY_up -0.14% (thresh +0.05%, z=0.6); Gold_down +0.27% (thresh -0.30%, z=0.2)</p></article>
+<article class="score-card calm"><div class="score-top"><span>B. Dovish</span><b>1/4</b></div><div class="meter"><span style="width:25%"></span></div><p>DXY_down -0.14% z=0.6; — 以下未达阈值 —; SHY_up=2Y_down +0.02% (thresh +0.05%, z=0.2); Gold_up +0.27% (thresh +0.30%, z=0.2); Nasdaq_strong -1.90% (thresh +0.50%, z=1.1)</p></article>
+<article class="score-card mute"><div class="score-top"><span>C. Liquidity</span><b>0/3</b></div><div class="meter"><span style="width:0%"></span></div><p>VIX=16.32 (thresh >18); HYG z=+1.57 LQD z=+0.91 spread=+0.66 (credit neutral); IWM-SPY=-0.27% (thresh <-0.30%)</p></article>
+<article class="score-card mute"><div class="score-top"><span>D. Inflation</span><b>0/4</b></div><div class="meter"><span style="width:0%"></span></div><p>curve: 5Y_5d=-7.7 10Y_5d=-8.5 30Y_5d=-7.5 (no bear-steepen/bear-flatten); TLT+0.55% (thresh <-0.50%); WTI+0.09% (thresh >+2.0%)</p></article>
+<article class="score-card calm"><div class="score-top"><span>E. Growth Scare</span><b>1/3</b></div><div class="meter"><span style="width:33%"></span></div><p>SHY+0.02% IEF+0.25% (need both >+0.05%); IWM-SPY=-0.27% (thresh <-0.30%); QQQ-IWM divergence -1.03%</p></article></div>
+  </section>
+  <section class="chain-section card">
+    <div class="section-head compact">
+      <div><div class="eyebrow">Asset Reaction Chain</div><h2>资产反应链条</h2></div>
+    </div>
+    <div class="chain-scroll"><div class="asset-chain"><div class="chain-card warning"><div class="chain-label">Fed预期</div><div class="chain-title">中性</div><div class="chain-value">等待信号</div></div>
+<div class="chain-arrow">→</div>
+<div class="chain-card neutral"><div class="chain-label">名义利率</div><div class="chain-title">下行</div><div class="chain-value">10Y 4.443%</div></div>
+<div class="chain-arrow">→</div>
+<div class="chain-card neutral"><div class="chain-label">实际利率</div><div class="chain-title">次要项</div><div class="chain-value">非主驱动</div></div>
+<div class="chain-arrow">→</div>
+<div class="chain-card danger"><div class="chain-label">黄金/成长</div><div class="chain-title">承压</div><div class="chain-value">GLD +0.27% · QQQ -1.90%</div></div>
+<div class="chain-arrow">→</div>
+<div class="chain-card neutral"><div class="chain-label">信用</div><div class="chain-title">稳定</div><div class="chain-value">HYG -0.01%</div></div>
+<div class="chain-arrow">→</div>
+<div class="chain-card neutral"><div class="chain-label">波动率</div><div class="chain-title">平静</div><div class="chain-value">VIX 16.3</div></div></div></div>
+  </section>
+  <section class="data-grid"><article class="card table-card"><div class="card-title">UST Yields</div><table><thead><tr><th>Tenor</th><th>Latest</th><th>Daily</th><th>5D</th></tr></thead><tbody><tr><td>13W</td><td>3.630%</td><td>+1.2bp</td><td>-0.5bp</td></tr>
+<tr><td>5Y</td><td>4.176%</td><td>-3.7bp</td><td>-7.7bp</td></tr>
+<tr><td>10Y</td><td>4.443%</td><td>-4.4bp</td><td>-8.5bp</td></tr>
+<tr><td>30Y</td><td>4.936%</td><td>-3.9bp</td><td>-7.5bp</td></tr>
+</tbody></table></article><article class="card table-card"><div class="card-title">ETF Snapshot</div><table><thead><tr><th>Ticker</th><th>Price</th><th>Daily</th><th>Signal</th></tr></thead><tbody><tr><td>SHY</td><td>$82.12</td><td>+0.02%</td><td>2Y proxy</td></tr>
+<tr><td>IEF</td><td>$94.52</td><td>+0.25%</td><td>10Y proxy</td></tr>
+<tr><td>TLT</td><td>$86.19</td><td>+0.55%</td><td>long-end</td></tr>
+<tr><td>UUP</td><td>$27.93</td><td>-0.14%</td><td>USD</td></tr>
+<tr><td>GLD</td><td>$397.63</td><td>+0.27%</td><td>Gold</td></tr>
+<tr><td>QQQ</td><td>$729.86</td><td>-1.90%</td><td>Nasdaq</td></tr>
+<tr><td>SPY</td><td>$750.33</td><td>-0.60%</td><td>S&P500</td></tr>
+<tr><td>IWM</td><td>$292.08</td><td>-0.87%</td><td>Russell</td></tr>
+<tr><td>HYG</td><td>$80.03</td><td>-0.01%</td><td>HY credit</td></tr>
+<tr><td>LQD</td><td>$109.12</td><td>+0.12%</td><td>IG credit</td></tr>
+<tr><td>VXX</td><td>$22.57</td><td>+0.04%</td><td>Volatility</td></tr>
+<tr><td>CL</td><td>$90.66</td><td>+0.09%</td><td>WTI</td></tr>
+</tbody></table></article></section>
+  
+  <section class="explain-grid">
+    <article class="card explain-card"><div class="card-title">自动解读</div><p><strong>为什么是震荡观察？</strong></p>
+<p>当前无单一模块得分突出：鹰派 1/4，鸽派 1/4，流动性 0/3，增长恐慌 1/3。</p>
+<p>10Y 4.443%（日变 -4.4bp），VIX 16.3，信用 HYG/LQD z-score +1.57/+0.91。</p>
+<p>信号未收敛到明确方向，市场处于震荡消化阶段。等待任一模块升级至 ≥3 或归因明确化后再判断。</p></article>
+    <article class="card watch-card"><div class="card-title">观察等待条件</div><ul class="watch-list"><li><span></span>B(鸽派) ≥3 触发 CANDIDATE（当前 1/4）。</li>
+<li><span></span>C(流动性) 保持 0/3（当前 0/3）。</li>
+<li><span></span>VIX 不重新上破 25（当前 16.3）且 Gate 全过。</li>
+<li><span></span>10Y 4.443% 方向明确（当前日变 -4.4bp），等归因信号收敛。</li></ul></article>
+  </section>
+  <section class="cross card"><div class="card-title">ABCD Cross-Validation</div><div class="cross-grid"><div><b>A Hawkish 1/4</b><span>🔴 长端贴现率/真实利率压力已很高，通胀预期反而下行——纯真实利率故事。 ✅</span></div>
+<div><b>C Liquidity 0/3</b><span>🟢 信用利差仍在自满区、继续收窄，市场尚未对企业信用恶化定价。 HY OAS=271bp, 20dΔ=-9.0 ✅</span></div>
+<div><b>E Growth Scare 1/3</b><span>VIX sig: OK ✅</span></div>
+<div><b>D Inflation 0/4</b><span>🟢 外汇与跨境风险扩散暂未启动。 ✅</span></div>
+<div><b>CASC Gate</b><span>[CASC 确认 0/4 · C端=有序重定价·估值压缩 [MOVE-proxy] · 干预守卫=未触发] ✅</span></div>
+<div class="wide"><b>Note</b><span>Both systems converge: no structural conflict detected.</span></div></div></section>
+</main>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -46,7 +46,7 @@
       "active": true,
       "type": "rate_event",
       "sources": [
-        "DGS2−IORB=42.0bp 降息被price out / 加息风险"
+        "DGS2−IORB=42.0bp 前端利率事件 · 5d-8.0bp(方向背离：短期下行)"
       ],
       "intensity": "red",
       "label": "前端急性",

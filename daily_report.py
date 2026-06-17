@@ -1871,7 +1871,23 @@ def compute_vts_rcv_interlock(vts: dict, rcv: dict) -> dict:
     rcv_systemic = rcv_long_led or rcv_acute_broad
     rcv_hot = rcv_severity in ("elevated", "acute")
 
-    # ── Default ──
+    # ── Default: one or both probes missing ──
+    vts_missing = vts_structure == "N/A"
+    if rcv_abstain and vts_missing:
+        return {
+            "state": "N/A", "state_label": "双探针均无数据·无法互锁",
+            "vts_hot": False,
+            "rcv_hot": False,
+            "front_confirmed": False, "systemic_confirmed": False,
+        }
+    if vts_missing:
+        rcv_desc = f"RCV={rcv_severity}" if rcv_severity != "N/A" else "RCV无数据"
+        return {
+            "state": "vts_missing", "state_label": f"VTS缺数据·{rcv_desc}·单探针无法确认双探针共振",
+            "vts_hot": False,
+            "rcv_hot": rcv_hot,
+            "front_confirmed": False, "systemic_confirmed": False,
+        }
     if rcv_abstain:
         return {
             "state": "N/A", "state_label": "RCV无数据",
