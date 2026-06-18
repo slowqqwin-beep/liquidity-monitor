@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-17",
+  "generated_at": "2026-06-18",
   "generator": "Risk OS Orchestrator v2.0 — SSoT",
   "_version": "v2.0",
   "_note": "⚠️ 唯一权威状态输出。三套输入系统(Fed Reaction/ABCD/risk_dashboard) 降级为信号提供层，不得输出最终结论。下游只能读取 risk_os_final，不得重算。",
-  "date": "2026-06-17",
+  "date": "2026-06-18",
   "regime": "R4 防御",
   "regime_key": "R4",
   "systemic_classification": "NON-SYSTEMIC WATCH",
@@ -16,7 +16,7 @@
   "cross_domain_signals": 3,
   "red_count": 2,
   "risk_os_final": {
-    "date": "2026-06-17",
+    "date": "2026-06-18",
     "final_regime": "R4 防御",
     "final_regime_key": "R4",
     "final_systemic_classification": "NON-SYSTEMIC WATCH",
@@ -46,19 +46,19 @@
       "active": true,
       "type": "rate_event",
       "sources": [
-        "DGS2−IORB=42.0bp 前端利率事件 · 5d-8.0bp(方向背离：短期下行)"
+        "DGS2−IORB=40.0bp 前端利率事件 · 5d-8.0bp(方向背离：短期下行)"
       ],
       "intensity": "red",
       "label": "前端急性",
       "evidence": {
-        "vix": 16.2,
-        "dgs2_iorb_bp": 42.0
+        "vix": 16.4,
+        "dgs2_iorb_bp": 40.0
       }
     },
     "rate_shock": {
       "active": true,
-      "dfii10_official": 2.15,
-      "dfii10_nowcast": 2.18,
+      "dfii10_official": 2.14,
+      "dfii10_nowcast": 2.17,
       "gap_bp": 3,
       "direction": "基本持平",
       "method": "DGS10 − 10Y BEI",
