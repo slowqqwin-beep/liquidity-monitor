@@ -24,6 +24,60 @@ def _light_color(l: str) -> str:
     m = {"🔴":"red","🟠":"orange","🟡":"yellow","🟢":"green","⚠️":"yellow"}
     return m.get(l, "gray")
 
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Verdict 映射 — 唯一入口，与 compute_vts_rcv_interlock() 的 state 全集保持覆盖
+# ═══════════════════════════════════════════════════════════════════════════
+
+VERDICTS_MD = {
+    "systemic":     "系统已进入系统性风险阶段。VTS倒挂+RCV长端/全曲线→Role B确认触发。激进降风险。",
+    "pre-systemic": "前端压力积聚，未进系统性。等RCV翻long-led或acute-broad叠VTS倒挂→升档。",
+    "front":        "双探针前端一致·近端事件非系统性。等CPI/Fed落地看前端是fade还是扩散。要盯的翻转点：RCV→long-led/acute-broad叠VTS倒挂→agree-systemic。",
+    "divergent":    "VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。",
+    "calm":         "双端平静·无双探针共振。系统性风险维度=低，不触发额外动作。",
+    "N/A":          "VTS/RCV数据缺失 — 无法判定系统性状态。等数据恢复。",
+}
+
+VERDICTS_PNG = {
+    "systemic":     "[!] SYSTEMIC CONFIRMED -- VTS inversion + RCV long/acute-broad. Defend. Role B triggered.",
+    "pre-systemic": "Front stress accumulating, NOT systemic yet. Watch RCV→long-led or acute-broad + VTS inverted → upgrade.",
+    "front":        "Non-systemic front event. Await CPI/Fed → front will either fade or spread. Key flip: RCV→long-led/acute-broad + VTS inverted.",
+    "divergent":    "VTS hot · RCV calm → single-asset technical. No dual-probe resonance, no extra systemic position action.",
+    "calm":         "Low risk. Dual probes calm. Maintain baseline.",
+    "N/A":          "VTS/RCV data missing — cannot confirm or refute systemic. Watch for data return.",
+}
+
+
+def _lock_to_stg_key(lock_state: str, vts_structure: str) -> str:
+    """将互锁 state 映射为 verdict 键。
+    
+    stg_key 枚举全集：systemic / pre-systemic / front / divergent / N/A / calm
+    必须与 compute_vts_rcv_interlock() 可能产出的 state 全集保持一一对应。
+    """
+    if lock_state == "agree-systemic":
+        return "systemic"
+    if vts_structure in ("倒挂", "倒挂·急性"):
+        return "pre-systemic"
+    if lock_state == "agree-front":
+        return "front"
+    if lock_state == "divergent":
+        return "divergent"
+    if lock_state in ("N/A", "vts_missing"):
+        return "N/A"
+    return "calm"
+
+
+def get_verdict_md(lock_state: str, vts_structure: str) -> str:
+    """MD 报告中文 verdict，缺键时返回高亮告警而非空串。"""
+    key = _lock_to_stg_key(lock_state, vts_structure)
+    return VERDICTS_MD.get(key, f"[!] VERDICT KEY MISSING: key='{key}' lock_state='{lock_state}'")
+
+def get_verdict_png(lock_state: str, vts_structure: str) -> str:
+    """PNG 看板英文 verdict，缺键时返回高亮告警而非空串。"""
+    key = _lock_to_stg_key(lock_state, vts_structure)
+    return VERDICTS_PNG.get(key, f"[!] VERDICT KEY MISSING: key='{key}' lock_state='{lock_state}'")
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Markdown Dashboard
 # ═══════════════════════════════════════════════════════════════════════════
@@ -66,14 +120,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     else:
         stage, stage_l, stage_c = "calm", "无双探针共振·前端事件未扩散", "🟢"
 
-    # Verdict — systemic-risk dimension; 仓位归 §0.6 瀑布管
-    verdicts = {
-        "systemic": "系统已进入系统性风险阶段。VTS倒挂+RCV长端/全曲线→Role B确认触发。激进降风险。",
-        "pre-systemic": "前端压力积聚，未进系统性。等RCV翻long-led或acute-broad叠VTS倒挂→升档。",
-        "front": "双探针前端一致·近端事件非系统性。等CPI/Fed落地看前端是fade还是扩散。要盯的翻转点：RCV→long-led/acute-broad叠VTS倒挂→agree-systemic。",
-        "divergent": "VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。",
-        "calm": "双端平静·无双探针共振。系统性风险维度=低，不触发额外动作。",
-    }
+    # Verdict — 统一入口 get_verdict_md()，枚举全集覆盖，缺键高亮告警
 
     lines = []
     lines.append(f"# 🛡️ 前端风险 → 系统性风险 演化看板\n")
@@ -184,7 +231,8 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
             lines.append(f"| C Nowcast | {nowcast['nowcast_level_light']} {nc_level} · 方向数据累积中(<5d历史) |")
         else:
             lines.append(f"| C Nowcast | {nowcast['nowcast_level_light']} {nc_level} · 方向{nc_dir} |")
-    lines.append(f"\n> **最终判断**：{verdicts.get(stage,'')}\n")
+    verdict_md = get_verdict_md(lock_state, vts.get("structure",""))
+    lines.append(f"\n> **最终判断**：{verdict_md}\n")
 
     lines.append(f"---\n*ABCD v3.5.1 风险演化看板 | {run_date} | FRED+Yahoo*")
     return "\n".join(lines)
@@ -322,16 +370,10 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
     for i,(l,r) in enumerate(metrics):
         txt(ax4,0.6,y0-i*1.05,l,9.5,tc_dark); txt(ax4,6.0,y0-i*1.05,r,9,tc_dim)
 
-    # Verdict
-    verdicts = {
-        "systemic": "[!] SYSTEMIC CONFIRMED -- VTS inversion + RCV long/acute-broad. Defend. Role B triggered.",
-        "pre-systemic": "Front stress accumulating, NOT systemic yet. Watch RCV→long-led or acute-broad + VTS inverted → upgrade.",
-        "front": "Non-systemic front event. Await CPI/Fed → front will either fade or spread. Key flip: RCV→long-led/acute-broad + VTS inverted.",
-        "calm": "Low risk. Dual probes calm. Maintain baseline.",
-    }
-    stg_key = "systemic" if lock_state=="agree-systemic" else ("pre-systemic" if vts.get("structure","") in ("倒挂","倒挂·急性") else ("front" if lock_state=="agree-front" else ("divergent" if lock_state=="divergent" else "calm")))
+    # Verdict — 统一入口 get_verdict_png()，枚举全集覆盖，缺键高亮告警
+    verdict_text = get_verdict_png(lock_state, vts.get("structure",""))
     box(ax4,0.3,1.5,9.4,1.8,stage_s,stage_s,0.1)
-    txt(ax4,0.6,2.8,f"VERDICT: {verdicts.get(stg_key,'')}",10,tc_dark,True)
+    txt(ax4,0.6,2.8,f"VERDICT: {verdict_text}",10,tc_dark,True)
 
     # Footer
     txt(ax4,0.3,0.3,f"ABCD v3.5.1 Risk Evolution Dashboard · {run_date} · FRED + Yahoo",8,tc_dim)
@@ -368,12 +410,17 @@ def main():
     lock = casc.get("vts_rcv_lock", compute_vts_rcv_interlock(vts, rcv))
     nowcast = compute_real_yield_nowcast(raw)
 
-    # 1) Markdown
+    # 1) Markdown (dated archive)
     md = format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, nowcast=nowcast)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     md_path = REPORT_DIR / f"risk_dashboard_{run_date}.md"
     md_path.write_text(md, encoding="utf-8")
     print(f"[Dashboard MD saved to {md_path}]")
+
+    # 1b) Sync latest snapshot → risk_dashboard_latest.md (build_site.py source)
+    latest_path = REPORT_DIR.parent / "risk_dashboard_latest.md"
+    latest_path.write_text(md, encoding="utf-8")
+    print(f"[Dashboard MD synced to {latest_path}]")
 
     # 2) PNG
     png_path = REPORT_DIR / f"risk_dashboard_{run_date}.png"

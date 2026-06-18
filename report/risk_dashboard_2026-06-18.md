@@ -7,18 +7,18 @@
 
 | 维度 | 信号 |
 |------|------|
-| 事件窗 | VIX9D/VIX=1.052 **前端急性** | VIX=16.4 5dΔ-3.5 |
-| 风险性质 | 单资产技术性·CASC守卫 |
+| 事件窗 | VIX=16.4 5dΔ-3.5 |
+| 风险性质 | 平静（单探针·VTS缺数据） |
 | 市场信号 | 无跨资产确认 |
-| 利率路径 | DGS2−IORB=42.0bp 降息被price out / 加息风险 5dΔ-8.0bp |
+| 利率路径 | DGS2−IORB=40.0bp 降息被price out / 加息风险 5dΔ-8.0bp |
 
 ---
 ## ② 第一层传导
 
 | 端 | 指标 | 当前值 | 灯 | DUR5 | 状态 |
 |----|------|--------|------|------|------|
-| C 长端利率 | DFII10 | 2.15% | 🔴 | 5/5 ✅ | 贴现率压力 |
-| C Nowcast | Real Yield Nowcast | 2.20% | 🔴 | — | 官方DFII10滞后修正・实际利率高压 方向：小幅上行 |
+| C 长端利率 | DFII10 | 2.14% | 🔴 | 5/5 ✅ | 贴现率压力 |
+| C Nowcast | Real Yield Nowcast | 2.17% | 🔴 | — | 官方DFII10滞后修正・实际利率高压 方向：基本持平 |
 | A 资金管道 | EFFR-IORB | -2.0bp | 🟠 | 5/5 ✅ | 资金管道偏紧 |
 | A 拆借 | SOFR-IORB | -2.0bp | 🟠 | — | 拆借市场 |
 
@@ -29,23 +29,23 @@
 |--------|------|---------|
 | **T1 信用(B端)** | HY/IG OAS走阔脱离自满 | 🟢 未触发 (HY/IG ⚠️自满) |
 | **T2 流动性(A端)** | EFFR-IORB 🟠/🔴+DUR5≥5 | 🟠 已触发·部分压力 (EFFR-IORB=-2.0bp DUR5=5/5) |
-| **T3 跨资产/跨境** | CASC≥2+VTS+RCV互锁 | 🟢 未触发 (CASC0/4·VTS=contango·互锁=divergent) |
+| **T3 跨资产/跨境** | CASC≥2+VTS+RCV互锁 | 🟢 未触发 (CASC0/4·VTS=N/A⚠️缺数据·互锁=vts_missing) |
 
 ---
 ## ④ 系统性风险阶段与最终判断
 
 | 项目 | 状态 |
 |------|------|
-| 当前阶段 | 🟡 **单资产技术性·前端急性·无双探针共振** |
+| 当前阶段 | ⚪ **VTS缺数据·RCV=calm·单探针无法确认双探针共振 · 无法判定** |
 | Regime | **R3 警惕**(R3) · 跨域=2 · 🔴=1 |
 | 仓位 | P=35% / H=35% / C=30% |
-| VTS | contango · 前端=前端急性 |
-| RCV | balanced/calm · sev=calm · tilt=N/A · 2y/30y=1.726 z=2.1 (形态偏离但vol不高·不触发tilt) |
-| 互锁 | divergent — VTS热·RCV平→股票单资产技术性 |
-| C端 | 有序重定价·估值压缩 [MOVE-proxy] · 双探针:divergent |
-| C Nowcast | 官方确认与Nowcast同步走高·实际利率高压 → 估值压力继续强化 |
+| VTS | N/A · 前端=N/A |
+| RCV | balanced/calm · sev=calm · tilt=N/A · 2y/30y=1.719 z=2.0 (形态偏离但vol不高·不触发tilt) |
+| 互锁 | vts_missing — VTS缺数据·RCV=calm·单探针无法确认双探针共振 |
+| C端 | 有序重定价·估值压缩 [MOVE-proxy] |
+| C Nowcast | 🔴 实际利率高压 · 方向基本持平 |
 
-> **最终判断**：VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。
+> **最终判断**：VTS/RCV数据缺失 — 无法判定系统性状态。等数据恢复。
 
 ---
 *ABCD v3.5.1 风险演化看板 | 2026-06-18 | FRED+Yahoo*
