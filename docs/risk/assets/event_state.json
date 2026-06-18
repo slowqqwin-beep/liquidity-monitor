@@ -46,20 +46,20 @@
       "active": true,
       "type": "rate_event",
       "sources": [
-        "DGS2−IORB=40.0bp 前端利率事件 · 5d-8.0bp(方向背离：短期下行)"
+        "DGS2−IORB=55.0bp 前端利率事件 · 5d+7.0bp(方向一致：短期上行)"
       ],
       "intensity": "red",
       "label": "前端急性",
       "evidence": {
-        "vix": 16.4,
-        "dgs2_iorb_bp": 40.0
+        "vix": 18.4,
+        "dgs2_iorb_bp": 55.0
       }
     },
     "rate_shock": {
       "active": true,
-      "dfii10_official": 2.14,
-      "dfii10_nowcast": 2.17,
-      "gap_bp": 3,
+      "dfii10_official": 2.23,
+      "dfii10_nowcast": 2.24,
+      "gap_bp": 1,
       "direction": "基本持平",
       "method": "DGS10 − 10Y BEI",
       "quality_note": "官方DFII10滞后修正，Nowcast更实时",
@@ -83,7 +83,7 @@
       "credit": {
         "active": false,
         "label": "未触发",
-        "evidence": "HY OAS=271bp，仍在自满区"
+        "evidence": "HY OAS=263bp，仍在自满区"
       },
       "liquidity": {
         "active": true,
