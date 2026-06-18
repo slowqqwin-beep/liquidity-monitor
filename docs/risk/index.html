@@ -11,7 +11,7 @@
 <header class="hero">
   <h1>🛡️ Risk Evolution Dashboard</h1>
   <div class="sub">ABCD v3.5 · 前端风险 → 系统性风险演化看板</div>
-  <div class="timestamp">2026-06-18 23:24:50 · GitHub Actions</div>
+  <div class="timestamp">2026-06-18 23:32:23 · GitHub Actions</div>
   <nav class="nav-links">
     <a href="../">Fed Reaction Dashboard</a>
     <a href="./" class="active">Risk Dashboard</a>
@@ -23,9 +23,9 @@
   <section>
     <div class="section-head"><h2>① 近端事件风险</h2></div>
     <div class="card signal-grid">
-      <div class="signal-label">事件窗</div><div class="signal-value">美国美联储利率决策 T-5 · 新加坡时间 2026-06-17 02:00</div>
-<div class="signal-label">风险性质</div><div class="signal-value">Fed事件 · 近端事件 · 非系统性</div>
-<div class="signal-label">市场信号</div><div class="signal-value">暂无跨资产确认</div>
+      <div class="signal-label">事件窗</div><div class="signal-value">VIX9D/VIX=1.010 <strong>前端紧张</strong></div>
+<div class="signal-label">风险性质</div><div class="signal-value">单资产技术性·CASC守卫</div>
+<div class="signal-label">市场信号</div><div class="signal-value">无跨资产确认</div>
 <div class="signal-label">利率路径</div><div class="signal-value">DGS2−IORB=40.0bp 降息被price out / 加息风险 5dΔ-8.0bp</div>
 
     </div>
@@ -43,7 +43,7 @@
   <section>
     <div class="section-head"><h2>③ 系统性风险触发器</h2></div>
     <div class="card">
-      <table><thead><tr><th>触发器</th><th>条件</th><th>当前状态</th></tr></thead><tbody><tr><td><strong>T1 信用(B端)</strong></td><td>HY/IG OAS走阔脱离自满</td><td><span class="light light-green"></span>🟢 未触发 (HY/IG ⚠️自满)</td></tr><tr><td><strong>T2 流动性(A端)</strong></td><td>EFFR-IORB <span class="light light-orange"></span>🟠/<span class="light light-red"></span>🔴+DUR5≥5</td><td><span class="light light-orange"></span>🟠 已触发·部分压力 (EFFR-IORB=-2.0bp DUR5=5/5)</td></tr><tr><td><strong>T3 跨资产/跨境</strong></td><td>CASC≥2+VTS+RCV互锁</td><td><span class="light light-green"></span>🟢 未触发 (CASC0/4·VTS=N/A⚠️缺数据·互锁=vts_missing)</td></tr></tbody></table>
+      <table><thead><tr><th>触发器</th><th>条件</th><th>当前状态</th></tr></thead><tbody><tr><td><strong>T1 信用(B端)</strong></td><td>HY/IG OAS走阔脱离自满</td><td><span class="light light-green"></span>🟢 未触发 (HY/IG ⚠️自满)</td></tr><tr><td><strong>T2 流动性(A端)</strong></td><td>EFFR-IORB <span class="light light-orange"></span>🟠/<span class="light light-red"></span>🔴+DUR5≥5</td><td><span class="light light-orange"></span>🟠 已触发·部分压力 (EFFR-IORB=-2.0bp DUR5=5/5)</td></tr><tr><td><strong>T3 跨资产/跨境</strong></td><td>CASC≥2+VTS+RCV互锁</td><td><span class="light light-green"></span>🟢 未触发 (CASC0/4·VTS=contango·互锁=divergent)</td></tr></tbody></table>
     </div>
   </section>
 
@@ -51,7 +51,7 @@
   <section>
     <div class="section-head"><h2>④ 系统性风险阶段与最终判断</h2></div>
     <div class="card">
-      <table><thead><tr><th>项目</th><th>状态</th></tr></thead><tbody><tr><td>当前阶段</td><td>⚪ <strong>VTS缺数据·RCV=calm·单探针无法确认双探针共振 · 无法判定</strong></td></tr><tr><td>Regime</td><td><strong>R3 警惕</strong>(R3) · 跨域=2 · <span class="light light-red"></span>🔴=1</td></tr><tr><td>仓位</td><td>P=35% / H=35% / C=30%</td></tr><tr><td>VTS</td><td>N/A · 前端=N/A</td></tr><tr><td>RCV</td><td>balanced/calm · sev=calm · tilt=N/A · 2y/30y=1.719 z=2.0 (形态偏离但vol不高·不触发tilt)</td></tr><tr><td>互锁</td><td>vts_missing — VTS缺数据·RCV=calm·单探针无法确认双探针共振</td></tr><tr><td>C端</td><td>有序重定价·估值压缩 [MOVE-proxy]</td></tr><tr><td>C Nowcast</td><td><span class="light light-red"></span>🔴 实际利率高压 · 方向基本持平</td></tr></tbody></table>
+      <table><thead><tr><th>项目</th><th>状态</th></tr></thead><tbody><tr><td>当前阶段</td><td><span class="light light-yellow"></span>🟡 <strong>单资产技术性·前端紧张·无双探针共振</strong></td></tr><tr><td>Regime</td><td><strong>R3 警惕</strong>(R3) · 跨域=2 · <span class="light light-red"></span>🔴=1</td></tr><tr><td>仓位</td><td>P=35% / H=35% / C=30%</td></tr><tr><td>VTS</td><td>contango · 前端=前端紧张</td></tr><tr><td>RCV</td><td>balanced/calm · sev=calm · tilt=N/A · 2y/30y=1.719 z=2.0 (形态偏离但vol不高·不触发tilt)</td></tr><tr><td>互锁</td><td>divergent — VTS热·RCV平→股票单资产技术性</td></tr><tr><td>C端</td><td>有序重定价·估值压缩 [MOVE-proxy] · 双探针:divergent</td></tr><tr><td>C Nowcast</td><td><span class="light light-red"></span>🔴 实际利率高压 · 方向基本持平</td></tr></tbody></table>
     </div>
   </section>
 
@@ -63,7 +63,7 @@
               style="border:0" width="100%" height="500" frameborder="0" scrolling="no"></iframe>
     </div>
   </section>
-<section class="card"><div class="card-title">最终判断</div><p>VTS/RCV数据缺失 — 无法判定系统性状态。等数据恢复。</p></section>
+<section class="card"><div class="card-title">最终判断</div><p>VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。</p></section>
 </main>
 
 <footer>
