@@ -83,6 +83,12 @@ SERIES_FREQ: dict[str, str] = {
     "WALCL": "weekly",
     "WTREGEN": "weekly",
     "THREEFYTP10": "monthly",  # NY Fed ACM term premium, monthly release
+    # Derived series that inherit their source frequency
+    "MORTGAGE_SPREAD": "weekly",  # derived from MORTGAGE30US
+    # DTWEXBGS: daily series but FRED publishes with ~weekly lag
+    "DTWEXBGS": "weekly",
+    # ^TNX: Yahoo Yahoo 10Y yield, known intermittent availability
+    "^TNX": "weekly",
 }
 
 # Stale tracker persistence
@@ -675,9 +681,9 @@ def check_staleness(data: dict) -> list[str]:
             # Monthly: allow up to 35 calendar days without update
             tolerance_days = 35
         elif freq == "weekly":
-            # Weekly: allow up to 8 calendar days without update
-            # PMMS (Freddie Mac 30Y) releases Thursday; by next Thu = 7d, +1d buffer
-            tolerance_days = 8
+            # Weekly: allow up to 10 calendar days without update
+            # Normal: Thu→Thu=7d + 1d holiday buffer + 2d FRED ingestion lag
+            tolerance_days = 10
         else:
             # Daily: allow up to 5 calendar days (covers long weekends)
             tolerance_days = 5
