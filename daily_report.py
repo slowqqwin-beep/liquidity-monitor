@@ -226,6 +226,76 @@ NOWCAST_DIRECTION_THRESHOLDS = [
 ]
 
 
+def _estimate_us10y_from_futu(dgs10_val: float, dgs10_date: str,
+                              target_date: str | None = None) -> float | None:
+    """Estimate 10Y yield on target_date from IEF price delta vs DGS10 anchor.
+
+    IEF (iShares 7-10Y Treasury ETF) effective duration ≈ 7.2 years.
+    Δyield_10Y ≈ −ΔIEF% / duration_IEF.
+
+    If target_date is None, estimates to the latest available IEF close.
+    Otherwise estimates to the specific target_date (must satisfy: IEF K-line
+    has data on both dgs10_date and target_date).
+
+    Returns estimated 10Y yield (%), or None if Futu unavailable.
+    """
+    try:
+        from futu import OpenQuoteContext, RET_OK, KLType, AuType
+
+        q = OpenQuoteContext(host="127.0.0.1", port=11111)
+        # pull enough K-lines to cover anchor→target window
+        ret, kline, _ = q.request_history_kline(
+            code="US.IEF",
+            ktype=KLType.K_DAY,
+            autype=AuType.QFQ,
+            start=dgs10_date,
+            max_count=10,
+        )
+        q.close()
+
+        if ret != RET_OK or kline.empty:
+            return None
+
+        ief_anchor = None
+        ief_target = None
+        found_target_date = None
+
+        for _, row in kline.iterrows():
+            dt = str(row["time_key"])[:10]
+            if dt == dgs10_date:
+                ief_anchor = row["close"]
+            if target_date and dt == target_date:
+                ief_target = row["close"]
+                found_target_date = dt
+            # keep latest as fallback (for no target_date mode)
+            if ief_target is None:
+                ief_target = row["close"]
+                found_target_date = dt
+
+        if ief_anchor is None or ief_target is None or ief_anchor == 0:
+            return None
+
+        IEF_DURATION = 7.2  # effective duration in years
+        delta_pct = (ief_target - ief_anchor) / ief_anchor
+        delta_yield = -delta_pct / IEF_DURATION  # decimal
+        estimated_10y = round(dgs10_val + delta_yield * 100, 2)
+
+        # Guardrail: reject unreasonable jumps (>15bp/day)
+        if found_target_date and found_target_date > dgs10_date:
+            from datetime import date
+            days_diff = (date.fromisoformat(found_target_date) - date.fromisoformat(dgs10_date)).days
+            if days_diff > 0 and abs(delta_yield * 100) > 15 * days_diff:
+                return None
+
+        # If target_date specified but not found in K-line, degrade gracefully
+        if target_date and not found_target_date:
+            return None
+
+        return estimated_10y
+    except Exception:
+        return None
+
+
 def compute_real_yield_nowcast(data: dict) -> dict:
     """C_RealYield_Nowcast: 10Y实际利率实时估算.
 
@@ -263,25 +333,69 @@ def compute_real_yield_nowcast(data: dict) -> dict:
         "real_yield_nowcast_raw": None,
     }
 
-    # ── 1. US10Y nominal ──
+    # ── 0. Extract source series ──
     tnx_s = data.get(YAHOO_TNX_ID, [])
     dgs10_s = data.get(DGS10_ID, [])
-    if tnx_s and last_value(tnx_s) is not None:
-        raw_val = last_value(tnx_s)
-        # ^TNX from Yahoo returns yield × 10 (e.g. 44.7 = 4.47%)
-        us10y = raw_val / 10.0 if raw_val > 10 else raw_val
-        result["us10y_latest"] = round(us10y, 2)
-        result["us10y_latest_date"] = last_date(tnx_s)
-        result["us10y_source"] = "Yahoo ^TNX"
-    elif dgs10_s and last_value(dgs10_s) is not None:
-        result["us10y_latest"] = round(last_value(dgs10_s), 2)
-        result["us10y_latest_date"] = last_date(dgs10_s)
-        result["us10y_source"] = "FRED DGS10"
-    else:
-        result["status"] = "degraded"
-        result["data_status"] = "missing_us10y"
-        result["degradation_reason"] = "C_RealYield_Nowcast: missing_us10y (no ^TNX or DGS10)"
-        return result
+    tnx_date = last_date(tnx_s) if tnx_s else None
+    dgs10_date = last_date(dgs10_s) if dgs10_s else None
+    dgs10_val = last_value(dgs10_s) if dgs10_s else None
+
+    t10yie_s = data.get("T10YIE", [])
+    bei_date_raw = last_date(t10yie_s) if t10yie_s else None
+
+    # ── 1. US10Y nominal (date-matched to BEI when possible) ──
+    # Key insight: real_yield_nowcast = US10Y − T10YIE, so both must be
+    # on the same date.  FRED T10YIE (BEI) is often 1 day fresher than
+    # DGS10.  Use Futu IEF to forward-estimate US10Y to BEI date.
+    selected = False
+
+    # Tier 0: BEI date > DGS10 date → estimate 10Y to BEI date via Futu IEF
+    if (dgs10_date and dgs10_val is not None and bei_date_raw
+            and bei_date_raw > dgs10_date):
+        ief_est = _estimate_us10y_from_futu(
+            dgs10_val, dgs10_date, target_date=bei_date_raw)
+        if ief_est is not None:
+            result["us10y_latest"] = ief_est
+            result["us10y_latest_date"] = bei_date_raw  # ISO date = BEI date
+            result["us10y_source"] = f"Futu IEF estimate for {bei_date_raw} (anchor DGS10 {dgs10_date})"
+            selected = True
+
+    # Tier 1: DGS10 already covers BEI date → use DGS10 directly
+    if not selected and dgs10_date and dgs10_val is not None:
+        if (bei_date_raw and dgs10_date >= bei_date_raw) or dgs10_date:
+            result["us10y_latest"] = round(dgs10_val, 2)
+            result["us10y_latest_date"] = dgs10_date
+            result["us10y_source"] = "FRED DGS10"
+            selected = True
+
+    # Tier 2: fresher-date comparison DGS10 vs ^TNX
+    if not selected:
+        if tnx_s and last_value(tnx_s) is not None and dgs10_date and tnx_date:
+            if dgs10_date > tnx_date:
+                result["us10y_latest"] = round(dgs10_val, 2)
+                result["us10y_latest_date"] = dgs10_date
+                result["us10y_source"] = "FRED DGS10"
+            else:
+                raw_val = last_value(tnx_s)
+                us10y = raw_val / 10.0 if raw_val > 10 else raw_val
+                result["us10y_latest"] = round(us10y, 2)
+                result["us10y_latest_date"] = tnx_date
+                result["us10y_source"] = "Yahoo ^TNX"
+        elif tnx_s and last_value(tnx_s) is not None:
+            raw_val = last_value(tnx_s)
+            us10y = raw_val / 10.0 if raw_val > 10 else raw_val
+            result["us10y_latest"] = round(us10y, 2)
+            result["us10y_latest_date"] = tnx_date
+            result["us10y_source"] = "Yahoo ^TNX"
+        elif dgs10_s and dgs10_val is not None:
+            result["us10y_latest"] = round(dgs10_val, 2)
+            result["us10y_latest_date"] = dgs10_date
+            result["us10y_source"] = "FRED DGS10"
+        else:
+            result["status"] = "degraded"
+            result["data_status"] = "missing_us10y"
+            result["degradation_reason"] = "C_RealYield_Nowcast: missing_us10y (no ^TNX or DGS10)"
+            return result
 
     # ── 2. 10Y BEI ──
     t10yie_s = data.get("T10YIE", [])
