@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-18T23:48:13.788383+00:00",
+  "generated_at": "2026-06-19T23:01:40.618349+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1100
+      "n_obs": 1099
     },
     {
       "id": "EFFR",
@@ -80,7 +80,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US High Yield OAS",
-      "n_obs": 787
+      "n_obs": 786
     },
     {
       "id": "BAMLC0A0CM",
@@ -88,7 +88,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US Corp OAS",
-      "n_obs": 786
+      "n_obs": 785
     },
     {
       "id": "BAMLEMCBPIOAS",
@@ -96,7 +96,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA EM Corporate OAS",
-      "n_obs": 787
+      "n_obs": 786
     },
     {
       "id": "VIXCLS",
@@ -104,7 +104,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 774
+      "n_obs": 773
     },
     {
       "id": "TEDRATE",
@@ -232,7 +232,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "S&P 500 ETF price - equity risk signal",
-      "n_obs": 752
+      "n_obs": 753
     },
     {
       "id": "HYG",
@@ -240,7 +240,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 752
+      "n_obs": 753
     },
     {
       "id": "FXY",
@@ -248,7 +248,7 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
-      "n_obs": 752
+      "n_obs": 753
     },
     {
       "id": "GOLD_10Y_RATIO",
@@ -288,7 +288,7 @@
       "layer": "L2",
       "unit": "x",
       "desc": "Risk-tier divergence",
-      "n_obs": 786
+      "n_obs": 785
     },
     {
       "id": "MOVE_PROXY",
