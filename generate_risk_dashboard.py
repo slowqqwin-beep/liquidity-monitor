@@ -15,6 +15,7 @@ from daily_report import (
     compute_vts_rcv_interlock, apply_casc_gate, compute_position,
     compute_rate_path_proxy, compute_trigger_proximity,
     compute_real_yield_nowcast,
+    rate_path_direction_label,
 )
 
 DATA_DIR   = Path(__file__).resolve().parent / "data"
@@ -95,8 +96,10 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     lock_state = lock.get("state","N/A")
     vix9d_r = vts.get("ratio_vix9d_vix")
     vix9d_r_str = f"{vix9d_r:.3f}" if vix9d_r is not None else "N/A"
-    rp_gap, rp_label = rate_path.get("gap_bp"), rate_path.get("level_label","N/A")
+    rp_gap = rate_path.get("gap_bp")
+    rp_label = rate_path.get("direction_label", rate_path.get("level_label", "N/A"))
     rp_5d = rate_path.get("gap_5d_chg")
+    _, rp_arrow = rate_path_direction_label(rp_5d) if rp_5d is not None else ("", "")
 
     # Systemic stage — describes systemic-risk dimension only; never outputs position advice
     # v3.5.1: VTS=N/A explicitly gated (not folded into calm). stage_l emoji removed (stage_c provides it).
@@ -151,7 +154,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     if casc.get("legs",{}).get("FX",{}).get("mutated"): sig.append("FX突变✅")
     lines.append(f"| 市场信号 | {'·'.join(sig) if sig else '无跨资产确认'} |")
     rp_gap_str = f"{rp_gap:.1f}" if rp_gap is not None else "N/A"
-    lines.append(f"| 利率路径 | DGS2−IORB={rp_gap_str}bp {rp_label}{' 5dΔ'+str(rp_5d)+'bp' if rp_5d else ''} |\n")
+    lines.append(f"| 利率路径 | DGS2−IORB={rp_gap_str}bp{' · 5dΔ'+f'{rp_5d:+.1f}'+'bp '+rp_arrow if rp_5d is not None else ''} · [{rp_label} · 代理非OIS] |\n")
 
     # ② First-layer transmission
     lines.append("---\n## ② 第一层传导\n")

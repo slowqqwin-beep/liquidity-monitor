@@ -74,6 +74,31 @@ RATE_PATH_THRESHOLDS: dict[str, tuple[float, float]] = {
     "降息被price out / 加息风险": (15, float("inf")),
 }
 
+# 利率路径(代理) 5日变化方向标签 — 阈值 (bp)
+# 标签 conditioned on 5dΔ 符号，不再无条件复用绝对水平标签
+RATE_PATH_5D_DIRECTION_THRESH: float = 2.0
+
+
+def rate_path_direction_label(
+    d5_dgs2_iorb: float | None,
+    thresh: float = RATE_PATH_5D_DIRECTION_THRESH,
+) -> tuple[str, str]:
+    """DGS2−IORB 利率路径方向标签 — 唯一入口。
+
+    四处调用者（daily_report、generate_risk_dashboard、extract_risk_events、
+    update_event_window）必须通过此函数获取标签，禁止各自拷贝判断逻辑。
+
+    Returns:
+        (direction_label, arrow)  e.g. ("降息预期升温", "▼")
+    """
+    if d5_dgs2_iorb is None:
+        return ("N/A", "")
+    if d5_dgs2_iorb < -thresh:
+        return ("降息预期升温", "▼")
+    if d5_dgs2_iorb > thresh:
+        return ("降息被price out / 加息风险", "▲")
+    return ("政策利率预期平稳", "→")
+
 
 # Series frequency map for stale detection
 # "default" = daily; weekly = FRED H.4.1 / Freddie Mac Thursday releases
@@ -1171,7 +1196,9 @@ def compute_rate_path_proxy(data: dict) -> dict:
     if dgs2 is None or iorb is None:
         return {
             "gap_bp": None, "gap_5d_chg": None,
-            "level_label": "N/A(数据缺失)", "direction_str": "",
+            "level_label": "N/A(数据缺失)",
+            "direction_label": "N/A(数据缺失)",
+            "direction_str": "",
             "display_str": "利率路径(代理): N/A(数据缺失)",
             "dgs2_pct": None, "iorb_pct": None,
         }
@@ -1190,22 +1217,22 @@ def compute_rate_path_proxy(data: dict) -> dict:
 
     level_label = _classify_rate_path_level(gap_bp)
 
-    # Direction string with ±3bp noise filter
+    # Direction label + arrow — single-source via shared function (Task 1 refactor)
+    direction_label, arrow = rate_path_direction_label(gap_5d_chg)
+
+    # Direction string: value + arrow only (text label moved to brackets)
     if gap_5d_chg is None:
         direction_str = "5dΔ: N/A"
-    elif gap_5d_chg < -3:
-        direction_str = f"5dΔ {gap_5d_chg:+.1f}bp ▼ 降息预期升温"
-    elif gap_5d_chg > 3:
-        direction_str = f"5dΔ {gap_5d_chg:+.1f}bp ▲ 降息被price out"
     else:
-        direction_str = f"5dΔ {gap_5d_chg:+.1f}bp → 稳定"
+        direction_str = f"5dΔ {gap_5d_chg:+.1f}bp {arrow}"
 
-    display_str = f"利率路径(代理) | DGS2−IORB = {gap_bp}bp | {direction_str} | [{level_label} · 代理非OIS]"
+    display_str = f"利率路径(代理) | DGS2−IORB = {gap_bp}bp | {direction_str} | [{direction_label} · 代理非OIS]"
 
     return {
         "gap_bp": gap_bp,
         "gap_5d_chg": gap_5d_chg,
         "level_label": level_label,
+        "direction_label": direction_label,
         "direction_str": direction_str,
         "display_str": display_str,
         "dgs2_pct": round(dgs2, 3),

@@ -22,6 +22,10 @@ from pathlib import Path
 from typing import Any
 
 REPORT_DIR = Path(__file__).resolve().parent.parent.parent / "liquidity-dashboard" / "report"
+PROJECT_DIR = Path(__file__).resolve().parent.parent  # v3.5 root
+sys.path.insert(0, str(PROJECT_DIR))
+
+from daily_report import rate_path_direction_label
 
 
 def _infer_near_event(txt: str) -> dict:
@@ -85,14 +89,15 @@ def _infer_near_event(txt: str) -> dict:
     if m:
         spread = float(m.group(1))
         result["evidence"]["dgs2_iorb_bp"] = spread
-        if spread > 0:
-            result["event_sources"].append(f"DGS2−IORB={spread}bp 降息被price out / 加息风险")
-            if result["near_event_type"] == "unknown":
-                result["near_event_type"] = "rate_event"
-        else:
-            result["event_sources"].append(f"DGS2−IORB={spread}bp 隐含降息")
-            if result["near_event_type"] == "unknown":
-                result["near_event_type"] = "soft_landing_event"
+
+        # Parse 5dΔ from MD text (risk_dashboard ① 区 now includes it after refactor)
+        m5d = re.search(r'5dΔ\s*([+\-]?[\d.]+)bp', txt)
+        d5_dgs2_iorb = float(m5d.group(1)) if m5d else None
+
+        label, arrow = rate_path_direction_label(d5_dgs2_iorb)
+        result["event_sources"].append(f"DGS2−IORB={spread}bp {arrow} [{label}]")
+        if result["near_event_type"] == "unknown":
+            result["near_event_type"] = "rate_event"
 
     # ── 跨资产确认 (CASC) — must be parsed BEFORE systemic gate ──
     if "无跨资产确认" in txt or "CASC 0/" in txt:

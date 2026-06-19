@@ -19,10 +19,13 @@ from typing import Optional
 # ── Paths ──
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
+sys.path.insert(0, str(PROJECT_DIR))  # for daily_report imports
 DATA_DIR = PROJECT_DIR / "data"
 CALENDAR_PATH = DATA_DIR / "mm_calendar.json"
 DASHBOARD_PATH = PROJECT_DIR / "risk_dashboard_latest.md"
 REPORT_DIR = PROJECT_DIR / "report"
+
+from daily_report import rate_path_direction_label, RATE_PATH_5D_DIRECTION_THRESH
 
 
 # ── Helpers ──
@@ -274,12 +277,11 @@ def build_rate_path(md: str, signals: dict) -> str:
     dgs2_5d = signals.get("dgs2_iorb_5d")
 
     if dgs2_iorb is not None:
+        label, arrow = rate_path_direction_label(dgs2_5d)
         parts = [f"DGS2−IORB={dgs2_iorb:.1f}bp"]
         if dgs2_5d is not None:
-            delta_sign = "▲" if dgs2_5d > 0 else ("▼" if dgs2_5d < 0 else "→")
-            parts.append(f"5dΔ{dgs2_5d:+.1f}bp {delta_sign}")
-        if dgs2_iorb > 15:
-            parts.append("降息被price out / 加息风险")
+            parts.append(f"5dΔ{dgs2_5d:+.1f}bp {arrow}")
+        parts.append(f"[{label} · 代理非OIS]")
         return " ".join(parts)
 
     return "待确认"
