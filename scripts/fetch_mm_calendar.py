@@ -37,10 +37,54 @@ DEFAULT_ICS_URL = (
 )
 
 
+def normalize_ics_url(url: str) -> str:
+    """Convert Google Calendar embed/event URLs to the raw ical ICS URL.
+
+    embed format (returns HTML):  https://calendar.google.com/calendar/embed?src=CAL_ID...
+    ical format (returns ICS):    https://calendar.google.com/calendar/ical/CAL_ID/public/basic.ics
+    """
+    if not url:
+        return url
+
+    # Already correct ical/ path
+    if "/calendar/ical/" in url:
+        return url
+
+    # embed?src=... → extract the calendar ID and rebuild
+    embed_match = re.search(r"[/&?]src=([^&]+)", url)
+    if embed_match:
+        cal_id = embed_match.group(1)
+        # URL-decode if needed (e.g. %40 → @)
+        from urllib.parse import unquote
+        cal_id = unquote(cal_id)
+        # If cal_id doesn't end with @group.calendar.google.com, append it
+        if "@group.calendar.google.com" not in cal_id and not cal_id.endswith(".ics"):
+            cal_id = cal_id + "@group.calendar.google.com"
+        fixed = f"https://calendar.google.com/calendar/ical/{cal_id}/public/basic.ics"
+        print(f"[fetch_mm_calendar] Auto-converted embed URL → ical URL")
+        return fixed
+
+    # event?src=... similar pattern
+    if "/calendar/event?" in url and "src=" in url:
+        return normalize_ics_url(url)  # recurse with same src= extraction
+
+    return url
+
+
+def is_html_response(text: str) -> bool:
+    """Detect if response is HTML instead of valid iCalendar data."""
+    stripped = text.strip().lower()
+    return stripped.startswith("<!doctype") or stripped.startswith("<html")
+
+
 def get_ics_url() -> str:
     url = os.getenv("MM_CALENDAR_ICS_URL", "").strip()
     if url:
-        return url
+        normalized = normalize_ics_url(url)
+        if normalized != url:
+            print(f"[fetch_mm_calendar] WARNING: env var URL was embed format, "
+                  f"auto-converted to ical")
+        return normalized
     return DEFAULT_ICS_URL
 
 
@@ -179,6 +223,28 @@ def fetch_and_parse() -> list[dict]:
     resp.raise_for_status()
     raw = resp.text
     print(f"[fetch_mm_calendar] Downloaded {len(raw):,} bytes")
+
+    # Detect HTML responses (wrong URL format, e.g. embed instead of ical)
+    if is_html_response(raw):
+        if url == DEFAULT_ICS_URL:
+            raise RuntimeError(
+                "DEFAULT_ICS_URL returned HTML instead of ICS — "
+                "Google Calendar public ICS feed may be unavailable or require auth. "
+                f"First 200 chars: {raw[:200]}"
+            )
+        # Try fallback to DEFAULT_ICS_URL
+        print("[fetch_mm_calendar] Response is HTML, not ICS — "
+              "falling back to DEFAULT_ICS_URL")
+        fallback_resp = requests.get(DEFAULT_ICS_URL, timeout=30)
+        fallback_resp.raise_for_status()
+        raw = fallback_resp.text
+        print(f"[fetch_mm_calendar] Fallback downloaded {len(raw):,} bytes")
+        if is_html_response(raw):
+            raise RuntimeError(
+                "Both env-provided URL and DEFAULT_ICS_URL returned HTML — "
+                "Google Calendar ICS feed may be down. "
+                f"First 200 chars: {raw[:200]}"
+            )
 
     cal = Calendar.from_ical(raw)
     today = date.today()
