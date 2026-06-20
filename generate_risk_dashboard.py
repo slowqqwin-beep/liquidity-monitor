@@ -13,8 +13,9 @@ from daily_report import (
     load_data, compute_vintages, compute_v35_triggers,
     compute_abcd_signals, compute_casc, compute_vts, compute_rcv,
     compute_vts_rcv_interlock, apply_casc_gate, compute_position,
+    read_ssot_position,
     compute_rate_path_proxy, compute_trigger_proximity,
-    compute_real_yield_nowcast,
+    compute_real_yield_nowcast, compute_curve_regime,
     rate_path_direction_label,
 )
 
@@ -82,7 +83,7 @@ def get_verdict_png(lock_state: str, vts_structure: str) -> str:
 # ═══════════════════════════════════════════════════════════════════════════
 # Markdown Dashboard
 # ═══════════════════════════════════════════════════════════════════════════
-def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, *, nowcast=None):
+def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, *, nowcast=None, curve=None):
     a,b,c,d = abcd["A"],abcd["B"],abcd["C"],abcd["D"]
     cross, red_n = abcd["cross_domain_count"], abcd["red_domain_count"]
     reg, reg_key = pos["label"], pos["regime_key"]
@@ -128,6 +129,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     lines = []
     lines.append(f"# 🛡️ 前端风险 → 系统性风险 演化看板\n")
     lines.append(f"> **{run_date}** | Regime: **{reg}** | P={pos['Primary']}% / H={pos['Hedge']}% / C={pos['Cash']}% | 跨域信号={cross} | 🔴={red_n}\n")
+    lines.append(f"> ⚠️ 显示用 · 权威裁决以 Risk Dashboard (risk_os_state_machine SSoT) 为准 — 若与 dashboard.js 显示的 regime/仓位不一致，以 dashboard 为准\n")
 
     # ① Near-term event risk
     lines.append("---\n## ① 近端事件风险\n")
@@ -174,6 +176,27 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     a_sofr = a["details"].get("SOFR-IORB",{})
     sofr_v = a_sofr.get("value_bp",0) or 0
     lines.append(f"| A 拆借 | SOFR-IORB | {sofr_v}bp | {a_sofr.get('light','N/A')} | — | 拆借市场 |\n")
+
+    # ── 2s10s 曲线结构（② 子项） ──
+    if curve and curve.get("spread_2s10s_bp") is not None:
+        c_y2 = curve.get("yield_2y"); c_y10 = curve.get("yield_10y"); c_y30 = curve.get("yield_30y")
+        c_s = curve.get("spread_2s10s_bp"); c_s5 = curve.get("spread_5s30s_bp")
+        c_d5 = curve.get("chg_5d_bp"); c_reg = curve.get("regime", "N/A")
+        c_steep = curve.get("steepness", "N/A"); c_sig = curve.get("signal")
+        y2s = f"{c_y2:.2f}%" if c_y2 is not None else "N/A"
+        y10s = f"{c_y10:.2f}%" if c_y10 is not None else "N/A"
+        y30s = f"{c_y30:.2f}%" if c_y30 is not None else "N/A"
+        ss = f"{c_s:+.0f}bp" if c_s is not None else "N/A"
+        d5s = f"{c_d5:+.0f}bp" if c_d5 is not None else "N/A"
+        lines.append(f"| — | 2Y | {y2s} | — | — | — |")
+        lines.append(f"| — | 10Y | {y10s} | — | — | — |")
+        lines.append(f"| — | 30Y | {y30s} | — | — | — |")
+        lines.append(f"| — | **2s10s Spread** | **{ss}** | — | — | Δ5d {d5s} · {c_reg}({c_steep}) |")
+        if c_s5 is not None:
+            lines.append(f"| — | 5s30s Spread | {c_s5:+.0f}bp | — | — | — |")
+        if c_sig:
+            lines.append(f"| — | **信号** | **{c_sig}** | — | — | — |")
+        lines.append("")
 
     # ③ Systemic triggers
     lines.append("---\n## ③ 系统性风险触发器\n")
@@ -405,16 +428,19 @@ def main():
     abcd = compute_abcd_signals(raw)
     casc = compute_casc(raw, v35, abcd)
     abcd = apply_casc_gate(abcd, casc)
-    pos = compute_position(abcd, v35, casc=casc)
+    pos = read_ssot_position()
+    if pos is None:
+        pos = compute_position(abcd, v35, casc=casc)
     rate_path = compute_rate_path_proxy(raw)
 
     vts = casc.get("vts", compute_vts(raw))
     rcv = casc.get("rcv", compute_rcv(raw))
     lock = casc.get("vts_rcv_lock", compute_vts_rcv_interlock(vts, rcv))
     nowcast = compute_real_yield_nowcast(raw)
+    curve   = compute_curve_regime(raw)
 
     # 1) Markdown (dated archive)
-    md = format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, nowcast=nowcast)
+    md = format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, nowcast=nowcast, curve=curve)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     md_path = REPORT_DIR / f"risk_dashboard_{run_date}.md"
     md_path.write_text(md, encoding="utf-8")
