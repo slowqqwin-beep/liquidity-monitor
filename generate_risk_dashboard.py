@@ -175,7 +175,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     lines.append(f"| A 资金管道 | EFFR-IORB | {effr_v}bp | {effr_l} | {dur5_e}/5 {'✅' if dur5_e>=5 else ''} | 资金管道偏紧 |")
     a_sofr = a["details"].get("SOFR-IORB",{})
     sofr_v = a_sofr.get("value_bp",0) or 0
-    lines.append(f"| A 拆借 | SOFR-IORB | {sofr_v}bp | {a_sofr.get('light','N/A')} | — | 拆借市场 |\n")
+    lines.append(f"| A 拆借 | SOFR-IORB | {sofr_v}bp | {a_sofr.get('light','N/A')} | — | 拆借市场 |")
 
     # ── 2s10s 曲线结构（② 子项） ──
     if curve and curve.get("spread_2s10s_bp") is not None:
@@ -196,7 +196,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
             lines.append(f"| — | 5s30s Spread | {c_s5:+.0f}bp | — | — | — |")
         if c_sig:
             lines.append(f"| — | **信号** | **{c_sig}** | — | — | — |")
-        lines.append("")
+        lines.append("")  # separator before next section
 
     # ③ Systemic triggers
     lines.append("---\n## ③ 系统性风险触发器\n")

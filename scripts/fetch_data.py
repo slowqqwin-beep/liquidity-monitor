@@ -215,7 +215,12 @@ def fetch_move_index() -> list[dict[str, Any]]:
 # Yahoo Finance data (Layer 2 & D - equity/ETF signals)
 # ------------------------------------------------------------------
 
-YAHOO_TICKERS = ["SPY", "HYG", "FXY"]
+YAHOO_TICKERS = ["SPY", "HYG", "FXY", "GLD", "^VIX", "^VIX3M", "^VIX9D", "^TNX"]
+# ^VIX:   same-day VIX for CASC alignment
+# ^VIX3M: VIX 3-month — VTS term structure (VIX/VIX3M ratio)
+# ^VIX9D: VIX 9-day   — VTS front-end signal (VIX9D/VIX ratio)
+# ^TNX:   10Y Treasury yield — 2s10s curve & credit spread context
+# GLD:    Gold ETF — cross-asset risk signal
 
 
 def fetch_yahoo(ticker: str) -> list[dict[str, Any]]:
@@ -412,6 +417,16 @@ def main() -> int:
              "desc": "High Yield Bond ETF price - credit risk signal", "n_obs": len(all_series.get("HYG", []))},
             {"id": "FXY", "label": "FXY Close", "layer": "D", "unit": "$",
              "desc": "Japanese Yen ETF price - FX risk signal", "n_obs": len(all_series.get("FXY", []))},
+            {"id": "GLD", "label": "GLD Close", "layer": "L3", "unit": "$",
+             "desc": "Gold ETF price - cross-asset risk signal", "n_obs": len(all_series.get("GLD", []))},
+            {"id": "^VIX", "label": "VIX", "layer": "L2", "unit": "",
+             "desc": "CBOE Volatility Index - equity fear gauge", "n_obs": len(all_series.get("^VIX", []))},
+            {"id": "^VIX3M", "label": "VIX 3-Month", "layer": "L2", "unit": "",
+             "desc": "VIX 3-month futures - VTS term structure denominator", "n_obs": len(all_series.get("^VIX3M", []))},
+            {"id": "^VIX9D", "label": "VIX 9-Day", "layer": "L2", "unit": "",
+             "desc": "VIX 9-day futures - VTS front-end signal numerator", "n_obs": len(all_series.get("^VIX9D", []))},
+            {"id": "^TNX", "label": "10Y Treasury Yield", "layer": "L1", "unit": "%",
+             "desc": "CBOE 10-Year Treasury Note Yield - curve/carry context", "n_obs": len(all_series.get("^TNX", []))},
         ] + COMPUTED_SERIES,
     }
     # Add n_obs for computed
