@@ -9,8 +9,8 @@
 
 | 维度 | 信号 |
 |------|------|
-| 事件窗 | VIX9D/VIX=1.052 **前端急性** | VIX=16.4 5dΔ-3.0 |
-| 风险性质 | **非系统性**·近端事件 |
+| 事件窗 | VIX=18.4 5dΔ-3.8 |
+| 风险性质 | 平静（单探针·VTS缺数据） |
 | 市场信号 | 无跨资产确认 |
 | 利率路径 | DGS2−IORB=55.0bp · 5dΔ+7.0bp ▲ · [降息被price out / 加息风险 · 代理非OIS] |
 
@@ -37,23 +37,23 @@
 |--------|------|---------|
 | **T1 信用(B端)** | HY/IG OAS走阔脱离自满 | 🟢 未触发 (HY/IG ⚠️自满) |
 | **T2 流动性(A端)** | EFFR-IORB 🟠/🔴+DUR5≥5 | 🟠 已触发·部分压力 (EFFR-IORB=-2.0bp DUR5=5/5) |
-| **T3 跨资产/跨境** | CASC≥2+VTS+RCV互锁 | 🟢 未触发 (CASC0/4·VTS=contango·互锁=agree-front) |
+| **T3 跨资产/跨境** | CASC≥2+VTS+RCV互锁 | 🟢 未触发 (CASC0/4·VTS=N/A⚠️缺数据·互锁=vts_missing) |
 
 ---
 ## ④ 系统性风险阶段与最终判断
 
 | 项目 | 状态 |
 |------|------|
-| 当前阶段 | 🟡 **双探针前端一致·近端事件·非系统性** |
+| 当前阶段 | ⚪ **VTS缺数据·RCV=elevated·单探针无法确认双探针共振 · 无法判定** |
 | Regime | **R4 防御**(R4) · 跨域=2 · 🔴=1 |
 | 仓位 | P=25% / H=45% / C=30% |
-| VTS | contango · 前端=前端急性 |
+| VTS | N/A · 前端=N/A |
 | RCV | elevated-front-tilt · sev=elevated · tilt=front · 2y/30y=2.096 z=3.5 |
-| 互锁 | agree-front — 双探针前端一致·近端事件风险·非系统性 |
-| C端 | 有序重定价·估值压缩 |
+| 互锁 | vts_missing — VTS缺数据·RCV=elevated·单探针无法确认双探针共振 |
+| C端 | 有序重定价·估值压缩 [MOVE-proxy] |
 | C Nowcast | 🔴 实际利率高压 · 方向基本持平 |
 
-> **最终判断**：双探针前端一致·近端事件非系统性。等CPI/Fed落地看前端是fade还是扩散。要盯的翻转点：RCV→long-led/acute-broad叠VTS倒挂→agree-systemic。
+> **最终判断**：VTS/RCV数据缺失 — 无法判定系统性状态。等数据恢复。
 
 ---
 *ABCD v3.5.1 风险演化看板 | 2026-06-20 | FRED+Yahoo*

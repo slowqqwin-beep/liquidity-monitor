@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-18T12:47:39.401094+00:00",
+  "generated_at": "2026-06-20T13:37:34.656788+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -8,7 +8,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Secured Overnight Financing Rate",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "IORB",
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1096
+      "n_obs": 1098
     },
     {
       "id": "EFFR",
@@ -32,7 +32,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target upper bound",
-      "n_obs": 1095
+      "n_obs": 1096
     },
     {
       "id": "DFEDTARL",
@@ -40,7 +40,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target lower bound",
-      "n_obs": 1095
+      "n_obs": 1096
     },
     {
       "id": "RRPONTSYD",
@@ -56,7 +56,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "Reserves with Fed Reserve Banks ($B)",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "WTREGEN",
@@ -64,7 +64,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "TGA balance at Fed ($B)",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "WALCL",
@@ -72,7 +72,7 @@
       "layer": "L1",
       "unit": "$M",
       "desc": "Total Fed balance sheet",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "BAMLH0A0HYM2",
@@ -80,7 +80,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US High Yield OAS",
-      "n_obs": 786
+      "n_obs": 785
     },
     {
       "id": "BAMLC0A0CM",
@@ -88,7 +88,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US Corp OAS",
-      "n_obs": 785
+      "n_obs": 784
     },
     {
       "id": "BAMLEMCBPIOAS",
@@ -96,7 +96,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA EM Corporate OAS",
-      "n_obs": 786
+      "n_obs": 785
     },
     {
       "id": "VIXCLS",
@@ -104,7 +104,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 773
+      "n_obs": 772
     },
     {
       "id": "TEDRATE",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 746
+      "n_obs": 745
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -192,7 +192,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Freddie Mac 30Y fixed mortgage",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "DTWEXBGS",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 747
+      "n_obs": 746
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -264,7 +264,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Plumbing stress: positive = banks lending into repo",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "EFFR_IORB",
@@ -288,7 +288,7 @@
       "layer": "L2",
       "unit": "x",
       "desc": "Risk-tier divergence",
-      "n_obs": 785
+      "n_obs": 784
     },
     {
       "id": "MOVE_PROXY",
