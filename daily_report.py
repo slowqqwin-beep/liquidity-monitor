@@ -2506,6 +2506,150 @@ def compute_checklist(abcd: dict, pos: dict) -> list[str]:
     return items
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+#  SSoT read_ssot_position — 从 Risk OS Orchestrator 读取唯一权威仓位
+# ═══════════════════════════════════════════════════════════════════════════
+
+def read_ssot_position() -> dict | None:
+    """从 SSoT (docs/risk/assets/event_state.json) 读取权威仓位。
+
+    【保护1】文件不存在/读取失败 → 打印醒目横幅，返回 None（调用方回退备用裁决）
+    【保护2】文件过期（date != 今日）→ 打印横幅，返回 None
+            SSoT 是 AUX 级，失败不阻断日报。但跑挂时 event_state.json 停在昨天。
+            切换前 compute_position 每天现算永远新鲜；
+            切换后仓位来源变成可能停在昨天的文件——必须报警，绝不静默用旧值。
+    【保护3】字段缺失/格式错误 → 报错，不静默填默认值
+
+    Returns:
+        pos dict on success, None on P1/P2 fallback (caller uses compute_position).
+    Raises:
+        KeyError / TypeError / ValueError on P3 (hard error, not silent).
+    """
+    from datetime import date as _date
+
+    ES_PATH = Path(__file__).resolve().parent / "docs" / "risk" / "assets" / "event_state.json"
+    TODAY = _date.today().isoformat()
+
+    # ── P1: 文件不存在 ──
+    if not ES_PATH.exists():
+        _ssot_banner("event_state.json 不存在")
+        return None
+
+    # ── P1: 读取失败 ──
+    try:
+        es = json.loads(ES_PATH.read_text(encoding="utf-8"))
+    except Exception as e:
+        _ssot_banner(f"event_state.json 读取失败: {e}")
+        return None
+
+    # ── P2: 新鲜度检查（最关键）──
+    # SSoT 是 AUX 级，失败不阻断日报。但它跑挂时 event_state.json 停在昨天。
+    # 切换前 compute_position 每天现算永远新鲜；切换后仓位来源变成可能停在昨天的文件。
+    # 必须报警 + 回退，绝不静默用旧值。
+    file_date = es.get("date", "")
+    if file_date != TODAY:
+        mtime_str = _date.fromtimestamp(ES_PATH.stat().st_mtime).isoformat()
+        _ssot_banner(
+            f"数据过期 — event_state.json date={file_date}, "
+            f"今日={TODAY}, mtime={mtime_str} — SSoT 今日可能未跑成(AUX级)"
+        )
+        return None
+
+    # ── P3: 字段完整性校验 ──
+    required_fields = {
+        "regime": str,
+        "regime_key": str,
+        "red_count": int,
+        "positions": dict,
+        "cross_domain_signals": int,
+        "systemic_confirmed": bool,
+    }
+    for field, expected in required_fields.items():
+        if field not in es:
+            raise KeyError(
+                f"SSoT event_state.json 缺少必要字段: '{field}'，无法映射仓位"
+            )
+        if not isinstance(es[field], expected):
+            raise TypeError(
+                f"SSoT event_state.json 字段 '{field}' 类型错误: "
+                f"期望 {expected.__name__}, 实际 {type(es[field]).__name__}"
+            )
+
+    positions = es["positions"]
+    for k in ("primary", "hedge", "cash"):
+        if k not in positions:
+            raise KeyError(f"SSoT positions 缺失: '{k}'，无法映射仓位")
+
+    # ── 字段映射: "25%" → 25 ──
+    def _pct(v):
+        """解析仓位百分比字符串 → int。失败则 raise，不静默给默认值。"""
+        if isinstance(v, str) and v.endswith("%"):
+            return int(v[:-1])
+        if isinstance(v, (int, float)):
+            return int(v)
+        raise ValueError(f"无法解析仓位百分比值: {v!r}")
+
+    try:
+        primary = _pct(positions["primary"])
+        hedge   = _pct(positions["hedge"])
+        cash    = _pct(positions["cash"])
+    except ValueError as e:
+        raise ValueError(f"SSoT position 百分比解析失败: {e}") from e
+
+    # 三值和校验
+    total = primary + hedge + cash
+    if total != 100:
+        raise ValueError(
+            f"SSoT 仓位和不等于100: P={primary} H={hedge} C={cash} = {total}"
+        )
+
+    regime_label = es["regime"].replace(" ⚠️", "")
+    regime_key   = es["regime_key"]
+    red_count    = es["red_count"]
+    systemic     = es["systemic_confirmed"]
+    cross_domain = es["cross_domain_signals"]
+
+    # ── 映射到 pos dict (与 compute_position 输出格式一致) ──
+    pos = {
+        "Primary":    primary,
+        "Hedge":      hedge,
+        "Cash":       cash,
+        "regime_key": regime_key,
+        "label":      regime_label,
+        "regime":     regime_label,
+        "ab_bearish": False,
+        "cb_bearish": False,
+        "steps": [{
+            "step":    f"SSoT 唯一裁决 → {regime_label}",
+            "source":  "Risk OS Orchestrator v2.0 (SSoT)",
+            "primary": primary,
+            "hedge":   hedge,
+            "cash":    cash,
+            "note":    (f"red_count={red_count}, cross_domain={cross_domain}, "
+                        f"systemic_confirmed={systemic} → "
+                        f"P={primary}/H={hedge}/C={cash}"),
+        }],
+    }
+
+    return pos
+
+
+def _ssot_banner(msg: str):
+    """醒目横幅 — SSoT 不可用时的警告。"""
+    sep = "=" * 68
+    print(f"\n{sep}")
+    print(f"  ⚠️  SSoT 不可用: {msg}")
+    print(f"  → 本期仓位来自 compute_position 备用裁决，非权威")
+    print(f"{sep}\n")
+
+
+def _ssot_fallback_note():
+    """切换后 compute_position 仅作对照用，已在 main() 走 SSoT 优先路径时标注。"""
+    # 实际横幅已由 _ssot_banner 打印，此处为语义占位——防止未来有人
+    # 误删 banner 调用后静默回退。
+    pass
+
+
 def compute_position(abcd: dict, v35: dict, *, casc: dict | None = None) -> dict:
     """Full S1-S5 position computation (v3.5).
 
@@ -3601,6 +3745,46 @@ def format_markdown_report(
             lines.append(f"| {row['domain']} | {row['name']} | {row['value_str']} | {row['delta_str']} | {row['thresh_str']} | {row['light']} | {row['type']} | {row['dur']} |")
     lines.append("")
 
+    # ====== 2s10s 曲线结构 ======
+    lines.append("## 2s10s 曲线结构")
+    lines.append("")
+    curve_regime_val = curve.get("regime", "N/A")
+    curve_spread_2s10s = curve.get("spread_2s10s_bp")
+    curve_spread_5s30s = curve.get("spread_5s30s_bp")
+    curve_steep = curve.get("steepness", "N/A")
+    curve_y2 = curve.get("yield_2y")
+    curve_y10 = curve.get("yield_10y")
+    curve_y30 = curve.get("yield_30y")
+    curve_chg_5d = curve.get("chg_5d_bp")
+    curve_chg_2y = curve.get("chg_2y_5d_bp")
+    curve_chg_10y = curve.get("chg_10y_5d_bp")
+    curve_signal = curve.get("signal")
+    # Build summary
+    spread_str = f"{curve_spread_2s10s:+.0f}bp" if curve_spread_2s10s is not None else "N/A"
+    y2_str = f"{curve_y2:.2f}%" if curve_y2 is not None else "N/A"
+    y10_str = f"{curve_y10:.2f}%" if curve_y10 is not None else "N/A"
+    y30_str = f"{curve_y30:.2f}%" if curve_y30 is not None else "N/A"
+    chg_5d_str = f"{curve_chg_5d:+.0f}bp" if curve_chg_5d is not None else "N/A"
+    chg_2y_str = f"{curve_chg_2y:+.0f}bp" if curve_chg_2y is not None else "N/A"
+    chg_10y_str = f"{curve_chg_10y:+.0f}bp" if curve_chg_10y is not None else "N/A"
+    spread_5s30s_str = f"{curve_spread_5s30s:+.0f}bp" if curve_spread_5s30s is not None else "N/A"
+    lines.append(f"| 指标 | 当前值 | 5d Δ |")
+    lines.append(f"|------|--------|------|")
+    lines.append(f"| 2Y | {y2_str} | {chg_2y_str} |")
+    lines.append(f"| 10Y | {y10_str} | {chg_10y_str} |")
+    lines.append(f"| 30Y | {y30_str} | — |")
+    lines.append(f"| 2s10s Spread | {spread_str} | {chg_5d_str} |")
+    if curve_spread_5s30s is not None:
+        lines.append(f"| 5s30s Spread | {spread_5s30s_str} | — |")
+    lines.append(f"| **Regime** | **{curve_regime_val}** (形态={curve_steep}) | |")
+    if curve_signal:
+        lines.append(f"| **信号** | **{curve_signal}** | |")
+    lines.append("")
+    curve_reason = curve.get("reason")
+    if curve_reason:
+        lines.append(f"> ⚠️ {curve_reason}")
+        lines.append("")
+
     # ====== C_RealYield_Nowcast ======
     if nowcast is not None:
         lines.extend(_format_nowcast_section(nowcast))
@@ -3723,7 +3907,18 @@ def main():
     # §0.7 CASC — 跨资产应力确认层 (在 regime 判定前作为降级闸)
     casc     = compute_casc(raw, v35, abcd)
     abcd     = apply_casc_gate(abcd, casc)
-    pos      = compute_position(abcd, v35, casc=casc)
+
+    # ── SSoT 唯一裁决 (v3.5.1) ──
+    # read_ssot_position() 读 Risk OS Orchestrator 权威仓位。
+    # P1(不存在)/P2(过期) → 回退 compute_position() + 横幅；
+    # P3(字段坏) → 抛异常阻断。
+    pos = read_ssot_position()
+    if pos is None:
+        pos = compute_position(abcd, v35, casc=casc)
+        _ssot_fallback_note()
+    else:
+        print(f"[✓ SSoT 权威仓位: {pos['regime_key']} P={pos['Primary']}/H={pos['Hedge']}/C={pos['Cash']}]")
+
     prox     = compute_trigger_proximity(abcd, raw)
     chk      = compute_checklist(abcd, pos)
 
@@ -3800,6 +3995,61 @@ def main():
         )
         if r.returncode == 0:
             print(f"[Extracted risk event_state]")
+            # Step A2: Run Risk OS State Machine (SSoT) → docs/risk/assets/event_state.json
+            # AUX-level: feeds dashboard.js, failure must NOT block daily report.
+            sm_script = tools_dir / "risk_os_state_machine.py"
+            sm_r = subprocess.run(
+                [sys.executable, "-X", "utf8", str(sm_script), "--date", run_date],
+                capture_output=True, timeout=30,
+            )
+            if sm_r.returncode == 0:
+                # Verify time-stamp: if file wasn't written, something is silently wrong
+                es_path = Path(__file__).resolve().parent / "docs" / "risk" / "assets" / "event_state.json"
+                if es_path.exists():
+                    es_mtime = es_path.stat().st_mtime
+                    print(f"[Risk OS State Machine: SSoT refreshed → docs/risk/assets/event_state.json  (mtime={es_mtime:.0f})]")
+                else:
+                    print(f"[⚠️ AUX DEGRADED] risk_os_state_machine ran but event_state.json not found at {es_path}")
+            else:
+                print(f"[⚠️ AUX DEGRADED] Risk OS State Machine failed (rc={sm_r.returncode}): {sm_r.stderr.decode(errors='replace')[:200]}")
+                print(f"  → daily report continues; dashboard.js may read stale event_state.json")
+            # Step A3: Cross-validate SSoT vs MD-derived event_state
+            #  Compare regime / red_count / systemic_confirmed / positions / cross_domain_signals
+            es_path = Path(__file__).resolve().parent / "docs" / "risk" / "assets" / "event_state.json"
+            md_es_path = Path(__file__).resolve().parent / "report" / f"event_state_{run_date}.json"
+            if es_path.exists() and md_es_path.exists():
+                import json as _json
+                sm = _json.loads(es_path.read_text(encoding="utf-8"))
+                ex = _json.loads(md_es_path.read_text(encoding="utf-8"))
+                divergences = []
+                sm_regime = sm.get("regime", "")
+                ex_regime = ex.get("regime", "")
+                if sm_regime and ex_regime and sm_regime != ex_regime:
+                    divergences.append(f"regime: SSoT={sm_regime} vs MD={ex_regime}")
+                sm_rc = sm.get("red_count")
+                ex_rc = ex.get("red_count")
+                if sm_rc is not None and ex_rc is not None and sm_rc != ex_rc:
+                    divergences.append(f"red_count: SSoT={sm_rc} vs MD={ex_rc}")
+                sm_sc = (sm.get("risk_os_final") or {}).get("systemic_confirmed")
+                ex_sc = (ex.get("event_state") or {}).get("systemic_confirmed")
+                if sm_sc is not None and ex_sc is not None and sm_sc != ex_sc:
+                    divergences.append(f"systemic_confirmed: SSoT={sm_sc} vs MD={ex_sc}")
+                sm_pos = sm.get("positions", {}) or {}
+                ex_pos = ex.get("positions", {}) or {}
+                if sm_pos.get("primary") != ex_pos.get("primary") or sm_pos.get("hedge") != ex_pos.get("hedge"):
+                    divergences.append(f"positions: SSoT=P={sm_pos.get('primary')}/H={sm_pos.get('hedge')}/C={sm_pos.get('cash')} "
+                                       f"vs MD=P={ex_pos.get('primary')}/H={ex_pos.get('hedge')}/C={ex_pos.get('cash')}")
+                sm_cd = sm.get("cross_domain_signals")
+                ex_cd = ex.get("cross_domain_signals")
+                if sm_cd is not None and ex_cd is not None and sm_cd != ex_cd:
+                    divergences.append(f"cross_domain_signals: SSoT={sm_cd} vs MD={ex_cd}")
+                if divergences:
+                    print(f"[⚠️ 双裁决器分歧] SSoT(risk_os_state_machine) vs MD(extract_risk_events):")
+                    for d in divergences:
+                        print(f"  {d}")
+                    print(f"  → 裁决以 SSoT (dashboard.js 读取 docs/risk/assets/event_state.json) 为准。MD/flowchart 为显示用，非权威。")
+                else:
+                    print(f"[✓ 双裁决器一致] SSoT 与 MD 对 regime/red_count/positions/systemic_confirmed 判定一致")
             # Step B: Generate white-background flowchart PNG
             png_script = tools_dir / "generate_flowchart_png.py"
             r2 = subprocess.run(
