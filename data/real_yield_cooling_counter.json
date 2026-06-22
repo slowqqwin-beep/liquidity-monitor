@@ -1,4 +1,11 @@
 {
   "cooling_counter": 0,
-  "last_update": "2026-06-20"
+  "cooling_z": 0.4,
+  "cooling_z_quality": "ok",
+  "current_delta_bp": 5.0,
+  "rolling_mean_delta_bp": 0.0,
+  "rolling_std_delta_bp": 12.5,
+  "rolling_window": 252,
+  "diff_window": 20,
+  "last_update": "2026-06-22"
 }

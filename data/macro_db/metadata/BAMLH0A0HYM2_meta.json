@@ -1,0 +1,41 @@
+{
+  "series_id": "BAMLH0A0HYM2",
+  "name": "ICE BofA US High Yield Index Option-Adjusted Spread",
+  "alias": "HY OAS",
+  "vendor": "ICE BofA / FRED",
+  "source": "FRED St. Louis Fed",
+  "fred_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+  "frequency": "daily",
+  "unit": "percent",
+  "start_date": "1996-12-31",
+  "end_date": "2026-06-17",
+  "rows_raw": 7694,
+  "rows_clean": 7560,
+  "seed_status": "found",
+  "history_quality": "complete_with_flags",
+  "quality_rating": "B-/C+",
+  "files": {
+    "raw": "BAMLH0A0HYM2_master_raw.csv",
+    "clean": "BAMLH0A0HYM2_master_clean_for_backtest.csv",
+    "audit": "BAMLH0A0HYM2_cleaning_audit.md",
+    "audit_json": "BAMLH0A0HYM2_audit.json"
+  },
+  "quality_flags": {
+    "ok": 7560,
+    "weekend_month_end": 100,
+    "synthetic_or_filled": 34,
+    "total": 7694
+  },
+  "known_issues": [
+    "100 month-end weekend rows removed from clean version (originated from seed fill/snapshot convention)",
+    "34 trading days 2023-03-06~2023-04-20 linearly interpolated - stripped from clean (covers SVB banking crisis, using interpolated values would underestimate credit spread shock)",
+    "seed filename contains 'filled' indicating pre-processed data, not raw FRED download"
+  ],
+  "usage_guidance": {
+    "suitable_for": ["long-term quantile/regime classification", "macro overlay", "credit cycle observation"],
+    "not_suitable_for": ["daily-frequency backtest without filtering", "SVB-window event studies", "credit spread shock modeling with daily precision"]
+  },
+  "gap_note": "Gap 2023-03-03~2023-06-18: 30 real(付鹏)+46 business-day interpolated. 32 weekends stripped. Source: Wayback(6 snapshots)+付鹏 April file+linear interpolation. Note: the interpolated portion 2023-03-06~2023-04-20 is flagged synthetic and excluded from clean version.",
+  "license_note": "ICE/FRED raw historical data may be copyrighted. For internal research and backtesting only. Do not publish raw full history or redistribute the dataset.",
+  "updated_at": "2026-06-21T11:53:00Z"
+}

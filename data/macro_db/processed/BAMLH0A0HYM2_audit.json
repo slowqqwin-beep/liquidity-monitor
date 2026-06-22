@@ -1,0 +1,35 @@
+{
+  "audit_date": "2026-06-21",
+  "file": "d:\\liquidity-dashboard\\v3.5\\data\\macro_db\\processed\\BAMLH0A0HYM2_master.csv",
+  "rows": 7694,
+  "date_range": [
+    "1996-12-31",
+    "2026-06-17"
+  ],
+  "null_dates": 0,
+  "null_values": 0,
+  "duplicates": 0,
+  "decimal_places": {
+    "1": 723,
+    "2": 6939,
+    "3": 32
+  },
+  "source_layers": {
+    "seed": 6907,
+    "fred_live_rolling_3y": 787
+  },
+  "weekend_rows": 100,
+  "weekend_month_end": 100,
+  "filled_segment_20230306_20230420": {
+    "rows": 34,
+    "issue": "3-decimal-place values suggest linear interpolation during SVB crisis window",
+    "recommendation": "flag as synthetic_or_filled, exclude from daily backtest"
+  },
+  "extreme_values": {
+    "min": 2.41,
+    "max": 21.82,
+    "median": 4.5,
+    "mean": 5.1761818299974
+  },
+  "verdict": "B-/C+: usable for long-term quantile / regime, NOT suitable for daily backtest or SVB-window analysis"
+}

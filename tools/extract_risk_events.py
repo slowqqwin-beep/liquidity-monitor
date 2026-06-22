@@ -21,8 +21,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-REPORT_DIR = Path(__file__).resolve().parent.parent.parent / "liquidity-dashboard" / "report"
 PROJECT_DIR = Path(__file__).resolve().parent.parent  # v3.5 root
+REPORT_DIR = PROJECT_DIR / "report"
 sys.path.insert(0, str(PROJECT_DIR))
 
 from daily_report import rate_path_direction_label

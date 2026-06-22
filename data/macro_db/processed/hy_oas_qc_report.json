@@ -1,0 +1,118 @@
+{
+  "qc_date": "2026-06-21",
+  "source_file": "D:\\liquidity-dashboard\\v3.5\\data\\macro_db\\processed\\BAMLH0A0HYM2_master_clean_for_backtest.csv",
+  "standalone_qc": {
+    "series": "BAMLH0A0HYM2",
+    "label": "HY OAS (ICE BofA US High Yield OAS)",
+    "unit": "% (percentage points, ×100 = bp)",
+    "rows": 7560,
+    "date_range": [
+      "1996-12-31",
+      "2026-06-17"
+    ],
+    "coverage_pct": 70.25,
+    "total_dates_in_range": 10761,
+    "weekend_missing": 3074,
+    "weekday_missing": 127,
+    "gaps_n_trading_days_ge_3": [
+      {
+        "start": "2001-09-11",
+        "end": "2001-09-13",
+        "n_trading_days": 3
+      },
+      {
+        "start": "2023-03-06",
+        "end": "2023-03-10",
+        "n_trading_days": 5
+      },
+      {
+        "start": "2023-03-13",
+        "end": "2023-03-17",
+        "n_trading_days": 5
+      },
+      {
+        "start": "2023-03-20",
+        "end": "2023-03-24",
+        "n_trading_days": 5
+      },
+      {
+        "start": "2023-03-27",
+        "end": "2023-03-31",
+        "n_trading_days": 5
+      },
+      {
+        "start": "2023-04-03",
+        "end": "2023-04-07",
+        "n_trading_days": 5
+      },
+      {
+        "start": "2023-04-10",
+        "end": "2023-04-14",
+        "n_trading_days": 5
+      },
+      {
+        "start": "2023-04-17",
+        "end": "2023-04-20",
+        "n_trading_days": 4
+      }
+    ],
+    "anomalies": [],
+    "value_stats": {
+      "min": 2.41,
+      "max": 21.82,
+      "mean": 5.18,
+      "median": 4.52,
+      "std": 2.53
+    },
+    "is_oas_not_yield": true,
+    "verdict": "WARN — 8 gap(s) totalling 37 trading days. SVB gap (2023-03-06~04-20, 34td) is known+deliberate exclusion."
+  },
+  "calendar_alignment": {
+    "joined_rows": 18219,
+    "joined_date_range": [
+      "1962-01-02",
+      "2026-06-20"
+    ],
+    "columns": [
+      "hy_oas",
+      "DGS10",
+      "DFII10",
+      "T10YIE",
+      "EFFR",
+      "DFEDTARU"
+    ],
+    "coverage_by_column": {
+      "hy_oas": {
+        "valid": 7560,
+        "total": 18219,
+        "pct": 41.5
+      },
+      "DGS10": {
+        "valid": 16100,
+        "total": 18219,
+        "pct": 88.37
+      },
+      "DFII10": {
+        "valid": 5869,
+        "total": 18219,
+        "pct": 32.21
+      },
+      "T10YIE": {
+        "valid": 5870,
+        "total": 18219,
+        "pct": 32.22
+      },
+      "EFFR": {
+        "valid": 6517,
+        "total": 18219,
+        "pct": 35.77
+      },
+      "DFEDTARU": {
+        "valid": 6396,
+        "total": 18219,
+        "pct": 35.11
+      }
+    },
+    "na_handling": "outer join — NaN = no data for that series on that date (holiday / missing source)"
+  }
+}

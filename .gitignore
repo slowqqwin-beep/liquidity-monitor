@@ -10,3 +10,14 @@ report/event_state_*.json
 !前端风险与系统性风险演化流程.png
 !财经市场风险诊断报告.png
 !四端快照信号逻辑示意图.png
+
+# macro_db — 不要提交原始数据
+data/macro_db/raw/
+data/macro_db/processed/*.csv
+data/macro_db/processed/*.parquet
+data/macro_db/db/*.duckdb
+
+# 允许提交 audit/metadata
+!data/macro_db/audit/*.md
+!data/macro_db/audit/*.json
+!data/macro_db/metadata/*.json

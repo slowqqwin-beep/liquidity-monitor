@@ -21,6 +21,8 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 
 # ---------------------------------------------------------------------------
 # Config
@@ -234,6 +236,7 @@ def compute_vintages(data: dict) -> dict:
 # ── C_RealYield_Nowcast ──────────────────────────────────────────────────
 NOWCAST_CSV_PATH = DATA_DIR / "real_yield_nowcast_history.csv"
 COOLING_JSON_PATH = DATA_DIR / "real_yield_cooling_counter.json"
+COOLING_Z_PANEL_PATH = DATA_DIR / "macro_db" / "processed" / "macro_research_panel.csv"  # full history for rolling z
 
 NOWCAST_LEVEL_THRESHOLDS = [
     (2.00, "🔴", "实际利率高压"),
@@ -347,7 +350,8 @@ def compute_real_yield_nowcast(data: dict) -> dict:
         "real_yield_gap": None,
         "divergence_status": "N/A",
         "cooling_counter": 0,
-        "cooling_target": 3,
+        "cooling_z": None,
+        "cooling_z_quality": "ok",
         "data_status": "ok",
         "degradation_reason": None,
         "asset_map": [],
@@ -496,14 +500,14 @@ def compute_real_yield_nowcast(data: dict) -> dict:
                 result["nowcast_direction_light"] = light
                 break
 
-    # ── 10. Cooling counter ──
-    _update_cooling_counter(result)
-
-    # ── 11. Asset map ──
-    result["asset_map"] = _build_asset_map(result)
-
-    # ── 12. Append to history CSV ──
+    # ── 10. Append to history CSV (must run before cooling-z) ──
     _append_nowcast_history(result)
+
+    # ── 11. Cooling-z (z-of-change based real yield retreat detector) ──
+    _compute_cooling_z(result)
+
+    # ── 12. Asset map ──
+    result["asset_map"] = _build_asset_map(result)
 
     return result
 
@@ -637,13 +641,89 @@ def _calibrate_basis(result: dict, data: dict) -> None:
         result["real_yield_nowcast"] = round(raw - basis_median, 2)
 
 
-def _update_cooling_counter(result: dict) -> None:
-    """Persist and update C_real_yield_cooling_counter."""
+def _compute_cooling_z(result: dict) -> None:
+    """cooling-z: z-of-change based real yield retreat detector.
+
+    Replaces old absolute <2.00% threshold with adaptive z-score:
+
+      Δ = real_yield_nowcast 20-obs change
+      z_chg = (Δ_t − mean(Δ, 252)) / std(Δ, 252)
+
+    Counter: z_chg ≤ −1.0 → counter += 1 (max 3), else → 0
+
+    Quality flags:
+      - no_history / insufficient_history_20d / insufficient_history_252d
+      - zero_std / nowcast_nan
+
+    Persists to COOLING_JSON_PATH with full metadata.
+    """
     ryn = result["real_yield_nowcast"]
     if ryn is None:
         result["cooling_counter"] = 0
+        result["cooling_z"] = None
+        result["cooling_z_quality"] = "nowcast_nan"
         return
 
+    # ── Read full-history panel (NOT nowcast CSV — needs 252+ rows) ──
+    if not COOLING_Z_PANEL_PATH.exists():
+        result["cooling_counter"] = 0
+        result["cooling_z"] = None
+        result["cooling_z_quality"] = "no_history"
+        return
+
+    try:
+        df = pd.read_csv(COOLING_Z_PANEL_PATH, parse_dates=["date"])
+        df = df.sort_values("date").reset_index(drop=True)
+        # Use only rows where real_yield_nowcast exists
+        ryn_series = df["real_yield_nowcast"].dropna().astype(float)
+    except Exception:
+        result["cooling_counter"] = 0
+        result["cooling_z"] = None
+        result["cooling_z_quality"] = "no_history"
+        return
+
+    if len(ryn_series) < 21:
+        result["cooling_counter"] = 0
+        result["cooling_z"] = None
+        result["cooling_z_quality"] = "insufficient_history_20d"
+        return
+
+    # ── Δ = 20-obs change ──
+    delta_series = ryn_series.diff(20).dropna()
+
+    if len(delta_series) < 252:
+        result["cooling_counter"] = 0
+        result["cooling_z"] = None
+        result["cooling_z_quality"] = "insufficient_history_252d"
+        return
+
+    # ── Rolling z-score (W=252) ──
+    rolling_mean = delta_series.rolling(252, min_periods=252).mean()
+    rolling_std  = delta_series.rolling(252, min_periods=252).std(ddof=1)
+
+    current_delta = float(delta_series.iloc[-1])
+    current_mean  = float(rolling_mean.iloc[-1])
+    current_std   = float(rolling_std.iloc[-1])
+
+    # ── Quality guards ──
+    if pd.isna(current_mean) or pd.isna(current_std):
+        result["cooling_counter"] = 0
+        result["cooling_z"] = None
+        result["cooling_z_quality"] = "insufficient_history_252d"
+        return
+
+    if current_std == 0.0:
+        result["cooling_counter"] = 0
+        result["cooling_z"] = None
+        result["cooling_z_quality"] = "zero_std"
+        return
+
+    # ── z-score ──
+    z_chg = round((current_delta - current_mean) / current_std, 2)
+    result["cooling_z"] = z_chg
+    result["cooling_z_quality"] = "ok"
+
+    # ── Counter accumulation ──
     prev_counter = 0
     if COOLING_JSON_PATH.exists():
         try:
@@ -652,15 +732,22 @@ def _update_cooling_counter(result: dict) -> None:
         except Exception:
             pass
 
-    if ryn < 2.00:
-        result["cooling_counter"] = min(prev_counter + 1, result["cooling_target"])
+    if z_chg <= -1.0:
+        result["cooling_counter"] = min(prev_counter + 1, 3)
     else:
         result["cooling_counter"] = 0
 
-    # Persist
+    # ── Persist ──
     try:
         COOLING_JSON_PATH.write_text(json.dumps({
             "cooling_counter": result["cooling_counter"],
+            "cooling_z": z_chg,
+            "cooling_z_quality": "ok",
+            "current_delta_bp": round(current_delta * 100, 1),
+            "rolling_mean_delta_bp": round(current_mean * 100, 1),
+            "rolling_std_delta_bp": round(current_std * 100, 1),
+            "rolling_window": 252,
+            "diff_window": 20,
             "last_update": date.today().isoformat(),
         }, indent=2), encoding="utf-8")
     except Exception:
@@ -2510,7 +2597,7 @@ def compute_checklist(abcd: dict, pos: dict) -> list[str]:
 #  SSoT read_ssot_position — 从 Risk OS Orchestrator 读取唯一权威仓位
 # ═══════════════════════════════════════════════════════════════════════════
 
-def read_ssot_position() -> dict | None:
+def read_ssot_position(es_path: Path | None = None) -> dict | None:
     """从 SSoT (docs/risk/assets/event_state.json) 读取权威仓位。
 
     【保护1】文件不存在/读取失败 → 打印醒目横幅，返回 None（调用方回退备用裁决）
@@ -2520,6 +2607,9 @@ def read_ssot_position() -> dict | None:
             切换后仓位来源变成可能停在昨天的文件——必须报警，绝不静默用旧值。
     【保护3】字段缺失/格式错误 → 报错，不静默填默认值
 
+    Args:
+        es_path: 可选，覆盖默认路径（仅测试用，生产代码不传此参数）。
+
     Returns:
         pos dict on success, None on P1/P2 fallback (caller uses compute_position).
     Raises:
@@ -2527,7 +2617,10 @@ def read_ssot_position() -> dict | None:
     """
     from datetime import date as _date
 
-    ES_PATH = Path(__file__).resolve().parent / "docs" / "risk" / "assets" / "event_state.json"
+    if es_path is None:
+        es_path = Path(__file__).resolve().parent / "docs" / "risk" / "assets" / "event_state.json"
+
+    ES_PATH = es_path
     TODAY = _date.today().isoformat()
 
     # ── P1: 文件不存在 ──
@@ -3408,7 +3501,8 @@ def _format_nowcast_section(nowcast: dict) -> list[str]:
     d1 = nc.get("nowcast_delta_1d")
     d5 = nc.get("nowcast_delta_5d")
     cooling = nc.get("cooling_counter", 0)
-    cooling_target = nc.get("cooling_target", 3)
+    cooling_z = nc.get("cooling_z")
+    cooling_z_quality = nc.get("cooling_z_quality", "N/A")
     data_status = nc.get("data_status", "ok")
 
     L.append("| 指标 | 值 |")
@@ -3455,7 +3549,12 @@ def _format_nowcast_section(nowcast: dict) -> list[str]:
     L.append(f"| 5日变化 | {d5_str} |")
     L.append(f"| 绝对水平 | {nc.get('nowcast_level_light','N/A')} {nc.get('nowcast_level_label','N/A')} |")
     L.append(f"| 方向 | {nc.get('nowcast_direction_light','⚪')} {nc.get('nowcast_direction','N/A')} |")
-    L.append(f"| Nowcast cooling | {cooling}/{cooling_target} |")
+    # Cooling-z row
+    if cooling_z is not None:
+        z_str = f"z_chg={cooling_z:.2f} (Δ20d chg, 252d rolling z)"
+        L.append(f"| Nowcast cooling-z | {cooling}/3 ({z_str}, quality={cooling_z_quality}) |")
+    else:
+        L.append(f"| Nowcast cooling-z | N/A (quality={cooling_z_quality}) |")
 
     # Data status
     status_labels = {
@@ -3532,6 +3631,16 @@ def _build_nowcast_interpretation(nowcast: dict) -> str:
     if not nowcast.get("nowcast_delta_1d") is None and nowcast.get("nowcast_delta_1d_warming"):
         if parts and "方向数据尚在累积" not in parts[-1]:
             parts.append("方向数据基于DFII10近似（Nowcast历史<5d），待实盘累积后切换为Nowcast自身方向。")
+
+    # Cooling-z interpretation
+    cooling_z = nowcast.get("cooling_z")
+    cooling_counter = nowcast.get("cooling_counter", 0)
+    if cooling_z is not None and cooling_counter >= 2:
+        parts.append(f"cooling-z={cooling_z:.1f}，真实利率20d回落动量显著（{cooling_counter}/3），C端贴现率压力边际缓解。")
+    elif cooling_z is not None and cooling_counter == 1:
+        parts.append(f"cooling-z={cooling_z:.1f}，出现回落动量信号但尚未确认（{cooling_counter}/3），需连续确认。")
+    elif cooling_z is not None and cooling_counter == 0 and cooling_z <= -1.0:
+        parts.append(f"cooling-z={cooling_z:.1f}，单日回落动量达标但无历史积累，需观察连续性。")
 
     return "".join(parts)
 

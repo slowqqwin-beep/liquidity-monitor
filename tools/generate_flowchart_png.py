@@ -26,8 +26,9 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.font_manager import FontProperties
 
-REPORT_DIR = Path(__file__).resolve().parent.parent.parent / "liquidity-dashboard" / "report"
-ARCHIVE_DIR = Path(__file__).resolve().parent.parent / "daily_archive"
+PROJECT_DIR = Path(__file__).resolve().parent.parent  # v3.5 root
+REPORT_DIR = PROJECT_DIR / "report"
+ARCHIVE_DIR = PROJECT_DIR / "daily_archive"
 
 # ── 颜色方案 ──
 C_ORANGE = "#f06a25"
@@ -138,7 +139,12 @@ def draw_flowchart(event_state: dict, output_path: Path):
     ax.text(7, y, header_line,
             fontproperties=FONT_MEDIUM, ha="center", va="center",
             fontsize=10, color=C_TEXT_SUB)
-    y -= 0.9
+    y -= 0.25
+    # SSoT authority note — flowchart reads MD-derived event_state, not the authoritative SSoT JSON
+    ax.text(7, y, "显示用 · 权威裁决以 Risk Dashboard (risk_os_state_machine SSoT) 为准",
+            fontproperties=FONT_SMALL, ha="center", va="center",
+            fontsize=7, color=C_GRAY)
+    y -= 0.65
 
     # ══════════════════════════════════════════════
     #  LAYER 1: 近端事件风险

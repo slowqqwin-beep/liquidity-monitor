@@ -1,0 +1,20 @@
+{
+  "BAMLH0A0HYM2": {
+    "series_id": "BAMLH0A0HYM2",
+    "name": "ICE BofA US High Yield Index Option-Adjusted Spread",
+    "alias": "HY OAS",
+    "vendor": "ICE BofA / FRED",
+    "source": "FRED St. Louis Fed",
+    "fred_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+    "frequency": "daily",
+    "unit": "percent",
+    "start_date": "1996-12-31",
+    "end_date": "2026-06-17",
+    "rows": 7694,
+    "seed_status": "found",
+    "history_quality": "complete",
+    "gap_note": "overlap_ok",
+    "license_note": "ICE/FRED raw historical data may be copyrighted. For internal research and backtesting only. Do not publish raw full history or redistribute the dataset.",
+    "updated_at": "2026-06-21T11:44:01Z"
+  }
+}

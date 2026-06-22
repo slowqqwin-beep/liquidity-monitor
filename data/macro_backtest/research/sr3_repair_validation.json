@@ -1,0 +1,70 @@
+{
+  "params": {
+    "shock_5d_min_bp": 4.0,
+    "shock_1d_min_bp": 3.0,
+    "peak_lookback_days": 5,
+    "decel_abs_bp_threshold": 1.5,
+    "decel_min_days": 2,
+    "repair_min_bp": 5.0,
+    "repair_max_days": 60,
+    "repair_max_days_mid": 120,
+    "repair_max_days_long": 250,
+    "repair_min_ratio": 0.3,
+    "shock_min_height_bp": 5.0,
+    "event_min_gap_days": 20,
+    "credit_hyoas_benign_max_bp": 10.0,
+    "credit_hyoas_malign_min_bp": 20.0,
+    "credit_dgs10_declining_bp": -2.0
+  },
+  "data_range": {
+    "start": "2018-05-07",
+    "end": "2026-06-17",
+    "trading_days": 2045,
+    "contracts": 84
+  },
+  "events": {
+    "total_hawkish_shocks": 15,
+    "shock_height_mean_bp": 22.97,
+    "shock_height_median_bp": 22.0,
+    "shock_height_max_bp": 66.0,
+    "deceleration_detected": 15,
+    "deceleration_rate_pct": 100.0,
+    "repair_60d": 3,
+    "repair_120d": 4,
+    "repair_250d": 7,
+    "repair_any_window": 7
+  },
+  "decel_to_repair_by_window": {
+    "decel_events": 15,
+    "repair_60d": 3,
+    "repair_60d_hit_rate_pct": 20.0,
+    "repair_120d": 4,
+    "repair_120d_hit_rate_pct": 26.7,
+    "repair_250d": 7,
+    "repair_250d_hit_rate_pct": 46.7,
+    "any_repair": 7,
+    "any_repair_hit_rate_pct": 46.7
+  },
+  "repair_classification": {
+    "benign_repair": 2,
+    "malign_repair": 0,
+    "mixed_repair": 1,
+    "unknown_credit_unavailable": 0,
+    "decel_no_repair": 12,
+    "no_repair": 0
+  },
+  "forward_validation": {
+    "repair_5d_mean_bp": -18.5,
+    "repair_5d_median_bp": -6.75,
+    "repair_5d_pct_positive": 0.0,
+    "repair_5d_n": 3,
+    "repair_10d_mean_bp": -18.42,
+    "repair_10d_median_bp": -6.75,
+    "repair_10d_pct_positive": 33.3,
+    "repair_10d_n": 3,
+    "repair_20d_mean_bp": -18.0,
+    "repair_20d_median_bp": -4.25,
+    "repair_20d_pct_positive": 0.0,
+    "repair_20d_n": 3
+  }
+}

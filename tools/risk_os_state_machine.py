@@ -29,6 +29,34 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SERIES_PATH = PROJECT_ROOT / "data" / "series.json"
 DOCS_ASSETS = PROJECT_ROOT / "docs" / "risk" / "assets"
 
+sys.path.insert(0, str(PROJECT_ROOT))
+from daily_report import rate_path_direction_label
+
+# ══════════════════════════════════════════════════════════════════════
+#  THRESHOLDS — 具名常量，单一来源（VTS重标等日历触发项改这里）
+# ══════════════════════════════════════════════════════════════════════
+# C端 — 实际利率
+DFII10_THRESHOLD = 2.00           # DFII10 ≥ 2.00% = 实际利率高压
+DFII10_DUR5_MIN = 5               # DUR5 ≥ 5 = 持续高压确认
+
+# A端 — 资金管道 (EFFR-IORB)
+EFFR_IORB_THRESHOLD = -3          # EFFR-IORB ≥ -3bp = 流动性偏紧
+EFFR_IORB_DUR5_MIN = 3            # DUR5 ≥ 3 = 持续偏紧确认
+
+# B端 — 信用
+HY_OAS_THRESHOLD = 300            # HY OAS ≥ 300bp = 脱离自满
+
+# D端 — 跨资产压力 (CASC)
+VIX_THRESHOLD = 25                # VIX > 25
+MOVE_THRESHOLD = 120              # MOVE > 120
+HY_20D_DELTA_THRESHOLD = 0.20     # HY 20d Δ > 20bp
+FXY_5D_THRESHOLD = 2.5            # FXY 5d |Δ| > 2.5%
+
+# Fed Reaction 推断 (模拟层)
+DGS2_IORB_HAWKISH = 20            # DGS2-IORB ≥ 20bp = hawkish pressure
+VIX_CALM = 20                     # VIX < 20 = vol calm
+HY_OAS_COMPLACENT = 300           # HY OAS < 300bp = complacent
+
 # ── Helpers ──
 def _load_data():
     if not SERIES_PATH.exists():
@@ -57,34 +85,71 @@ def _dur5(s, lo, hi, mn=5):
 
 # ═══ 数据质量评估 ═══
 def assess_data_quality(raw, run_date: str) -> dict:
-    """Check Yahoo/Market data staleness → degrade confidence for systemic confirmation."""
-    r = {"stale": False, "stale_series": [], "confidence": "high", "impact": "",
-         "note": "数据质量正常"}
+    """Check ALL data staleness (Yahoo + FRED + derived) → degrade confidence.
 
-    # Yahoo-sourced series check
+    Covers every sequence that feeds into compute_triggers / compute_transmission /
+    regime determination. Missing or stale → confidence cannot be 'high'.
+    """
+    r = {"stale": False, "stale_series": [], "missing_series": [],
+         "confidence": "high", "impact": "", "note": "数据质量正常",
+         "data_degraded": False}
+
+    # Yahoo-sourced series (market data from fetch_data / yfinance)
     yahoo_keys = {"^VIX", "^VIX3M", "^VIX9D", "FXY", "HYG", "SPY", "^TNX"}
+
+    # FRED + other raw series (from series.json pipeline)
+    fred_keys = {"DGS2", "DGS10", "DFII10", "T10YIE", "EFFR", "IORB", "SOFR",
+                 "VIXCLS", "MOVE", "BAMLH0A0HYM2", "BAMLC0A0CM"}
+
+    # Derived sequences (computed by pipeline; must exist, staleness not applicable)
+    derived_keys = {"EFFR_IORB"}
+
     today = None
     try:
         today = datetime.strptime(run_date, "%Y-%m-%d").date()
     except: pass
 
-    for k in yahoo_keys:
+    # ── Check ALL Yahoo + FRED keys for staleness ──
+    all_keys = yahoo_keys | fred_keys
+    for k in sorted(all_keys):
         s = raw.get(k, [])
-        if s:
-            ld = _ld(s)
-            if ld and today:
-                try: d = datetime.strptime(ld, "%Y-%m-%d").date()
-                except: continue
-                age = (today - d).days
-                if age > 5:
-                    r["stale"] = True
-                    r["stale_series"].append(f"{k} (last: {ld}, {age}d stale)")
+        if not s:
+            r["stale"] = True
+            r["missing_series"].append(k)
+            r["data_degraded"] = True
+            continue
+        ld = _ld(s)
+        if ld and today:
+            try:
+                d = datetime.strptime(ld, "%Y-%m-%d").date()
+            except:
+                continue
+            age = (today - d).days
+            if age > 5:
+                r["stale"] = True
+                r["stale_series"].append(f"{k} (last: {ld}, {age}d stale)")
+                r["data_degraded"] = True
 
+    # ── Check derived keys: must exist ──
+    for k in sorted(derived_keys):
+        if k not in raw or not raw.get(k):
+            r["stale"] = True
+            r["missing_series"].append(f"{k} (derived, 缺失)")
+            r["data_degraded"] = True
+
+    # ── Assemble impact note ──
     if r["stale"]:
         r["confidence"] = "low"
-        r["impact"] = ("Yahoo数据滞后>5天，VTS/CASC/双探针互锁不能用于系统性确认。"
-                       "systemic_confirmed严格为false，等fetch_data重抓。")
-        r["note"] = f"⚠️ 数据质量降级：{'; '.join(r['stale_series'][:4])}"
+        parts = []
+        if r["stale_series"]:
+            parts.append(f"数据滞后({len(r['stale_series'])}项): {', '.join(r['stale_series'][:4])}")
+        if r["missing_series"]:
+            parts.append(f"数据缺失({len(r['missing_series'])}项): {', '.join(r['missing_series'][:4])}")
+        r["impact"] = (
+            "数据质量问题，VTS/CASC/双探针互锁不能用于系统性确认。"
+            "systemic_confirmed严格为false，等fetch_data重抓。"
+        )
+        r["note"] = f"⚠️ 数据质量降级：{'；'.join(parts)}"
 
     return r
 
@@ -122,18 +187,15 @@ def compute_front_event(raw):
          "dgs2_iorb_bp": d2_io}}
     if d2_io and d2_io > 0:
         r["active"], r["type"] = True, "rate_event"
-        # v3.5.1: include direction (level vs change) — avoids "降息被price out" static template
-        # when 5d delta is moving dovish (negative)
-        dir_note = ""
-        if d2_5d_bp is not None:
-            dir_note = f" · 5d{d2_5d_bp:+.1f}bp" + ("(方向背离：短期下行)" if d2_5d_bp < 0 else "(方向一致：短期上行)")
-        r["sources"].append(f"DGS2−IORB={d2_io}bp 前端利率事件{dir_note}")
-    if vix and vix > 20:
+        # Direction label — single-source via rate_path_direction_label (Task 1 refactor)
+        label, arrow = rate_path_direction_label(d2_5d_bp)
+        r["sources"].append(f"DGS2−IORB={d2_io}bp {arrow} [{label} · 代理非OIS]")
+    if vix and vix > VIX_CALM:
         r["active"] = True
         r["type"] = "mixed_event" if r["type"] == "rate_event" else "vol_event"
         r["sources"].append(f"VIX={vix:.1f}")
     if r["active"]:
-        r["intensity"] = "red" if (d2_io and d2_io >= 20) else "orange"
+        r["intensity"] = "red" if (d2_io and d2_io >= DGS2_IORB_HAWKISH) else "orange"
         r["label"] = "前端急性" if r["intensity"] == "red" else "前端紧张"
     return r
 
@@ -141,17 +203,17 @@ def compute_front_event(raw):
 # ── 3. 实际利率/估值挤压 ──
 def compute_rate_shock(raw, nc):
     dof, now, dfii_s = nc.get("dfii10_official"), nc.get("dfii10_nowcast"), raw.get("DFII10", [])
-    oe = dof is not None and dof >= 2.00
-    ne = now is not None and now >= 2.00
-    d5 = _dur5(dfii_s, 2.00, float("inf"))
+    oe = dof is not None and dof >= DFII10_THRESHOLD
+    ne = now is not None and now >= DFII10_THRESHOLD
+    d5 = _dur5(dfii_s, DFII10_THRESHOLD, float("inf"))
     r = {"active": oe or ne, "dfii10_official": dof, "dfii10_nowcast": now,
          "gap_bp": nc.get("gap_bp"), "direction": nc.get("direction", "N/A"),
          "method": nc.get("method"), "quality_note": nc.get("quality"),
-         "dur5_dfii": d5, "dur5_confirmed": d5 >= 5,
+         "dur5_dfii": d5, "dur5_confirmed": d5 >= DFII10_DUR5_MIN,
          "level_label": "", "level_light": ""}
     if dof is not None:
-        r["level_label"] = "高压·估值压缩" if dof >= 2.00 else ("偏紧·接近阈值" if dof >= 1.20 else "正常区间")
-        r["level_light"] = "🔴" if dof >= 2.00 else ("🟠" if dof >= 1.20 else "🟢")
+        r["level_label"] = "高压·估值压缩" if dof >= DFII10_THRESHOLD else ("偏紧·接近阈值" if dof >= 1.20 else "正常区间")
+        r["level_light"] = "🔴" if dof >= DFII10_THRESHOLD else ("🟠" if dof >= 1.20 else "🟢")
     return r
 
 
@@ -161,16 +223,29 @@ def compute_transmission(raw, rs):
     ev, iov = _lv(e), _lv(io)
     ei = round((ev - iov) * 100, 1) if (ev and iov) else None
     si = round((_lv(sf) - iov) * 100, 1) if (_lv(sf) and iov) else None
-    d5 = _dur5(ei_derived, -3, float("inf"), mn=3) if ei_derived else 0
-    ls = ei is not None and ei >= -3
+
+    # F3: EFFR_IORB missing → d5=None (无法判定), not 0 (停在安全值)
+    t2_determinable = bool(ei_derived)
+    if t2_determinable:
+        d5 = _dur5(ei_derived, EFFR_IORB_THRESHOLD, float("inf"), mn=EFFR_IORB_DUR5_MIN)
+    else:
+        d5 = None  # 无法判定，不是0。缺数据不静默停在安全值。
+
+    ls = ei is not None and ei >= EFFR_IORB_THRESHOLD
     ra = rs.get("active", False)
+
+    # liquidity_buffer_thinning: None = 无法判定（派生序列缺失）
+    lb_thinning = (d5 >= EFFR_IORB_DUR5_MIN) if t2_determinable else None
+
     r = {"active": ra or ls, "real_yield_pressure": ra,
-         "liquidity_buffer_thinning": ls, "effr_iorb_bp": ei,
+         "liquidity_buffer_thinning": lb_thinning,
+         "t2_determinable": t2_determinable,
+         "effr_iorb_bp": ei,
          "sofr_iorb_bp": si, "dur5_effr_iorb": d5,
-         "dur5_confirmed": d5 >= 3}
-    if ra and ls: r["main_path"], r["summary"] = "C先红 → A偏紧 → B未坏 → D未动", "利率/实际利率冲击致估值压缩，非信用主导系统性风险。"
+         "dur5_confirmed": (d5 >= EFFR_IORB_DUR5_MIN) if t2_determinable else None}
+    if ra and lb_thinning: r["main_path"], r["summary"] = "C先红 → A偏紧 → B未坏 → D未动", "利率/实际利率冲击致估值压缩，非信用主导系统性风险。"
     elif ra: r["main_path"], r["summary"] = "C端利率压力为主", "利率冲击但资金管道通畅，看B端是否脱离自满。"
-    elif ls: r["main_path"], r["summary"] = "A端偏紧为主", "微观流动性压力主导。"
+    elif lb_thinning: r["main_path"], r["summary"] = "A端偏紧为主", "微观流动性压力主导。"
     else: r["main_path"], r["summary"] = "无明确压力", "四端无显著传导。"
     return r
 
@@ -181,15 +256,23 @@ def compute_triggers(raw, tx):
     ei, d5e = tx.get("effr_iorb_bp"), tx.get("dur5_effr_iorb", 0)
     hy_bp = hy * 100 if hy else None
 
-    t1_a = hy_bp is not None and hy_bp >= 300
+    t1_a = hy_bp is not None and hy_bp >= HY_OAS_THRESHOLD
     t1_l = "已触发" if t1_a else "未触发"
     t1_e = f"HY OAS={hy_bp:.0f}bp，{'已脱离自满' if t1_a else '仍在自满区'}" if hy_bp else "—"
 
     # T2: EFFR-IORB ≥ -3bp AND DUR5 ≥ 3
-    t2_a = ei is not None and ei >= -3 and d5e >= 3
-    t2_partial = ei is not None and ei >= -3 and not t2_a
-    t2_l = "已触发·部分压力" if (t2_a and (t2_partial or not t1_a)) else ("已触发" if t2_a else ("部分触发" if t2_partial else "未触发"))
-    t2_e = f"EFFR-IORB={ei}bp DUR5={d5e}/3" if ei else "—"
+    t2_determinable = tx.get("t2_determinable", True)
+    if not t2_determinable:
+        # F3: 派生序列缺失 → T2 "无法判定"，非静默停在"未触发"
+        t2_a = False
+        t2_partial = False
+        t2_l = "无法判定"
+        t2_e = "EFFR_IORB派生序列缺失，T2不可判定"
+    else:
+        t2_a = ei is not None and ei >= EFFR_IORB_THRESHOLD and d5e >= EFFR_IORB_DUR5_MIN
+        t2_partial = ei is not None and ei >= EFFR_IORB_THRESHOLD and not t2_a
+        t2_l = "已触发·部分压力" if (t2_a and (t2_partial or not t1_a)) else ("已触发" if t2_a else ("部分触发" if t2_partial else "未触发"))
+        t2_e = f"EFFR-IORB={ei}bp DUR5={d5e}/{EFFR_IORB_DUR5_MIN}" if ei else "—"
 
     vi, mv = _lv(raw.get("VIXCLS", [])), _lv(raw.get("MOVE", []))
     hy20d = _n_chg(raw.get("BAMLH0A0HYM2", []), 20)
@@ -201,10 +284,10 @@ def compute_triggers(raw, tx):
 
     casc = 0
     casc_parts = []
-    if vi and vi > 25: casc += 1; casc_parts.append(f"VIX={vi:.1f}>25")
-    if mv and mv > 120: casc += 1; casc_parts.append(f"MOVE={mv:.0f}>120")
-    if hy20d and hy20d > 0.20: casc += 1; casc_parts.append(f"HY 20dΔ={hy20d*100:.0f}bp")
-    if f5r and abs(f5r) > 2.5: casc += 1; casc_parts.append(f"FXY 5d={f5r:+.1f}%")
+    if vi and vi > VIX_THRESHOLD: casc += 1; casc_parts.append(f"VIX={vi:.1f}>{VIX_THRESHOLD}")
+    if mv and mv > MOVE_THRESHOLD: casc += 1; casc_parts.append(f"MOVE={mv:.0f}>{MOVE_THRESHOLD}")
+    if hy20d and hy20d > HY_20D_DELTA_THRESHOLD: casc += 1; casc_parts.append(f"HY 20dΔ={hy20d*100:.0f}bp")
+    if f5r and abs(f5r) > FXY_5D_THRESHOLD: casc += 1; casc_parts.append(f"FXY 5d={f5r:+.1f}%")
     t3_a = casc >= 2
     t3_l = f"{'已触发' if t3_a else '未触发'} (CASC{casc}/4)"
     t3_e = f"CASC {casc}/4（{'，'.join(casc_parts)}）" if casc_parts else f"CASC {casc}/4，无跨资产压力"
@@ -255,9 +338,7 @@ def run_orchestrator(raw, fe, rs, tx, tg, dq):
 
     # ──── REGIME: 仓位防御等级 (R1→R4) ────
     # v2.0: red≥2 → R4（A+C双红即为防御模式，不要求系统性确认）
-    if red_count >= 3:
-        regime_key, regime_label = "R4", "R4 防御"
-    elif red_count >= 2:
+    if red_count >= 2:
         regime_key, regime_label = "R4", "R4 防御"
     elif red_count >= 1 or (orange_count >= 1 and fe.get("active")):
         regime_key, regime_label = "R3", "R3 警惕"
@@ -295,6 +376,10 @@ def run_orchestrator(raw, fe, rs, tx, tg, dq):
         systemic_class = "NON-SYSTEMIC WATCH"
         dq["impact"] = (dq.get("impact", "") +
                         " 系统性确认被数据质量降级强制置为false。")
+
+    # Data quality degraded → regime flagged uncertain (F4)
+    if dq.get("data_degraded", False):
+        regime_label += " ⚠️"
 
     # ──── POSITIONS ────
     pos_map = {
@@ -338,8 +423,18 @@ def run_orchestrator(raw, fe, rs, tx, tg, dq):
     else:
         judgement = "无系统性风险信号。四端平静。"
 
-    # Data quality note in judgement
-    if dq.get("stale", False):
+    # Data quality note in judgement (F4: covers stale + missing, all degradation)
+    if dq.get("data_degraded", False):
+        if dq.get("missing_series"):
+            missing_note = f"缺失序列: {', '.join(dq['missing_series'][:3])}"
+            judgement += (f" ⚠️数据不足:{missing_note}。"
+                          f"regime/red_count置信度打折，"
+                          f"不排除因数据缺失低估真实风险。需等待fetch_data补全序列。")
+        elif dq.get("stale_series"):
+            judgement += (" ⚠️数据滞后，regime/red_count可能基于过期数据。"
+                          "结论置信度打折。需重抓fetch_data。")
+    elif dq.get("stale", False):
+        # Backward compat: stale but not fully degraded (pre-F2 path)
         judgement += (" ⚠️数据质量降级：Yahoo数据滞后，CASC/VTS/双探针互锁"
                       "不能用于系统性确认。结论置信度打折，需重抓fetch_data。")
 
@@ -373,6 +468,8 @@ def run_orchestrator(raw, fe, rs, tx, tg, dq):
             "confidence": dq.get("confidence", "high"),
             "data_quality": {"stale": dq.get("stale", False),
                              "stale_series": dq.get("stale_series", []),
+                             "missing_series": dq.get("missing_series", []),
+                             "data_degraded": dq.get("data_degraded", False),
                              "impact": dq.get("impact", "")},
             "source_votes": source_votes,
         },
@@ -394,13 +491,13 @@ def _infer_fed_reaction_signal(raw, fe, tg):
     hy_bp = hy * 100 if hy else None
 
     parts = []
-    if d2_io and d2_io >= 20:
+    if d2_io and d2_io >= DGS2_IORB_HAWKISH:
         parts.append("hawkish pressure (DGS2-IORB high)")
     elif d2_io and d2_io >= 0:
         parts.append("rate normalization bias")
     if vix and vix < 20:
         parts.append("vol calm")
-    if hy_bp and hy_bp < 300:
+    if hy_bp and hy_bp < HY_OAS_COMPLACENT:
         parts.append("credit gate: complacent/improving")
     else:
         parts.append("credit gate: deterioration signal")
@@ -416,7 +513,7 @@ def _infer_abcd_signal(red_c, red_a, red_b, red_d, tg, tx):
     ei = tx.get("effr_iorb_bp")
     if ei is not None and ei >= 0:
         a_color = "🔴"
-    elif ei is not None and ei >= -3:
+    elif ei is not None and ei >= EFFR_IORB_THRESHOLD:
         a_color = "🟠"
     elif ei is not None and ei >= -7:
         a_color = "🟡"
@@ -482,8 +579,8 @@ def assemble(run_date: str) -> dict:
     fe = compute_front_event(raw)
     rs = compute_rate_shock(raw, nc)
     tx = compute_transmission(raw, rs)
-    tg = compute_triggers(raw, tx)
-    dq = assess_data_quality(raw, run_date)
+    dq = assess_data_quality(raw, run_date)      # F4: 质量检查必须先于触发器
+    tg = compute_triggers(raw, tx)                 # 触发器在质量检查之后（脏数据不可用）
     orch = run_orchestrator(raw, fe, rs, tx, tg, dq)
     cf = detect_conflicts(fe, orch, tg)
 
@@ -554,17 +651,24 @@ def main():
     out = DOCS_ASSETS / "event_state.json"
     out.write_text(json.dumps(es, ensure_ascii=False, indent=2), encoding="utf-8")
     rf = es["risk_os_final"]
-    print(f"[Risk OS v2.0] State written → {out}")
-    print(f"  Final Regime:    {rf['final_regime']} ({rf['final_regime_key']})")
-    print(f"  Systemic:        {rf['final_systemic_classification']}")
-    print(f"  Systemic Confirmed: {rf['systemic_confirmed']}")
-    print(f"  Position:        P{rf['final_position']['primary']} H{rf['final_position']['hedge']} C{rf['final_position']['cash']}")
-    print(f"  Confidence:      {rf['confidence']}")
-    print(f"  Data Quality:    {'[STALE]' if rf['data_quality']['stale'] else 'OK'}")
-    print(f"  Hero: {rf['final_hero']}")
-    if es["signal_conflicts"]:
-        print(f"  [WARN] Conflicts: {len(es['signal_conflicts'])}")
-        for c in es["signal_conflicts"]: print(f"    - {c['detail']}")
+    try:
+        print(f"[Risk OS v2.0] State written → {out}")
+        print(f"  Final Regime:    {rf['final_regime']} ({rf['final_regime_key']})")
+        print(f"  Systemic:        {rf['final_systemic_classification']}")
+        print(f"  Systemic Confirmed: {rf['systemic_confirmed']}")
+        print(f"  Position:        P{rf['final_position']['primary']} H{rf['final_position']['hedge']} C{rf['final_position']['cash']}")
+        print(f"  Confidence:      {rf['confidence']}")
+        print(f"  Data Quality:    {'[STALE]' if rf['data_quality']['stale'] else 'OK'}")
+        print(f"  Hero: {rf['final_hero']}")
+        if es["signal_conflicts"]:
+            print(f"  [WARN] Conflicts: {len(es['signal_conflicts'])}")
+            for c in es["signal_conflicts"]: print(f"    - {c['detail']}")
+    except UnicodeEncodeError:
+        # Windows GBK console can't print ⚠️ — state written; CLI output degraded
+        print(f"[Risk OS v2.0] State written -> {out}")
+        print(f"  Final Regime:    {rf['final_regime_key']} {rf['final_systemic_classification']}")
+        print(f"  Position:        P{rf['final_position']['primary']} H{rf['final_position']['hedge']} C{rf['final_position']['cash']}")
+        print(f"  Confidence:      {rf['confidence']}")
     return es
 
 

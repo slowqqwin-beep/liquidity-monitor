@@ -192,6 +192,43 @@ fetch_mm_calendar.py → update_event_window.py → build_site.py → risk_os_st
 
 ---
 
+## 8. SR3 修复决策框架 (Research-Only)
+
+> **引用文档**: `docs/research/sr3_repair_decision_framework.md`  
+> **状态**: Research-Only — **不接入 Risk OS，不改变仓位裁决**
+
+### 核心结论
+
+**SR3 deceleration 只能解除"继续追空"的必要；SR3 level repair 才允许正式买入；benign repair 才允许加仓趋势。**
+
+### 关键数据
+
+- 15 个鹰派冲击事件，100% 出现钝化，但 60d 修复率仅 20%
+- 2022-2023 加息周期内 10 个事件全部 decel_no_repair
+- **钝化是刹车灯，不是绿灯**
+
+### 集成状态
+
+| 项目 | 状态 |
+|------|------|
+| 接入 Risk OS | ❌ 不接入 |
+| 修改 dashboard | ❌ 不修改 |
+| 修改 run_all.py | ❌ 不修改 |
+| 改变仓位系统 | ❌ 不改变 |
+| SR3 deceleration 作为买入信号 | ❌ 禁用 |
+| 用于 AI 硬件链观察/小探参考 | ✅ 仅参考 |
+
+### 禁止事项
+
+- ❌ SR3 钝化不得作为正式买入信号
+- ❌ SR3 钝化不得触发仓位上调
+- ❌ 不得在 HY_OAS_available = false 时判断信用稳定
+- ❌ 不得 forward-fill / back-fill / interpolate HY OAS
+
+详细决策树和四阶段框架见 `docs/research/sr3_repair_decision_framework.md`。
+
+---
+
 ## 7. 维护清单
 
 - [ ] 新增 FRED 序列 → 更新 `FRED_SERIES` + 状态机 `_load_data()` 引用
@@ -199,6 +236,10 @@ fetch_mm_calendar.py → update_event_window.py → build_site.py → risk_os_st
 - [ ] 修改 R1-R4 规则 → 更新 `run_state_machine()`
 - [ ] 新增输出字段 → 更新 `assemble()` + `dashboard.js`
 - [ ] 数据异常 → 检查 `data/series.json` 中对应序列的 len
+
+- [x] **④ 已发生的裁决冲突：MD 与 SSoT 对 regime/position 独立判定，今日实测 R4 vs R3、P 差 5pp、H 差 10pp。** 架构文档已定 SSoT=状态机。根因：`daily_report.py` 的 `compute_position()` 和 `risk_os_state_machine.py` 的 `run_orchestrator()` 是两套独立 red_count 定义（ABCD 域综合 vs 原始触发器二进制和），对"流动性压力"的颗粒度不同导致 regime 分歧。**修复分两阶段：**
+  - **已做（v0.5.59）**: (a) 管线补入 `risk_os_state_machine.py` 每天自动刷新 SSoT event_state；(b) 加交叉验证横幅 — 每天比对两个 event_state 的 regime/red_count/systemic_confirmed/positions，不一致打印 ⚠️ 到日报末；(c) flowchart PNG + MD 报告头部标注"显示用·权威裁决以 Dashboard 为准"。
+  - **待做**: 将 `daily_report.py` 的 regime/position 判定改为读 `risk_os_state_machine` 输出（SSoT 单向流），彻底消除第二裁决器。涉及：`compute_position()` 的 `red_count` 语义对齐、ABCD 域 `cross_count` 与状态机 `orange_count` 映射。
 
 - [ ] **总纲：「不确定」必须可见，不能沉默** → 任何输入缺失/状态未知的情形，默认行为必须是**可见的不确定**（告警、⚪灯、N/A、abort），绝不能是**沉默的确定**（停在 true、折叠成 calm、返回空串、当作未触发）。以下三条是同一原则在不同切面的投影——manifest 横幅停滞、门控 None、VTS 折叠、verdict 缺键四次实锤：
 

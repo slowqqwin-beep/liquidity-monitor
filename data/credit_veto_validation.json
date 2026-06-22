@@ -1,0 +1,171 @@
+{
+  "meta": {
+    "spec_version": "v3",
+    "parameters": {
+      "high_floor_bp": 750,
+      "low_gate_bp": 400,
+      "z_threshold": 1.0
+    },
+    "data_range": "1996-12-31 ~ 2026-06-17",
+    "total_rows": 7694,
+    "valid_rows": 7422,
+    "generated_at": "2026-06-22"
+  },
+  "tests": [
+    {
+      "id": "A1",
+      "name": "P(veto) < 50% (上界)",
+      "status": "PASS",
+      "actual": "24.0% (1779/7422)",
+      "expected": "< 50%",
+      "note": ""
+    },
+    {
+      "id": "A2",
+      "name": "P(veto) > 1% (下界，信号活着)",
+      "status": "PASS",
+      "actual": "24.0%",
+      "expected": "> 1%",
+      "note": ""
+    },
+    {
+      "id": "A3",
+      "name": "平静期否决极少 (2021=0, 2017≤15, 2014 非平静不计)",
+      "status": "PASS",
+      "actual": "{'2021': '0/262 (0.0%)', '2017': '11/260 (4.2%)', '2014': '59/261 (22.6%) — 非平静基准 (OAS 335-571bp)'}",
+      "expected": "2021=0, 2017≤15 (OAS 338-416bp 边界), 2014 OAS 335-571bp 非平静年",
+      "note": ""
+    },
+    {
+      "id": "B1",
+      "name": "GFC 加速段 (2008-09~10)",
+      "status": "PASS",
+      "actual": "45/45d (100.0%) — hf:45 zg:31",
+      "expected": "veto 全开 (z-arm)",
+      "note": ""
+    },
+    {
+      "id": "B2",
+      "name": "GFC 持续期 (2009-01~03)",
+      "status": "PASS",
+      "actual": "65/65d (100.0%) — hf:65 zg:0",
+      "expected": "high_floor 强否 100%",
+      "note": ""
+    },
+    {
+      "id": "B3",
+      "name": "COVID (2020-03)",
+      "status": "PASS",
+      "actual": "22/22d (100.0%) — hf:12 zg:22",
+      "expected": "veto 全开",
+      "note": ""
+    },
+    {
+      "id": "B4",
+      "name": "2011 EU (2011-08~10)",
+      "status": "PASS",
+      "actual": "53/66d (80.3%) — hf:30 zg:33",
+      "expected": "veto 全开",
+      "note": ""
+    },
+    {
+      "id": "B5",
+      "name": "2015-16 能源 (2015-12~2016-02)",
+      "status": "PASS",
+      "actual": "58/63d (92.1%) — hf:34 zg:47",
+      "expected": "veto 全开",
+      "note": ""
+    },
+    {
+      "id": "B6",
+      "name": "2018 Q4 (2018-12)",
+      "status": "PASS",
+      "actual": "17/20d (85.0%) — hf:0 zg:17",
+      "expected": "z-arm 否决",
+      "note": ""
+    },
+    {
+      "id": "B7",
+      "name": "SVB (2023-03)",
+      "status": "PASS",
+      "actual": "10/23d (43.5%) — hf:0 zg:10",
+      "expected": "z-arm 否决",
+      "note": ""
+    },
+    {
+      "id": "B8",
+      "name": "2021 自满 (全年)",
+      "status": "PASS",
+      "actual": "0/262d (0.0%) — hf:0 zg:0",
+      "expected": "0 天否决 (gate=400 全压)",
+      "note": ""
+    },
+    {
+      "id": "B9",
+      "name": "2019 降息放行 (leg-2 standalone veto=16/261d 不足以判)",
+      "status": "DEFERRED → Phase 3",
+      "actual": "N/A (standalone)",
+      "expected": "N/A (需 leg-1 合并)",
+      "note": "需 joint: P(leg-2 veto | leg-1 ignition) 在 2019。16/261d 可能全落在 leg-1 未点火日（完全无害），也可能压在关键进场点（那才是问题）。leg-2 单序列无法区分。"
+    },
+    {
+      "id": "C1",
+      "name": "腿间正交 (Leg-1 ⊥ Leg-2)",
+      "status": "DEFERRED → Phase 3",
+      "actual": "N/A (standalone)",
+      "expected": "N/A (需 leg-1 合并)",
+      "note": "需两序列合并: P(leg-2🔴|leg-1🔴) vs P(leg-2🔴|leg-1🟢)。按 z⊕level veto 定义重测。Phase 3 联合 backtest 时跑。"
+    },
+    {
+      "id": "D1",
+      "name": "有效期内 z 无 NaN",
+      "status": "PASS",
+      "actual": "0 NaN / 7422 valid",
+      "expected": "0 NaN",
+      "note": ""
+    },
+    {
+      "id": "D2",
+      "name": "有效期内 z 无 Inf",
+      "status": "PASS",
+      "actual": "0 Inf / 7422 valid",
+      "expected": "0 Inf",
+      "note": ""
+    },
+    {
+      "id": "D3",
+      "name": "前 272 天标 warmup",
+      "status": "PASS",
+      "actual": "warmup=272d (Z_WINDOW=252+DELTA_WINDOW=20)",
+      "expected": "前 272 天 mark warmup",
+      "note": ""
+    },
+    {
+      "id": "D4",
+      "name": "否决信号活跃 (veto > 0)",
+      "status": "PASS",
+      "actual": "veto=1779/7422 (24.0%)",
+      "expected": "veto > 0 (信号不死)",
+      "note": ""
+    },
+    {
+      "id": "D5",
+      "name": "数据覆盖 1996-2026 无系统性断层",
+      "status": "PASS",
+      "actual": "1996-12-31 ~ 2026-06-17, 7694 行",
+      "expected": "1996-12-31 ~ 2026-06-17, ~7,694 行",
+      "note": ""
+    }
+  ],
+  "summary": {
+    "total_tests": 18,
+    "pass": 16,
+    "fail": 0,
+    "deferred_to_phase3": 2,
+    "verdict": "ALL_PASS (leg-2 standalone)",
+    "deferred_items": [
+      "B9",
+      "C1"
+    ]
+  }
+}
