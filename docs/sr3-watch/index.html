@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SR3 Repair Watch</title>
+  <link rel="stylesheet" href="./assets/sr3-watch.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Standalone · Research-Only</div>
+        <h1>SR3 Repair Watch</h1>
+        <p>独立监控页 · 不接 Risk OS / dashboard / run_all.py · 不影响仓位</p>
+      </div>
+      <div class="pill-stack">
+        <span class="pill pill-blue">Research-Only</span>
+        <span class="pill pill-yellow">Deceleration ≠ Buy Signal</span>
+      </div>
+    </header>
+
+    <main>
+      <section id="warningBanner" class="warning-banner hidden"></section>
+
+      <section class="hero panel">
+        <div class="hero-main">
+          <div class="state-chip" id="stateChip">Loading</div>
+          <h2 id="heroState">SR3 状态读取中</h2>
+          <p id="heroNote">正在读取最新 SR3 Repair Watch 数据。</p>
+        </div>
+        <div class="hero-meta">
+          <div><span>数据日</span><strong id="dataDate">N/A</strong></div>
+          <div><span>生成时间</span><strong id="generatedAt">N/A</strong></div>
+          <div><span>参考峰值</span><strong id="referencePeak">N/A</strong></div>
+          <div><span>状态</span><strong id="status">Research-Only</strong></div>
+        </div>
+      </section>
+
+      <section class="alert panel">
+        <div class="alert-icon">⚠️</div>
+        <div>
+          <h3>mixed_repair 不是买入信号</h3>
+          <p id="mixedRepairWarning">它只表示 SR3 冲击已钝化，但尚未完成 level repair，且 benign repair 条件未完全满足。</p>
+        </div>
+      </section>
+
+      <section class="grid four" id="questionCards"></section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h3>Z26-H27-M27 远期曲线比较</h3>
+            <p class="muted">从 2026-06-16 开始，每天比较 Dec-26、Mar-27、Jun-27 三个 SR3 合约的隐含利率曲线。</p>
+          </div>
+          <span class="tag">Daily Forward Curve</span>
+        </div>
+        <div class="chart-card">
+          <svg id="curveChart" role="img" aria-label="SR3 Z26-H27-M27 forward curve comparison"></svg>
+        </div>
+        <div class="chart-footer">
+          <div id="curveLegend" class="legend"></div>
+          <div id="curveSummary" class="curve-summary"></div>
+        </div>
+        <div class="table-wrap compact">
+          <table id="curveTable"></table>
+        </div>
+      </section>
+
+      <section class="grid two">
+        <div class="panel">
+          <div class="section-head">
+            <h3>当前快照 KPI</h3>
+            <span class="tag">Snapshot</span>
+          </div>
+          <div class="kpi-grid" id="kpiGrid"></div>
+        </div>
+
+        <div class="panel">
+          <div class="section-head">
+            <h3>参考峰值</h3>
+            <span class="tag">Reference Peak</span>
+          </div>
+          <p class="muted">参考峰值用于判断 SR3 是仅仅钝化，还是已经发生 level repair。</p>
+          <div class="table-wrap">
+            <table id="referencePeaksTable"></table>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid two">
+        <div class="panel">
+          <div class="section-head">
+            <h3>分类详情</h3>
+            <span class="tag warning-tag">No Buy Signal</span>
+          </div>
+          <div class="detail-list" id="classificationDetails"></div>
+        </div>
+
+        <div class="panel">
+          <div class="section-head">
+            <h3>约束确认</h3>
+            <span class="tag">Boundary</span>
+          </div>
+          <div class="constraint-list" id="constraintList"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h3>信号组合速查 · Research-only · 非交易指令</h3>
+            <p class="muted">这里只解释宏观状态，不给出买入、加仓或仓位上调指令。</p>
+          </div>
+          <span class="tag">Research Matrix</span>
+        </div>
+        <div class="table-wrap">
+          <table id="signalMatrixTable"></table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div>SR3 Repair Watch · Standalone Research Dashboard</div>
+      <div>Research-Only ✅ · 不接 Risk OS ✅ · 不影响仓位 ✅ · Deceleration ≠ Buy Signal ✅</div>
+    </footer>
+  </div>
+
+  <script src="./assets/sr3-watch.js"></script>
+</body>
+</html>

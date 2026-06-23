@@ -1,0 +1,162 @@
+{
+  "generated_at": "2026-06-23T11:41:35",
+  "data_date": "2026-06-23",
+  "reference_peak": "formal shock",
+  "status": "Research-Only",
+  "state": "State 2: Deceleration",
+  "state_title": "State 2: Deceleration",
+  "state_note": "已钝化（曲线移动 <1.5bp），但尚未出现实质性/持续修复",
+  "hawkish_impulse": false,
+  "deceleration": true,
+  "deceleration_since": "2026-05-28",
+  "level_repair": false,
+  "classification": "mixed_repair",
+  "classification_reason": "Mixed signals, no clear benign/malign pattern",
+  "repair": true,
+  "near_rate": 3.8,
+  "drawdown_from_peak_bp": -7.5,
+  "daily_change_bp": -1.38,
+  "five_day_change_bp": 11.88,
+  "high_plateau": true,
+  "hy_oas": null,
+  "dgs10": null,
+  "real_yield_nowcast": null,
+  "repair_start_date": "2026-05-28",
+  "repair_magnitude_bp": 9.25,
+  "reference_peaks": [
+    {
+      "source": "Formal Shock",
+      "date": "2026-05-22",
+      "distance": "24d",
+      "near_rate": 3.725,
+      "height": "9.5bp"
+    },
+    {
+      "source": "Recent 60d Peak",
+      "date": "2026-06-22",
+      "distance": "1d",
+      "near_rate": 3.8025,
+      "height": "—"
+    }
+  ],
+  "signal_matrix": [
+    {
+      "condition": "信用不扩 + SR3 钝化",
+      "meaning": "鹰派动能衰竭，但短端预期尚未回落"
+    },
+    {
+      "condition": "信用不扩 + SR3 level repair + real yield 不再创新高",
+      "meaning": "短端预期已明显回落，信用未恶化"
+    },
+    {
+      "condition": "信用不扩 + SR3 benign repair + 分子兑现",
+      "meaning": "软着陆情景：利率回落 + 信用收窄"
+    },
+    {
+      "condition": "SR3 钝化但不修复",
+      "meaning": "暂停后利率继续上行，不构成拐点信号"
+    }
+  ],
+  "field_warnings": [],
+  "mixed_repair_warning": "mixed_repair 不是买入信号；它只表示 SR3 冲击已钝化但尚未完成 level repair，且 benign repair 条件未完全满足。",
+  "research_note": "Research-Only；不接 Risk OS / dashboard / run_all.py；不影响仓位；SR3 deceleration ≠ buy signal。",
+  "constraints": {
+    "research_only": true,
+    "standalone_sr3_watch": true,
+    "no_risk_os": true,
+    "no_existing_dashboard_merge": true,
+    "no_run_all": true,
+    "no_position_impact": true,
+    "deceleration_not_buy_signal": true
+  },
+  "curve_start_date": "2026-06-16",
+  "curve_source_file": "100-CME_DL_SR3H2027, 1D.csv",
+  "curve_contracts": [
+    {
+      "code": "Z26",
+      "label": "Dec-26",
+      "contract": "SR3Z2026"
+    },
+    {
+      "code": "H27",
+      "label": "Mar-27",
+      "contract": "SR3H2027"
+    },
+    {
+      "code": "M27",
+      "label": "Jun-27",
+      "contract": "SR3M2027"
+    }
+  ],
+  "curve_comparison": [
+    {
+      "date": "2026-06-16",
+      "label": "6/16 讲话前",
+      "rates": {
+        "Z26": 3.885,
+        "H27": 3.94,
+        "M27": 3.94
+      }
+    },
+    {
+      "date": "2026-06-17",
+      "label": "6/17 讲话后",
+      "rates": {
+        "Z26": 4.035,
+        "H27": 4.095,
+        "M27": 4.08
+      }
+    },
+    {
+      "date": "2026-06-18",
+      "label": "6/18 确认日",
+      "rates": {
+        "Z26": 4.095,
+        "H27": 4.145,
+        "M27": 4.11
+      }
+    },
+    {
+      "date": "2026-06-22",
+      "label": "2026-06-22",
+      "rates": {
+        "Z26": 4.125,
+        "H27": 4.19,
+        "M27": 4.175
+      }
+    },
+    {
+      "date": "2026-06-23",
+      "label": "2026-06-23",
+      "rates": {
+        "Z26": 4.115,
+        "H27": 4.175,
+        "M27": 4.16
+      }
+    }
+  ],
+  "curve_bp_changes": [
+    {
+      "code": "Z26",
+      "label": "Dec-26",
+      "from_date": "2026-06-16",
+      "to_date": "2026-06-23",
+      "bp_change": 23.0
+    },
+    {
+      "code": "H27",
+      "label": "Mar-27",
+      "from_date": "2026-06-16",
+      "to_date": "2026-06-23",
+      "bp_change": 23.5
+    },
+    {
+      "code": "M27",
+      "label": "Jun-27",
+      "from_date": "2026-06-16",
+      "to_date": "2026-06-23",
+      "bp_change": 22.0
+    }
+  ],
+  "curve_warning": null
+}

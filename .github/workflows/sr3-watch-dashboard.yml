@@ -1,0 +1,40 @@
+name: SR3 Watch Dashboard
+
+on:
+  schedule:
+    - cron: "30 23 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-sr3-watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Optional: if your repo already has an SR3 report generator, run it before dashboard build.
+      # Keep this guarded so the standalone dashboard does not break old workflows.
+      - name: Refresh SR3 report if generator exists
+        run: |
+          if [ -f scripts/sr3_repair_watch.py ]; then
+            python scripts/sr3_repair_watch.py || true
+          else
+            echo "scripts/sr3_repair_watch.py not found; use existing sr3_repair_watch_latest.md"
+          fi
+
+      - name: Build SR3 Watch Dashboard
+        run: python scripts/build_sr3_watch_dashboard.py
+
+      - name: Commit dashboard update
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add docs/sr3-watch scripts/build_sr3_watch_dashboard.py .github/workflows/sr3-watch-dashboard.yml README_SR3_WATCH.md
+          git diff --cached --quiet || git commit -m "update standalone SR3 watch dashboard"
+          git push
