@@ -24,3 +24,4 @@ data/macro_db/db/*.duckdb
 
 # 自动生成拷贝文件（每次跑脚本会覆盖）
 _sr3_watch.md
+_patch.py

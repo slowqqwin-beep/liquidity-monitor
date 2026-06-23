@@ -32,7 +32,7 @@
         <div class="hero-meta">
           <div><span>数据日</span><strong id="dataDate">N/A</strong></div>
           <div><span>生成时间</span><strong id="generatedAt">N/A</strong></div>
-          <div><span>参考峰值</span><strong id="referencePeak">N/A</strong></div>
+          <div><span>事件基准 / 峰值</span><strong id="referencePeak">N/A</strong></div>
           <div><span>状态</span><strong id="status">Research-Only</strong></div>
         </div>
       </section>
@@ -78,10 +78,10 @@
 
         <div class="panel">
           <div class="section-head">
-            <h3>参考峰值</h3>
-            <span class="tag">Reference Peak</span>
+            <h3>事件参考线</h3>
+            <span class="tag">Event Reference</span>
           </div>
-          <p class="muted">参考峰值用于判断 SR3 是仅仅钝化，还是已经发生 level repair。</p>
+          <p class="muted">当前事件参考线用于判断 FOMC/沃什后的 hike-over 是否已经回到事件前基准；旧 formal shock 只保留作研究审计。</p>
           <div class="table-wrap">
             <table id="referencePeaksTable"></table>
           </div>
@@ -100,23 +100,31 @@
         <div class="panel">
           <div class="section-head">
             <div>
-              <h3>2s10s 曲线结构</h3>
-              <p class="muted">每日下载 TradingView 2s10s 后，用这里判断曲线是变陡、变平，或进一步识别熊平/熊陡/牛平/牛陡。</p>
+              <h3>2Y/10Y + 2s10s 曲线结构</h3>
+              <p class="muted">上半部分显示 2Y 与 10Y 两条利率曲线；下半部分显示 10Y-2Y 利差，用来观察阔开/缩窄和熊平/熊陡/牛平/牛陡。</p>
             </div>
             <span class="tag">Curve Structure</span>
           </div>
 
-          <div class="twos10s-hero">
+          <div class="twos10s-hero six">
             <div>
               <span>最新 2s10s</span>
               <strong id="twos10sLatest">N/A</strong>
             </div>
             <div>
-              <span>日变动</span>
-              <strong id="twos10s1d">N/A</strong>
+              <span>阔开/缩窄</span>
+              <strong id="twos10sWidening">N/A</strong>
             </div>
             <div>
-              <span>5日变动</span>
+              <span>10Y 日变动</span>
+              <strong id="twos10sD10">N/A</strong>
+            </div>
+            <div>
+              <span>2Y 日变动</span>
+              <strong id="twos10sD2">N/A</strong>
+            </div>
+            <div>
+              <span>5日利差变动</span>
               <strong id="twos10s5d">N/A</strong>
             </div>
             <div>
@@ -155,7 +163,6 @@
     </footer>
   </div>
 
-  <script src="./data/sr3_data.js"></script>
   <script src="./assets/sr3-watch.js"></script>
 </body>
 </html>

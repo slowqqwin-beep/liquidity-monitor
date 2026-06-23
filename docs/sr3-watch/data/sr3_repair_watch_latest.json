@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-23T11:41:35",
+  "generated_at": "2026-06-23T20:40:52",
   "data_date": "2026-06-23",
   "reference_peak": "formal shock",
   "status": "Research-Only",
@@ -8,28 +8,28 @@
   "state_note": "已钝化（曲线移动 <1.5bp），但尚未出现实质性/持续修复",
   "hawkish_impulse": false,
   "deceleration": true,
-  "deceleration_since": "2026-05-28",
+  "deceleration_since": "2026-05-26",
   "level_repair": false,
   "classification": "mixed_repair",
   "classification_reason": "Mixed signals, no clear benign/malign pattern",
   "repair": true,
-  "near_rate": 3.8,
-  "drawdown_from_peak_bp": -7.5,
-  "daily_change_bp": -1.38,
-  "five_day_change_bp": 11.88,
+  "near_rate": 3.79,
+  "drawdown_from_peak_bp": -6.5,
+  "daily_change_bp": -2.88,
+  "five_day_change_bp": 10.38,
   "high_plateau": true,
-  "hy_oas": null,
-  "dgs10": null,
-  "real_yield_nowcast": null,
-  "repair_start_date": "2026-05-28",
-  "repair_magnitude_bp": 9.25,
+  "hy_oas": 266.0,
+  "dgs10": 4.46,
+  "real_yield_nowcast": 2.23,
+  "repair_start_date": "2026-05-26",
+  "repair_magnitude_bp": 5.0,
   "reference_peaks": [
     {
       "source": "Formal Shock",
       "date": "2026-05-22",
       "distance": "24d",
       "near_rate": 3.725,
-      "height": "9.5bp"
+      "height": "7.0bp"
     },
     {
       "source": "Recent 60d Peak",
@@ -159,7 +159,26 @@
     }
   ],
   "curve_warning": null,
-  "twos10s_source_file": "TVC_US10Y, 1D.csv",
+  "event_baseline_date": "2026-06-16",
+  "event_baseline_avg_rate": 3.9217,
+  "hike_over_peak_date": "2026-06-22",
+  "hike_over_peak_avg_rate": 4.1633,
+  "current_event_peak_date": "2026-06-22",
+  "current_event_peak_avg_rate": 4.1633,
+  "current_event_repair_start_date": "2026-06-23",
+  "hike_over_shock_bp": 24.17,
+  "hike_over_repair_magnitude_bp": 5.17,
+  "hike_over_repair_ratio": 0.2139,
+  "hike_over_remaining_bp": 19.0,
+  "event_avg_level_repair": false,
+  "event_strict_level_repair": false,
+  "event_level_repair_date": null,
+  "current_event_state": "hike_over_repair_started",
+  "current_event_note": "本轮不是简单 price-out 降息，而是 FOMC/沃什后曲线 price-over / hike-over。事件前基准 2026-06-16，hike-over 峰值 2026-06-22，冲击约 +24.2bp；当前已修复约 5.2bp（21.4%），距离事件前基准仍约 +19.0bp。当前事件修复启动不等于 level repair，也不是买入信号。",
+  "current_event_repair_magnitude_bp": 5.17,
+  "current_event_drawdown_from_peak_bp": -5.17,
+  "event_level_repair_tolerance_bp": 2.0,
+  "twos10s_source_file": "2s10s.csv",
   "twos10s_series": [
     {
       "date": "2025-03-27",
@@ -2011,18 +2030,22 @@
     },
     {
       "date": "2026-06-23",
-      "spread_bp": 29.7,
-      "ten_y": 4.485,
-      "two_y": 4.188
+      "spread_bp": 29.3,
+      "ten_y": 4.487,
+      "two_y": 4.194
     }
   ],
   "twos10s_latest": {
-    "latest_spread_bp": 29.7,
-    "change_1d_bp": 1.8,
-    "change_5d_bp": -10.6,
+    "latest_spread_bp": 29.3,
+    "change_1d_bp": 1.4,
+    "change_5d_bp": -11.0,
+    "d10_1d_bp": -2.2,
+    "d2_1d_bp": -3.6,
+    "widening_state": "阔开 / Steepening",
     "structure": "牛陡",
-    "structure_note": "10Y 和 2Y 同下，但 2Y 下得更多：市场在交易降息/增长压力。",
-    "latest_date": "2026-06-23"
+    "structure_note": "10Y 和 2Y 同下，但 2Y 下得更多，2s10s 阔开：市场在交易降息/增长压力。",
+    "latest_date": "2026-06-23",
+    "has_yields": true
   },
   "twos10s_warning": null
 }

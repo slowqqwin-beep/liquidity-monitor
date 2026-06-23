@@ -51,32 +51,31 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 START_DATE = "2026-06-16"
 
 MD_CANDIDATES = [
-    ROOT / "sr3_repair_watch_latest.md",
+    ROOT / "_sr3_watch.md",
     ROOT / "docs/sr3-watch/data/sr3_repair_watch_latest.md",
+    ROOT / "sr3_repair_watch_latest.md",
 ]
 
 CSV_CANDIDATES = [
     ROOT / "100-CME_DL_SR3M2026, 1D.csv",
     ROOT / "100-CME_DL_SR3H2027, 1D.csv",
-    ROOT / "data/100-CME_DL_SR3M2026, 1D.csv",
-    ROOT / "data/100-CME_DL_SR3H2027, 1D.csv",
-    ROOT / "docs/sr3-watch/data/100-CME_DL_SR3M2026, 1D.csv",
-    ROOT / "docs/sr3-watch/data/100-CME_DL_SR3H2027, 1D.csv",
 ]
 
 TWOS10S_CANDIDATES = [
-    ROOT / "TVC_US10Y, 1D.csv",
     ROOT / "2s10s.csv",
     ROOT / "twos10s.csv",
     ROOT / "tradingview_2s10s.csv",
     ROOT / "US10Y-US02Y, 1D.csv",
     ROOT / "TVC_US10Y-US02Y, 1D.csv",
     ROOT / "TVC_US10Y-TVC_US02Y, 1D.csv",
+    ROOT / "data/2s10s.csv",
+    ROOT / "data/twos10s.csv",
+    ROOT / "data/tradingview_2s10s.csv",
     ROOT / "data/US10Y-US02Y, 1D.csv",
-    ROOT / "data/TVC_US10Y, 1D.csv",
     ROOT / "docs/sr3-watch/data/2s10s.csv",
     ROOT / "docs/sr3-watch/data/twos10s.csv",
-    ROOT / "docs/sr3-watch/data/TVC_US10Y, 1D.csv",
+    ROOT / "docs/sr3-watch/data/tradingview_2s10s.csv",
+    ROOT / "docs/sr3-watch/data/US10Y-US02Y, 1D.csv",
 ]
 
 
@@ -448,6 +447,138 @@ def write_curve_audit_csv(curve_rows: List[Dict[str, Any]]) -> None:
 
 
 
+
+def derive_current_event_repair(curve_rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Derive current post-FOMC price-over / hike-over repair from Z26-H27-M27 curve.
+
+    Vocabulary:
+    - This is NOT just "price-out cuts".
+    - If the FOMC/Warsh shock lifts the forward curve above the pre-event baseline,
+      the dashboard treats it as "price-over hikes / hike-over premium".
+    - Repair start means the hike-over premium starts to retreat from the event peak.
+    - Full level repair means the curve returns to the pre-event baseline, not just
+      a one-day pullback from the peak.
+    """
+    out = {
+        "event_baseline_date": None,
+        "event_baseline_avg_rate": None,
+        "hike_over_peak_date": None,
+        "hike_over_peak_avg_rate": None,
+        "current_event_peak_date": None,
+        "current_event_peak_avg_rate": None,
+        "current_event_repair_start_date": None,
+        "hike_over_shock_bp": None,
+        "hike_over_repair_magnitude_bp": None,
+        "hike_over_repair_ratio": None,
+        "hike_over_remaining_bp": None,
+        "event_avg_level_repair": False,
+        "event_strict_level_repair": False,
+        "event_level_repair_date": None,
+        "current_event_state": "N/A",
+        "current_event_note": "缺少 Z26-H27-M27 曲线，无法计算当前事件修复。",
+    }
+
+    if not curve_rows:
+        return out
+
+    rows = []
+    for row in curve_rows:
+        rates = row.get("rates", {})
+        vals = [rates.get("Z26"), rates.get("H27"), rates.get("M27")]
+        vals = [float(v) for v in vals if v is not None]
+        if vals:
+            rows.append({"date": row.get("date"), "avg_rate": sum(vals) / len(vals), "rates": rates})
+
+    if len(rows) < 2:
+        out["current_event_note"] = "曲线样本不足，无法确认当前事件修复。"
+        return out
+
+    baseline = rows[0]
+    latest = rows[-1]
+    peak_idx = max(range(len(rows)), key=lambda i: rows[i]["avg_rate"])
+    peak = rows[peak_idx]
+
+    out["event_baseline_date"] = baseline["date"]
+    out["event_baseline_avg_rate"] = round(baseline["avg_rate"], 4)
+    out["hike_over_peak_date"] = peak["date"]
+    out["hike_over_peak_avg_rate"] = round(peak["avg_rate"], 4)
+
+    # Backward-compatible aliases
+    out["current_event_peak_date"] = peak["date"]
+    out["current_event_peak_avg_rate"] = round(peak["avg_rate"], 4)
+
+    shock_bp = round((peak["avg_rate"] - baseline["avg_rate"]) * 100, 2)
+    repaired_bp = round(max(0.0, peak["avg_rate"] - latest["avg_rate"]) * 100, 2)
+    remaining_bp = round(max(0.0, latest["avg_rate"] - baseline["avg_rate"]) * 100, 2)
+    ratio = None if shock_bp <= 0 else round(repaired_bp / shock_bp, 4)
+
+    out["hike_over_shock_bp"] = shock_bp
+    out["hike_over_repair_magnitude_bp"] = repaired_bp
+    out["hike_over_remaining_bp"] = remaining_bp
+    out["hike_over_repair_ratio"] = ratio
+
+    # Backward-compatible fields
+    out["current_event_repair_magnitude_bp"] = repaired_bp
+    out["current_event_drawdown_from_peak_bp"] = round((latest["avg_rate"] - peak["avg_rate"]) * 100, 2)
+
+    if len(rows) - 1 <= peak_idx:
+        out["current_event_state"] = "at_hike_over_peak_or_no_repair"
+        out["current_event_note"] = "最新曲线仍在 price-over / hike-over 峰值附近，尚未出现当前事件修复起点。"
+    else:
+        start_date = None
+        for i in range(peak_idx + 1, len(rows)):
+            if rows[i]["avg_rate"] < rows[i - 1]["avg_rate"]:
+                start_date = rows[i]["date"]
+                break
+        out["current_event_repair_start_date"] = start_date
+        if start_date:
+            out["current_event_state"] = "hike_over_repair_started"
+        else:
+            out["current_event_state"] = "post_peak_but_not_confirmed"
+
+    # Level repair definitions.
+    tolerance_bp = 2.0
+    out["event_level_repair_tolerance_bp"] = tolerance_bp
+    out["event_avg_level_repair"] = latest["avg_rate"] <= baseline["avg_rate"] + tolerance_bp / 100.0
+
+    strict_ok = True
+    for code in ["Z26", "H27", "M27"]:
+        b = baseline["rates"].get(code)
+        l = latest["rates"].get(code)
+        if b is None or l is None or float(l) > float(b) + tolerance_bp / 100.0:
+            strict_ok = False
+            break
+    out["event_strict_level_repair"] = strict_ok
+
+    # First date that satisfies strict level repair after peak.
+    level_date = None
+    for row in rows[peak_idx + 1:]:
+        avg_ok = row["avg_rate"] <= baseline["avg_rate"] + tolerance_bp / 100.0
+        strict = True
+        for code in ["Z26", "H27", "M27"]:
+            b = baseline["rates"].get(code)
+            l = row["rates"].get(code)
+            if b is None or l is None or float(l) > float(b) + tolerance_bp / 100.0:
+                strict = False
+                break
+        if avg_ok and strict:
+            level_date = row["date"]
+            break
+    out["event_level_repair_date"] = level_date
+
+    ratio_pct = "N/A" if ratio is None else f"{ratio * 100:.1f}%"
+    out["current_event_note"] = (
+        f"本轮不是简单 price-out 降息，而是 FOMC/沃什后曲线 price-over / hike-over。"
+        f"事件前基准 {baseline['date']}，hike-over 峰值 {peak['date']}，"
+        f"冲击约 +{shock_bp:.1f}bp；当前已修复约 {repaired_bp:.1f}bp（{ratio_pct}），"
+        f"距离事件前基准仍约 +{remaining_bp:.1f}bp。"
+        f"当前事件修复启动不等于 level repair，也不是买入信号。"
+    )
+
+    return out
+
+
 def find_twos10s_source() -> Optional[Path]:
     direct = first_existing(TWOS10S_CANDIDATES)
     if direct:
@@ -458,9 +589,6 @@ def find_twos10s_source() -> Optional[Path]:
             continue
         for p in folder.glob("*.csv"):
             name = p.name.lower().replace(" ", "")
-            # Skip generated audit outputs to avoid reading our own normalized file as an input.
-            if name in {"twos10s_history.csv", "sr3_curve_z26_h27_m27.csv"}:
-                continue
             if any(k in name for k in keywords):
                 return p
     return None
@@ -482,11 +610,10 @@ def detect_twos10s_columns(headers: List[str], source: Path) -> Dict[str, Option
             out["two"] = h
             break
     fname = source.name.lower().replace(" ", "")
-    # 文件名提示：TVC_US10Y → close 是 10Y；TVC_US02Y → close 是 2Y
-    if out["ten"] is None and "close" in headers and "us10y" in fname:
+    if out["ten"] is None and "close" in headers and ("us10y" in fname or "10y" in fname):
         out["ten"] = "close"
-    if out["two"] is None and "close" in headers and "us02y" in fname:
-        out["two"] = "close"
+    if out["ten"] is None and out["two"] is not None and "close" in headers:
+        out["ten"] = "close"
     if out["spread"] is None and "close" in headers and any(k in fname for k in ["2s10s", "twos10s", "us10y-us02y", "us10y-us2y"]):
         out["spread"] = "close"
     return out
@@ -499,53 +626,93 @@ def spread_to_bp(value: Optional[float]) -> Optional[float]:
 
 
 def classify_curve_structure(series: List[Dict[str, Any]]) -> Dict[str, Any]:
+    empty = {
+        "latest_spread_bp": None,
+        "change_1d_bp": None,
+        "change_5d_bp": None,
+        "d10_1d_bp": None,
+        "d2_1d_bp": None,
+        "widening_state": "N/A",
+        "structure": "N/A",
+        "structure_note": "未提供 2s10s 数据。",
+        "latest_date": None,
+        "has_yields": False,
+    }
     if not series:
-        return {"latest_spread_bp": None, "change_1d_bp": None, "change_5d_bp": None, "structure": "N/A", "structure_note": "未提供 2s10s 数据。"}
+        return empty
+
     latest = series[-1]
     prev = series[-2] if len(series) >= 2 else None
     latest_bp = latest.get("spread_bp")
     prev_bp = prev.get("spread_bp") if prev else None
     change_1d = None if latest_bp is None or prev_bp is None else round(latest_bp - prev_bp, 2)
+
     idx_5d = max(0, len(series) - 6)
     base_5d = series[idx_5d]
     base_bp = base_5d.get("spread_bp")
     change_5d = None if latest_bp is None or base_bp is None else round(latest_bp - base_bp, 2)
 
+    widening_state = "N/A"
+    if change_1d is not None:
+        if change_1d > 1:
+            widening_state = "阔开 / Steepening"
+        elif change_1d < -1:
+            widening_state = "缩窄 / Flattening"
+        else:
+            widening_state = "稳定 / Stable"
+
     structure = "仅利差"
-    note = "当前只识别到 2s10s 利差，可判断变陡/变平；若同时提供 2Y/10Y 收益率，可进一步区分熊平/熊陡/牛平/牛陡。"
+    note = "当前只识别到 2s10s 利差：下方利差轴可判断阔开/缩窄；若同时提供 2Y 与 10Y，顶部会显示两条利率曲线并进一步识别熊平/熊陡/牛平/牛陡。"
     if change_1d is not None:
         if change_1d > 1:
             structure = "Steepening / 变陡"
-            note = "2s10s 走阔，曲线变陡；需结合 2Y/10Y 方向判断是熊陡还是牛陡。"
+            note = "2s10s 走阔，曲线变陡；需要看上方 2Y/10Y 两条线的方向，判断是熊陡还是牛陡。"
         elif change_1d < -1:
             structure = "Flattening / 变平"
-            note = "2s10s 收窄，曲线变平；需结合 2Y/10Y 方向判断是熊平还是牛平。"
+            note = "2s10s 收窄，曲线变平；需要看上方 2Y/10Y 两条线的方向，判断是熊平还是牛平。"
         else:
             structure = "Stable / 稳定"
             note = "2s10s 日度变化较小，曲线结构暂未给出强确认。"
 
     ten = latest.get("ten_y")
     two = latest.get("two_y")
-    if prev and ten is not None and two is not None and prev.get("ten_y") is not None and prev.get("two_y") is not None:
+    has_yields = ten is not None and two is not None
+    d10 = None
+    d2 = None
+
+    if prev and has_yields and prev.get("ten_y") is not None and prev.get("two_y") is not None:
         d10 = round((ten - prev["ten_y"]) * 100, 2)
         d2 = round((two - prev["two_y"]) * 100, 2)
         ds = change_1d
+
         if d10 > 0 and d2 > 0 and ds is not None and ds > 0:
             structure = "熊陡"
-            note = "10Y 和 2Y 同上，但 10Y 上得更多：长期利率/期限溢价压力更大。"
+            note = "10Y 和 2Y 同上，但 10Y 上得更多，2s10s 阔开：长期利率/期限溢价压力更大，对长久期资产更不友好。"
         elif d10 > 0 and d2 > 0 and ds is not None and ds < 0:
             structure = "熊平"
-            note = "10Y 和 2Y 同上，但 2Y 上得更多：主要是短端 Fed 鹰派重定价。"
+            note = "10Y 和 2Y 同上，但 2Y 上得更多，2s10s 缩窄：主要是短端 Fed 鹰派重定价。"
         elif d10 < 0 and d2 < 0 and ds is not None and ds > 0:
             structure = "牛陡"
-            note = "10Y 和 2Y 同下，但 2Y 下得更多：市场在交易降息/增长压力。"
+            note = "10Y 和 2Y 同下，但 2Y 下得更多，2s10s 阔开：市场在交易降息/增长压力。"
         elif d10 < 0 and d2 < 0 and ds is not None and ds < 0:
             structure = "牛平"
-            note = "10Y 和 2Y 同下，但 10Y 下得更多：避险或增长担忧更强。"
+            note = "10Y 和 2Y 同下，但 10Y 下得更多，2s10s 缩窄：避险或增长担忧更强。"
         else:
             structure = "Mixed / 混合"
-            note = "2Y 与 10Y 方向不一致，曲线结构需结合 SR3 与 real yield 再判断。"
-    return {"latest_spread_bp": latest_bp, "change_1d_bp": change_1d, "change_5d_bp": change_5d, "structure": structure, "structure_note": note, "latest_date": latest.get("date")}
+            note = "2Y 与 10Y 方向不一致，曲线结构需结合 SR3、real yield 和信用利差再判断。"
+
+    return {
+        "latest_spread_bp": latest_bp,
+        "change_1d_bp": change_1d,
+        "change_5d_bp": change_5d,
+        "d10_1d_bp": d10,
+        "d2_1d_bp": d2,
+        "widening_state": widening_state,
+        "structure": structure,
+        "structure_note": note,
+        "latest_date": latest.get("date"),
+        "has_yields": has_yields,
+    }
 
 
 def parse_twos10s_csv(source: Optional[Path]) -> Dict[str, Any]:
@@ -574,10 +741,12 @@ def parse_twos10s_csv(source: Optional[Path]) -> Dict[str, Any]:
             continue
         ten = to_float(row.get(cols["ten"])) if cols.get("ten") else None
         two = to_float(row.get(cols["two"])) if cols.get("two") else None
-        if cols.get("spread"):
+        if ten is not None and two is not None:
+            spread_bp = round((ten - two) * 100, 2)
+        elif cols.get("spread"):
             raw_spread = to_float(row.get(cols["spread"]))
             spread_bp = spread_to_bp(raw_spread)
-        elif ten is not None and two is not None:
+        elif False:
             spread_bp = round((ten - two) * 100, 2)
         else:
             spread_bp = None
@@ -611,6 +780,7 @@ def build() -> None:
 
     csv_path = first_existing(CSV_CANDIDATES)
     data.update(parse_curve_csv(csv_path))
+    data.update(derive_current_event_repair(data.get("curve_comparison") or []))
 
     twos10s_path = find_twos10s_source()
     data.update(parse_twos10s_csv(twos10s_path))

@@ -120,20 +120,43 @@ function renderWarnings(data){
 function renderHero(data){
   $("stateChip").textContent = data.state || "State 2: Deceleration";
   $("heroState").textContent = data.state || "State 2: Deceleration";
-  $("heroNote").textContent = data.state_note || "SR3 已钝化，但尚未完成 level repair；当前不是买入信号。";
+  $("heroNote").textContent = data.current_event_note || data.state_note || "SR3 已钝化，但尚未完成 level repair；当前不是买入信号。";
   $("dataDate").textContent = data.data_date || "N/A";
   $("generatedAt").textContent = data.generated_at || "N/A";
-  $("referencePeak").textContent = data.reference_peak || "N/A";
+  $("referencePeak").textContent = data.event_baseline_date && (data.hike_over_peak_date || data.current_event_peak_date) ? `${data.event_baseline_date} → ${data.hike_over_peak_date || data.current_event_peak_date}` : (data.reference_peak || "N/A");
   $("status").textContent = data.status || "Research-Only";
   $("mixedRepairWarning").textContent = data.mixed_repair_warning || fallbackData.mixed_repair_warning;
 }
 
 function renderQuestionCards(data){
+  const currentRepairStarted = !!data.current_event_repair_start_date;
+  const stillHikeOverImpulse = data.current_event_state === "at_hike_over_peak_or_no_repair" || data.current_event_state === "at_peak_or_no_repair";
+
   const items = [
-    {label:"处于 hawkish impulse？", value:boolText(data.hawkish_impulse), sub:"否 = 鹰派冲击不是当前主状态", cls:data.hawkish_impulse ? "red" : "green"},
-    {label:"进入 deceleration？", value:boolText(data.deceleration), sub:data.deceleration_since ? `起始：${data.deceleration_since}` : "N/A", cls:data.deceleration ? "yellow" : "gray"},
-    {label:"发生 level repair？", value:boolText(data.level_repair), sub:data.level_repair ? "已完成修复" : "未完成修复", cls:data.level_repair ? "green" : "red"},
-    {label:"修复分类", value:data.classification || "N/A", sub:"mixed_repair 仅表示混合修复，不代表买入信号", cls:"yellow"},
+    {
+      label:"当前事件仍在 hike-over impulse？",
+      value:boolText(stillHikeOverImpulse),
+      sub:stillHikeOverImpulse ? "仍在峰值附近，尚未回落" : "否 = 已离开当前事件峰值",
+      cls:stillHikeOverImpulse ? "red" : "green"
+    },
+    {
+      label:"当前事件修复启动？",
+      value:boolText(currentRepairStarted),
+      sub:currentRepairStarted ? `起始：${data.current_event_repair_start_date}` : "尚未确认从峰值回落",
+      cls:currentRepairStarted ? "yellow" : "gray"
+    },
+    {
+      label:"发生 event level repair？",
+      value:boolText(data.event_strict_level_repair || data.event_avg_level_repair),
+      sub:(data.event_strict_level_repair || data.event_avg_level_repair) ? "已回到事件前基准" : "未回到 6/16 事件基准",
+      cls:(data.event_strict_level_repair || data.event_avg_level_repair) ? "green" : "red"
+    },
+    {
+      label:"修复分类",
+      value:data.classification || "N/A",
+      sub:"mixed_repair 是原报告分类；当前事件单独看 repair start / level repair",
+      cls:"yellow"
+    },
   ];
   $("questionCards").innerHTML = items.map(i => `
     <article class="card ${i.cls}">
@@ -144,10 +167,11 @@ function renderQuestionCards(data){
   `).join("");
 }
 
+
 function renderKpis(data){
   const kpis = [
     {label:"near_rate", value:fmtPct(data.near_rate), cls:""},
-    {label:"较参考峰回落", value:fmt(data.drawdown_from_peak_bp, " bp", 2), cls:data.drawdown_from_peak_bp < 0 ? "good" : "warn"},
+    {label:"Hike-over 已修复", value:data.hike_over_repair_magnitude_bp === null || data.hike_over_repair_magnitude_bp === undefined ? fmt(data.drawdown_from_peak_bp, " bp", 2) : fmt(data.hike_over_repair_magnitude_bp, " bp", 2), cls:"good"},
     {label:"当日变动", value:fmt(data.daily_change_bp, " bp", 2), cls:data.daily_change_bp < 0 ? "good" : "warn", note:data.daily_change_bp < 0 ? "钝化，但不是买点" : ""},
     {label:"5d 累计", value:fmt(data.five_day_change_bp, " bp", 2), cls:data.five_day_change_bp > 5 ? "warn" : ""},
     {label:"高台 >3.5%", value:boolText(data.high_plateau), cls:data.high_plateau ? "warn" : "good"},
@@ -165,38 +189,95 @@ function renderKpis(data){
 }
 
 function renderReferencePeaks(data){
-  const rows = data.reference_peaks || [];
   const table = $("referencePeaksTable");
-  if(!rows.length){
-    table.innerHTML = `<thead><tr><th>来源</th><th>日期</th><th>距今</th><th>near_rate</th><th>高度</th></tr></thead><tbody><tr><td colspan="5">N/A</td></tr></tbody>`;
-    return;
+
+  const ratio = data.hike_over_repair_ratio === null || data.hike_over_repair_ratio === undefined
+    ? "N/A"
+    : `${(Number(data.hike_over_repair_ratio) * 100).toFixed(1)}%`;
+
+  const rows = [
+    {
+      source: "Event Baseline / 事件前基准",
+      date: data.event_baseline_date || "N/A",
+      role: "FOMC 前回准线",
+      rate: data.event_baseline_avg_rate === null || data.event_baseline_avg_rate === undefined ? "N/A" : fmt(data.event_baseline_avg_rate, "%", 4),
+      note: "event level repair 以这条线为准"
+    },
+    {
+      source: "Hike-over Peak / 加息预期峰值",
+      date: data.hike_over_peak_date || data.current_event_peak_date || "N/A",
+      role: "FOMC 后冲击峰值",
+      rate: data.hike_over_peak_avg_rate === null || data.hike_over_peak_avg_rate === undefined ? "N/A" : fmt(data.hike_over_peak_avg_rate, "%", 4),
+      note: data.hike_over_shock_bp === null || data.hike_over_shock_bp === undefined ? "N/A" : `相对基准 +${Number(data.hike_over_shock_bp).toFixed(1)}bp`
+    },
+    {
+      source: "Repair Start / 当前修复起点",
+      date: data.current_event_repair_start_date || "N/A",
+      role: "从峰值回落第一天",
+      rate: data.hike_over_repair_magnitude_bp === null || data.hike_over_repair_magnitude_bp === undefined ? "N/A" : `已修复 ${Number(data.hike_over_repair_magnitude_bp).toFixed(1)}bp`,
+      note: `修复比例 ${ratio}`
+    },
+    {
+      source: "Event Level Repair / 水平修复",
+      date: data.event_level_repair_date || "N/A",
+      role: "回到事件前基准",
+      rate: data.hike_over_remaining_bp === null || data.hike_over_remaining_bp === undefined ? "N/A" : `仍高 ${Number(data.hike_over_remaining_bp).toFixed(1)}bp`,
+      note: data.event_strict_level_repair ? "已完成" : "未完成"
+    }
+  ];
+
+  const oldFormal = (data.reference_peaks || []).find(r => String(r.source || "").toLowerCase().includes("formal"));
+  if(oldFormal){
+    rows.push({
+      source: "Formal Shock / 旧研究审计",
+      date: oldFormal.date || "N/A",
+      role: "原报告旧参考",
+      rate: oldFormal.near_rate === null || oldFormal.near_rate === undefined ? "N/A" : fmt(oldFormal.near_rate, "%", 4),
+      note: "不作为本轮 FOMC event level repair 回准线"
+    });
   }
+
   table.innerHTML = `
-    <thead><tr><th>来源</th><th>日期</th><th>距今</th><th>near_rate</th><th>高度</th></tr></thead>
+    <thead><tr><th>参考线</th><th>日期</th><th>用途</th><th>水平 / 进度</th><th>说明</th></tr></thead>
     <tbody>${rows.map(r => `
       <tr>
-        <td>${escapeHtml(r.source || "N/A")}</td>
-        <td>${escapeHtml(r.date || "N/A")}</td>
-        <td>${escapeHtml(r.distance || "N/A")}</td>
-        <td>${r.near_rate === null || r.near_rate === undefined ? "N/A" : fmt(r.near_rate, "%", 4)}</td>
-        <td>${escapeHtml(r.height || "N/A")}</td>
+        <td>${escapeHtml(r.source)}</td>
+        <td>${escapeHtml(r.date)}</td>
+        <td>${escapeHtml(r.role)}</td>
+        <td>${escapeHtml(r.rate)}</td>
+        <td>${escapeHtml(r.note)}</td>
       </tr>
     `).join("")}</tbody>`;
 }
 
+
 function renderDetails(data){
+  const ratio = data.hike_over_repair_ratio === null || data.hike_over_repair_ratio === undefined
+    ? "N/A"
+    : `${(Number(data.hike_over_repair_ratio) * 100).toFixed(1)}%`;
+
   const rows = [
     ["分类", data.classification || "N/A", "warn"],
     ["原因", data.classification_reason || "N/A", ""],
     ["level_repair", boolText(data.level_repair), data.level_repair ? "ok" : "bad"],
-    ["repair", boolText(data.repair), data.repair ? "ok" : "na"],
-    ["修复起始日", data.repair_start_date || "N/A", ""],
-    ["修复幅度", data.repair_magnitude_bp === null ? "N/A" : fmt(data.repair_magnitude_bp, " bp", 2), "warn"],
+    ["事件前基准日", data.event_baseline_date || "N/A", ""],
+    ["Hike-over 峰值日", data.hike_over_peak_date || data.current_event_peak_date || "N/A", "warn"],
+    ["当前修复起始日", data.current_event_repair_start_date || "N/A", data.current_event_repair_start_date ? "ok" : "na"],
+    ["Hike-over 冲击", data.hike_over_shock_bp === null || data.hike_over_shock_bp === undefined ? "N/A" : fmt(data.hike_over_shock_bp, " bp", 2), "warn"],
+    ["已修复幅度", data.hike_over_repair_magnitude_bp === null || data.hike_over_repair_magnitude_bp === undefined ? "N/A" : fmt(data.hike_over_repair_magnitude_bp, " bp", 2), "warn"],
+    ["修复比例", ratio, "warn"],
+    ["距离基准仍高", data.hike_over_remaining_bp === null || data.hike_over_remaining_bp === undefined ? "N/A" : fmt(data.hike_over_remaining_bp, " bp", 2), "bad"],
+    ["Avg level repair", boolText(data.event_avg_level_repair), data.event_avg_level_repair ? "ok" : "bad"],
+    ["Strict level repair", boolText(data.event_strict_level_repair), data.event_strict_level_repair ? "ok" : "bad"],
+    ["level repair 日期", data.event_level_repair_date || "N/A", data.event_level_repair_date ? "ok" : "na"],
+    ["原报告修复起始日", data.repair_start_date || "N/A", "na"],
   ];
+  const eventNote = data.current_event_note ? `<div class="event-note">${escapeHtml(data.current_event_note)}</div>` : "";
   $("classificationDetails").innerHTML = rows.map(([k,v,cls]) => `
     <div class="detail-row"><span>${escapeHtml(k)}</span><strong class="${cls}">${escapeHtml(v)}</strong></div>
-  `).join("");
+  `).join("") + eventNote;
 }
+
 
 function renderConstraints(data){
   const constraints = data.constraints || {};
@@ -230,7 +311,9 @@ function renderSignalMatrix(data){
 function renderTwos10s(data){
   const latest = data.twos10s_latest || {};
   $("twos10sLatest").textContent = latest.latest_spread_bp === null || latest.latest_spread_bp === undefined ? "N/A" : `${Number(latest.latest_spread_bp).toFixed(1)} bp`;
-  $("twos10s1d").textContent = latest.change_1d_bp === null || latest.change_1d_bp === undefined ? "N/A" : `${Number(latest.change_1d_bp).toFixed(1)} bp`;
+  $("twos10sWidening").textContent = latest.widening_state || "N/A";
+  $("twos10sD10").textContent = latest.d10_1d_bp === null || latest.d10_1d_bp === undefined ? "N/A" : `${Number(latest.d10_1d_bp).toFixed(1)} bp`;
+  $("twos10sD2").textContent = latest.d2_1d_bp === null || latest.d2_1d_bp === undefined ? "N/A" : `${Number(latest.d2_1d_bp).toFixed(1)} bp`;
   $("twos10s5d").textContent = latest.change_5d_bp === null || latest.change_5d_bp === undefined ? "N/A" : `${Number(latest.change_5d_bp).toFixed(1)} bp`;
   $("twos10sStructure").textContent = latest.structure || "N/A";
   $("twos10sNote").textContent = latest.structure_note || data.twos10s_warning || "等待 2s10s 数据。";
@@ -258,30 +341,20 @@ function renderTwos10sTable(data){
 
 function renderTwos10sChart(data){
   const svg = $("twos10sChart");
-  const rows = data.twos10s_series || [];
+  const rows = (data.twos10s_series || []).slice(-60).filter(r => r.spread_bp !== null && r.spread_bp !== undefined);
   svg.innerHTML = "";
   if(!rows.length){
     svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" fill="#92a3bc">暂无 2s10s 数据</text>`;
     return;
   }
 
-  const width = 560, height = 220;
-  const margin = {top: 22, right: 20, bottom: 36, left: 54};
+  const width = 760, height = 360;
+  const margin = {top: 24, right: 38, bottom: 42, left: 58};
+  const upper = {top: 34, height: 175};
+  const lower = {top: 252, height: 70};
   const innerW = width - margin.left - margin.right;
-  const innerH = height - margin.top - margin.bottom;
+
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-
-  const dataRows = rows.slice(-30).filter(r => r.spread_bp !== null && r.spread_bp !== undefined);
-  if(!dataRows.length){
-    svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" fill="#92a3bc">暂无 2s10s 数据</text>`;
-    return;
-  }
-
-  const vals = dataRows.map(r => Number(r.spread_bp));
-  const minV = Math.floor((Math.min(...vals) - 5) / 5) * 5;
-  const maxV = Math.ceil((Math.max(...vals) + 5) / 5) * 5;
-  const x = i => margin.left + (dataRows.length === 1 ? innerW / 2 : innerW * i / (dataRows.length - 1));
-  const y = v => margin.top + (maxV - v) * innerH / (maxV - minV || 1);
 
   const make = (tag, attrs = {}, text = null) => {
     const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
@@ -291,22 +364,105 @@ function renderTwos10sChart(data){
     return el;
   };
 
-  for(let i=0;i<=4;i++){
-    const val = minV + (maxV-minV)*i/4;
-    const yy = y(val);
-    make("line",{x1:margin.left,y1:yy,x2:width-margin.right,y2:yy,stroke:"rgba(148,163,184,.18)","stroke-dasharray":"4 6"});
-    make("text",{x:margin.left-9,y:yy+4,"text-anchor":"end",fill:"#92a3bc","font-size":"10"}, `${val.toFixed(0)}`);
+  const x = i => margin.left + (rows.length === 1 ? innerW / 2 : innerW * i / (rows.length - 1));
+
+  // Background split: upper yields, lower spread.
+  make("rect",{x:0,y:0,width,height,rx:18,fill:"rgba(3,7,18,.10)"});
+  make("text",{x:margin.left,y:18,fill:"#cfe6ff","font-size":"12","font-weight":"900"},"上：10Y 与 2Y 利率曲线");
+  make("text",{x:margin.left,y:238,fill:"#cfe6ff","font-size":"12","font-weight":"900"},"下：2s10s 利差（10Y - 2Y）");
+  make("line",{x1:margin.left,y1:229,x2:width-margin.right,y2:229,stroke:"rgba(148,163,184,.28)","stroke-dasharray":"5 6"});
+
+  const hasYields = rows.some(r => r.ten_y !== null && r.ten_y !== undefined && r.two_y !== null && r.two_y !== undefined);
+
+  if(hasYields){
+    const yieldVals = [];
+    rows.forEach(r => {
+      if(r.ten_y !== null && r.ten_y !== undefined) yieldVals.push(Number(r.ten_y));
+      if(r.two_y !== null && r.two_y !== undefined) yieldVals.push(Number(r.two_y));
+    });
+    const minY = Math.floor((Math.min(...yieldVals) - 0.03) * 100) / 100;
+    const maxY = Math.ceil((Math.max(...yieldVals) + 0.03) * 100) / 100;
+    const yYield = v => upper.top + (maxY - v) * upper.height / (maxY - minY || 1);
+
+    for(let i=0;i<=3;i++){
+      const val = minY + (maxY-minY)*i/3;
+      const yy = yYield(val);
+      make("line",{x1:margin.left,y1:yy,x2:width-margin.right,y2:yy,stroke:"rgba(148,163,184,.15)","stroke-dasharray":"4 6"});
+      make("text",{x:margin.left-9,y:yy+4,"text-anchor":"end",fill:"#92a3bc","font-size":"10"}, `${val.toFixed(2)}%`);
+    }
+
+    const drawLine = (field, color, widthPx, label) => {
+      const pts = rows.map((r,i) => {
+        const v = r[field];
+        return v === null || v === undefined ? null : [x(i), yYield(Number(v)), Number(v)];
+      }).filter(Boolean);
+      if(pts.length >= 2){
+        const d = pts.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
+        make("path",{d,fill:"none",stroke:color,"stroke-width":widthPx,"stroke-linecap":"round","stroke-linejoin":"round"});
+      }
+      pts.forEach((p, idx)=>make("circle",{cx:p[0],cy:p[1],r:idx===pts.length-1?4.4:3.1,fill:color,stroke:"#07101f","stroke-width":"1.1"}));
+      const last = pts[pts.length-1];
+      if(last) make("text",{x:last[0]+8,y:last[1]+4,fill:color,"font-size":"11","font-weight":"900"}, `${label} ${last[2].toFixed(3)}%`);
+    };
+
+    drawLine("ten_y", "#60a5fa", 2.8, "10Y");
+    drawLine("two_y", "#facc15", 2.8, "2Y");
+
+    // Fill the latest gap visually between 10Y and 2Y on the last date.
+    const last = rows[rows.length-1];
+    if(last.ten_y !== null && last.two_y !== null && last.ten_y !== undefined && last.two_y !== undefined){
+      const xx = x(rows.length-1);
+      const y10 = yYield(Number(last.ten_y));
+      const y2 = yYield(Number(last.two_y));
+      make("line",{x1:xx,y1:y10,x2:xx,y2:y2,stroke:"rgba(87,216,255,.6)","stroke-width":"3","stroke-dasharray":"4 4"});
+      make("text",{x:xx-8,y:Math.min(y10,y2)-10,"text-anchor":"end",fill:"#57d8ff","font-size":"11","font-weight":"900"}, `gap ${Number(last.spread_bp).toFixed(1)}bp`);
+    }
+  }else{
+    make("text",{x:"50%",y:upper.top + upper.height/2,"text-anchor":"middle",fill:"#92a3bc","font-size":"13"},"当前 2s10s CSV 只有利差，没有 2Y/10Y 两条利率曲线");
   }
 
-  const d = dataRows.map((r,i) => `${i===0 ? "M" : "L"} ${x(i)} ${y(Number(r.spread_bp))}`).join(" ");
-  make("path",{d,fill:"none",stroke:"#57d8ff","stroke-width":"2.8","stroke-linecap":"round","stroke-linejoin":"round"});
-  dataRows.forEach((r,i)=>{
-    make("circle",{cx:x(i),cy:y(Number(r.spread_bp)),r:i===dataRows.length-1 ? 4.8 : 3.2,fill:"#57d8ff",stroke:"#07101f","stroke-width":"1.2"});
+  // Spread lower panel.
+  const spreadVals = rows.map(r => Number(r.spread_bp));
+  const minS = Math.floor((Math.min(...spreadVals) - 4) / 5) * 5;
+  const maxS = Math.ceil((Math.max(...spreadVals) + 4) / 5) * 5;
+  const ySpread = v => lower.top + (maxS - v) * lower.height / (maxS - minS || 1);
+
+  for(let i=0;i<=2;i++){
+    const val = minS + (maxS-minS)*i/2;
+    const yy = ySpread(val);
+    make("line",{x1:margin.left,y1:yy,x2:width-margin.right,y2:yy,stroke:"rgba(148,163,184,.14)","stroke-dasharray":"4 6"});
+    make("text",{x:margin.left-9,y:yy+4,"text-anchor":"end",fill:"#92a3bc","font-size":"10"}, `${val.toFixed(0)}bp`);
+  }
+
+  const spreadPath = rows.map((r,i) => `${i===0 ? "M" : "L"} ${x(i)} ${ySpread(Number(r.spread_bp))}`).join(" ");
+  make("path",{d:spreadPath,fill:"none",stroke:"#57d8ff","stroke-width":"2.8","stroke-linecap":"round","stroke-linejoin":"round"});
+
+  rows.forEach((r,i)=>{
+    const curr = Number(r.spread_bp);
+    const prev = i > 0 ? Number(rows[i-1].spread_bp) : curr;
+    const fill = curr > prev ? "#54d18a" : curr < prev ? "#ff9d42" : "#57d8ff";
+    make("circle",{cx:x(i),cy:ySpread(curr),r:i===rows.length-1 ? 4.6 : 3.1,fill,stroke:"#07101f","stroke-width":"1.1"});
   });
 
-  const last = dataRows[dataRows.length-1];
-  make("text",{x:width-margin.right,y:margin.top+12,"text-anchor":"end",fill:"#cfe6ff","font-size":"12","font-weight":"900"}, `Latest: ${Number(last.spread_bp).toFixed(1)} bp`);
-  make("text",{x:margin.left,y:height-10,fill:"#92a3bc","font-size":"10"}, `${dataRows[0].date} → ${last.date}`);
+  // X labels: first, middle, last.
+  const labelIdxs = Array.from(new Set([0, Math.floor((rows.length-1)/2), rows.length-1]));
+  labelIdxs.forEach(i => {
+    make("line",{x1:x(i),y1:upper.top,x2:x(i),y2:lower.top+lower.height,stroke:"rgba(148,163,184,.10)"});
+    make("text",{x:x(i),y:height-14,"text-anchor":"middle",fill:"#92a3bc","font-size":"10"}, rows[i].date);
+  });
+
+  // Legend.
+  const legendX = width - 245;
+  make("rect",{x:legendX,y:10,width:215,height:28,rx:12,fill:"rgba(7,11,20,.55)",stroke:"rgba(148,163,184,.18)"});
+  make("circle",{cx:legendX+16,cy:24,r:4,fill:"#60a5fa"});
+  make("text",{x:legendX+25,y:28,fill:"#cbd7ea","font-size":"10"},"10Y");
+  make("circle",{cx:legendX+70,cy:24,r:4,fill:"#facc15"});
+  make("text",{x:legendX+79,y:28,fill:"#cbd7ea","font-size":"10"},"2Y");
+  make("circle",{cx:legendX+124,cy:24,r:4,fill:"#57d8ff"});
+  make("text",{x:legendX+133,y:28,fill:"#cbd7ea","font-size":"10"},"2s10s");
+
+  const latest = rows[rows.length-1];
+  make("text",{x:width-margin.right,y:lower.top+lower.height+20,"text-anchor":"end",fill:"#cfe6ff","font-size":"12","font-weight":"900"}, `Latest spread: ${Number(latest.spread_bp).toFixed(1)} bp`);
 }
 
 
