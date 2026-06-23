@@ -1,162 +1,156 @@
 {
-  "generated_at": "2026-06-23T11:41:35",
+  "generated_at": "2026-06-23T17:01:42.284191",
   "data_date": "2026-06-23",
-  "reference_peak": "formal shock",
-  "status": "Research-Only",
-  "state": "State 2: Deceleration",
-  "state_title": "State 2: Deceleration",
-  "state_note": "已钝化（曲线移动 <1.5bp），但尚未出现实质性/持续修复",
-  "hawkish_impulse": false,
-  "deceleration": true,
-  "deceleration_since": "2026-05-28",
-  "level_repair": false,
-  "classification": "mixed_repair",
-  "classification_reason": "Mixed signals, no clear benign/malign pattern",
-  "repair": true,
-  "near_rate": 3.8,
-  "drawdown_from_peak_bp": -7.5,
-  "daily_change_bp": -1.38,
-  "five_day_change_bp": 11.88,
-  "high_plateau": true,
-  "hy_oas": null,
-  "dgs10": null,
-  "real_yield_nowcast": null,
-  "repair_start_date": "2026-05-28",
-  "repair_magnitude_bp": 9.25,
-  "reference_peaks": [
+  "data_age_days": 0,
+  "reference_mode": "formal shock",
+  "last_formal_shock": {
+    "date": "2026-06-09",
+    "days_ago": 10,
+    "peak_near_rate_pct": 3.71,
+    "shock_height_bp": 8.0,
+    "still_active": true
+  },
+  "recent_60d_peak": {
+    "date": "2026-06-22",
+    "days_ago": 1,
+    "near_rate_pct": 3.8025,
+    "used_as_reference": false
+  },
+  "current": {
+    "near_rate_pct": 3.79,
+    "curve_move_bp": -2.88,
+    "curve_move_5d_sum_bp": 10.38,
+    "decline_from_ref_peak_bp": -8.0,
+    "on_elevated_plateau": true,
+    "hy_oas_bp": 266.0,
+    "hy_oas_available": false,
+    "dgs10_pct": 4.46,
+    "real_yield_nowcast_pct": 2.23
+  },
+  "state": {
+    "state_number": 2,
+    "state_label": "State 2: Deceleration",
+    "in_hawkish_impulse": false,
+    "structural_easing_detected": true,
+    "deceleration_detected": false,
+    "decel_start_date": null,
+    "level_repair_detected": false,
+    "repair_detected": false,
+    "repair_start_date": null,
+    "repair_bp_from_peak": 0.0,
+    "repair_classification": "structural_easing",
+    "repair_classification_reason": "全线合约低于参考峰(2026-06-09)，但 5日累计仍正向 — 结构松动先于动能"
+  },
+  "contract_diffs": [
     {
-      "source": "Formal Shock",
-      "date": "2026-05-22",
-      "distance": "24d",
-      "near_rate": 3.725,
-      "height": "9.5bp"
+      "contract": "SR3N2026",
+      "close": 96.21,
+      "close_chg": 0.0125,
+      "implied_rate_pct": 3.79,
+      "implied_chg_bp": -1.25
     },
     {
-      "source": "Recent 60d Peak",
-      "date": "2026-06-22",
-      "distance": "1d",
-      "near_rate": 3.8025,
-      "height": "—"
+      "contract": "SR3Q2026",
+      "close": 96.135,
+      "close_chg": 0.015,
+      "implied_rate_pct": 3.865,
+      "implied_chg_bp": -1.5
+    },
+    {
+      "contract": "SR3U2026",
+      "close": 96.075,
+      "close_chg": 0.04,
+      "implied_rate_pct": 3.925,
+      "implied_chg_bp": -4.0
+    },
+    {
+      "contract": "SR3Z2026",
+      "close": 95.925,
+      "close_chg": 0.05,
+      "implied_rate_pct": 4.075,
+      "implied_chg_bp": -5.0
+    },
+    {
+      "contract": "SR3H2027",
+      "close": 96.2875,
+      "close_chg": 0.0075,
+      "implied_rate_pct": 3.7125,
+      "implied_chg_bp": -0.75
+    },
+    {
+      "contract": "SR3M2027",
+      "close": 95.875,
+      "close_chg": 0.05,
+      "implied_rate_pct": 4.125,
+      "implied_chg_bp": -5.0
+    },
+    {
+      "contract": "SR3U2027",
+      "close": 95.93,
+      "close_chg": 0.045,
+      "implied_rate_pct": 4.07,
+      "implied_chg_bp": -4.5
     }
   ],
-  "signal_matrix": [
-    {
-      "condition": "信用不扩 + SR3 钝化",
-      "meaning": "鹰派动能衰竭，但短端预期尚未回落"
-    },
-    {
-      "condition": "信用不扩 + SR3 level repair + real yield 不再创新高",
-      "meaning": "短端预期已明显回落，信用未恶化"
-    },
-    {
-      "condition": "信用不扩 + SR3 benign repair + 分子兑现",
-      "meaning": "软着陆情景：利率回落 + 信用收窄"
-    },
-    {
-      "condition": "SR3 钝化但不修复",
-      "meaning": "暂停后利率继续上行，不构成拐点信号"
-    }
-  ],
-  "field_warnings": [],
-  "mixed_repair_warning": "mixed_repair 不是买入信号；它只表示 SR3 冲击已钝化但尚未完成 level repair，且 benign repair 条件未完全满足。",
-  "research_note": "Research-Only；不接 Risk OS / dashboard / run_all.py；不影响仓位；SR3 deceleration ≠ buy signal。",
+  "action": "短端预期：全线合约低于参考峰（结构松动），但动能信号仍在鹰派区；结构性下降领先",
+  "curve_structure": {
+    "ref_date": "2026-06-22",
+    "today_date": "2026-06-23",
+    "n_contracts": 7,
+    "n_below": 7,
+    "n_above": 0,
+    "avg_deviation_bp": -3.14,
+    "all_below_ref": true,
+    "detail": [
+      {
+        "contract": "SR3H2027",
+        "today_pct": 3.7125,
+        "ref_pct": 3.72,
+        "dev_bp": -0.75
+      },
+      {
+        "contract": "SR3M2027",
+        "today_pct": 4.125,
+        "ref_pct": 4.175,
+        "dev_bp": -5.0
+      },
+      {
+        "contract": "SR3N2026",
+        "today_pct": 3.79,
+        "ref_pct": 3.8025,
+        "dev_bp": -1.25
+      },
+      {
+        "contract": "SR3Q2026",
+        "today_pct": 3.865,
+        "ref_pct": 3.88,
+        "dev_bp": -1.5
+      },
+      {
+        "contract": "SR3U2026",
+        "today_pct": 3.925,
+        "ref_pct": 3.965,
+        "dev_bp": -4.0
+      },
+      {
+        "contract": "SR3U2027",
+        "today_pct": 4.07,
+        "ref_pct": 4.115,
+        "dev_bp": -4.5
+      },
+      {
+        "contract": "SR3Z2026",
+        "today_pct": 4.075,
+        "ref_pct": 4.125,
+        "dev_bp": -5.0
+      }
+    ]
+  },
   "constraints": {
     "research_only": true,
-    "standalone_sr3_watch": true,
-    "no_risk_os": true,
-    "no_existing_dashboard_merge": true,
-    "no_run_all": true,
-    "no_position_impact": true,
+    "not_in_risk_os": true,
+    "not_in_dashboard": true,
+    "not_in_run_all": true,
     "deceleration_not_buy_signal": true
-  },
-  "curve_start_date": "2026-06-16",
-  "curve_source_file": "100-CME_DL_SR3H2027, 1D.csv",
-  "curve_contracts": [
-    {
-      "code": "Z26",
-      "label": "Dec-26",
-      "contract": "SR3Z2026"
-    },
-    {
-      "code": "H27",
-      "label": "Mar-27",
-      "contract": "SR3H2027"
-    },
-    {
-      "code": "M27",
-      "label": "Jun-27",
-      "contract": "SR3M2027"
-    }
-  ],
-  "curve_comparison": [
-    {
-      "date": "2026-06-16",
-      "label": "6/16 讲话前",
-      "rates": {
-        "Z26": 3.885,
-        "H27": 3.94,
-        "M27": 3.94
-      }
-    },
-    {
-      "date": "2026-06-17",
-      "label": "6/17 讲话后",
-      "rates": {
-        "Z26": 4.035,
-        "H27": 4.095,
-        "M27": 4.08
-      }
-    },
-    {
-      "date": "2026-06-18",
-      "label": "6/18 确认日",
-      "rates": {
-        "Z26": 4.095,
-        "H27": 4.145,
-        "M27": 4.11
-      }
-    },
-    {
-      "date": "2026-06-22",
-      "label": "2026-06-22",
-      "rates": {
-        "Z26": 4.125,
-        "H27": 4.19,
-        "M27": 4.175
-      }
-    },
-    {
-      "date": "2026-06-23",
-      "label": "2026-06-23",
-      "rates": {
-        "Z26": 4.115,
-        "H27": 4.175,
-        "M27": 4.16
-      }
-    }
-  ],
-  "curve_bp_changes": [
-    {
-      "code": "Z26",
-      "label": "Dec-26",
-      "from_date": "2026-06-16",
-      "to_date": "2026-06-23",
-      "bp_change": 23.0
-    },
-    {
-      "code": "H27",
-      "label": "Mar-27",
-      "from_date": "2026-06-16",
-      "to_date": "2026-06-23",
-      "bp_change": 23.5
-    },
-    {
-      "code": "M27",
-      "label": "Jun-27",
-      "from_date": "2026-06-16",
-      "to_date": "2026-06-23",
-      "bp_change": 22.0
-    }
-  ],
-  "curve_warning": null
+  }
 }

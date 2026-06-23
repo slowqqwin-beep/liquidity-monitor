@@ -694,7 +694,12 @@ def main():
     import shutil
     root_copy = PROJECT_ROOT / "_sr3_watch.md"
     shutil.copy(mp, root_copy)
-    print(f"\nDone: {jp}\n      {mp}\n      → {root_copy}")
+    # 同步到 SR3 网页 → docs/sr3-watch/data/
+    web_data = PROJECT_ROOT / "docs" / "sr3-watch" / "data"
+    web_data.mkdir(parents=True, exist_ok=True)
+    shutil.copy(jp, web_data / "sr3_repair_watch_latest.json")
+    shutil.copy(mp, web_data / "sr3_repair_watch_latest.md")
+    print(f"\nDone: {jp}\n      {mp}\n      → {root_copy}\n      → {web_data}")
 
 
 if __name__ == "__main__":
