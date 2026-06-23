@@ -36,7 +36,7 @@ OUT_DIR = PROJECT_ROOT / "data" / "macro_backtest" / "research"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── TradingView CSV 自动同步 ──
-TV_CSV = PROJECT_ROOT / "data" / "历史数据" / "100-CME_DL_SR3H2027, 1D.csv"
+TV_CSV = PROJECT_ROOT / "data" / "历史数据" / "100-CME_DL_SR3M2026, 1D.csv"
 LONG_PATH = IN_DIR / "sr3_long.csv"
 FEAT_PATH = IN_DIR / "sr3_curve_features.csv"
 
@@ -280,6 +280,61 @@ def find_latest_shock(df):
     return events
 
 
+def curve_structure_check(df, ref_date, ref_idx):
+    """对比今日全合约 vs 参考日全合约：逐合约隐含利率差。
+    返回: {ref_date, n_below, n_total, avg_dev_bp, all_below, detail_list}"""
+    if not LONG_PATH.exists():
+        return None
+    long_df = pd.read_csv(LONG_PATH, parse_dates=["date", "maturity"])
+    long_df = long_df.sort_values(["date", "maturity"])
+
+    li = len(df) - 1
+    today = df["date"].iloc[li]
+    today_date = pd.Timestamp(today).date() if hasattr(today, 'date') else pd.Timestamp(today).date()
+
+    # 拿今日和参考日的合约快照
+    today_snap = long_df[long_df["date"].dt.date == today_date]
+    ref_snap = long_df[long_df["date"].dt.date == pd.Timestamp(ref_date).date()]
+
+    if len(today_snap) == 0 or len(ref_snap) == 0:
+        return None
+
+    # 按 contract 对齐
+    merged = today_snap[["contract", "implied_rate"]].merge(
+        ref_snap[["contract", "implied_rate"]],
+        on="contract", suffixes=("_today", "_ref")
+    )
+    if len(merged) < 3:
+        return None
+
+    merged["dev_bp"] = (merged["implied_rate_today"] - merged["implied_rate_ref"]) * 100
+    n_total = len(merged)
+    n_below = int((merged["dev_bp"] < 0).sum())
+    avg_dev = float(merged["dev_bp"].mean())
+    all_below = n_below == n_total
+    n_above = int((merged["dev_bp"] > 0).sum())
+
+    detail = []
+    for _, r in merged.sort_values("maturity" if "maturity" in merged.columns else "contract").iterrows():
+        detail.append({
+            "contract": r["contract"],
+            "today_pct": round(float(r["implied_rate_today"]), 4),
+            "ref_pct": round(float(r["implied_rate_ref"]), 4),
+            "dev_bp": round(float(r["dev_bp"]), 2),
+        })
+
+    return {
+        "ref_date": str(pd.Timestamp(ref_date).date()),
+        "today_date": str(today_date),
+        "n_contracts": n_total,
+        "n_below": n_below,
+        "n_above": n_above,
+        "avg_deviation_bp": round(avg_dev, 2),
+        "all_below_ref": all_below,
+        "detail": detail,
+    }
+
+
 def analyze(df, last_shock):
     si = last_shock["shock_idx"]
     shock_peak = last_shock["peak_near_rate"]
@@ -306,10 +361,17 @@ def analyze(df, last_shock):
     cmv = cr.get("curve_move_bp", np.nan)
     c5s = cr.get("curve_move_5d_sum", np.nan)
 
+    # 结构对比优先用近期 60 日峰（vs 参考日），不是 formal shock
+    # 因为结构松动是视觉信号：今天曲线比最近峰值低
+    struct_ref_date = rpd if li - rpi < ds else ref_date
+    struct = curve_structure_check(df, struct_ref_date, ref_idx)
+
     # Impulse check (near_rate already in %; 2bp ≈ 0.02%)
     near_peak = abs(cnr - ref_rate) < 0.02
     rising = (not pd.isna(c5s)) and c5s > 1.0
-    in_impulse = near_peak or ((li - rpi) <= 3 and rising)
+    # 结构降级：全合约低于参考峰 → 即使 near_rate 还在峰值附近，也算松动
+    structural_easing = struct and struct["all_below_ref"] and struct["n_contracts"] >= 4
+    in_impulse = (near_peak or ((li - rpi) <= 3 and rising)) and not structural_easing
 
     # Deceleration
     decel = False; dsi = None; dsd = None
@@ -372,6 +434,9 @@ def analyze(df, last_shock):
         cls = "decel_no_repair"; reason = "Deceleration detected but no repair yet"
     elif in_impulse:
         cls = "still_in_impulse"; reason = "Still in hawkish impulse phase"
+    elif structural_easing:
+        cls = "structural_easing"; reason = (f"全线合约低于参考峰({ref_date.date() if hasattr(ref_date,'date') else ref_date})，"
+                                             f"但 5日累计仍正向 — 结构松动先于动能")
 
     # State (descriptive only — research-only, not actionable)
     if cls == "benign_repair":
@@ -380,6 +445,8 @@ def analyze(df, last_shock):
         st, sl, act = 3, "State 3: Level Repair", "短端预期：已从参考峰回落 ≥10bp（level repair）；信用端分类见下方"
     elif decel:
         st, sl, act = 2, "State 2: Deceleration", "短端预期：已钝化（曲线移动 <1.5bp），但尚未出现实质性/持续修复"
+    elif structural_easing:
+        st, sl, act = 2, "State 2: Deceleration", "短端预期：全线合约低于参考峰（结构松动），但动能信号仍在鹰派区；结构性下降领先"
     else:
         st, sl, act = 1, "State 1: Hawkish Impulse", "短端预期：鹰派冲击未消退；曲线仍在上行或高台维持"
 
@@ -413,16 +480,32 @@ def analyze(df, last_shock):
                     "dgs10_pct": d10, "real_yield_nowcast_pct": ry},
         "state": {"state_number": st, "state_label": sl,
                   "in_hawkish_impulse": st == 1,
+                  "structural_easing_detected": bool(structural_easing),
                   "deceleration_detected": decel, "decel_start_date": str(dsd.date()) if dsd else None,
                   "level_repair_detected": level_repair,
                   "repair_detected": repair, "repair_start_date": str(rsd.date()) if rsd else None,
                   "repair_bp_from_peak": round(float(rbp), 2),
                   "repair_classification": cls, "repair_classification_reason": reason},
         "action": act,
+        "curve_structure": struct or {},
         "constraints": {"research_only": True, "not_in_risk_os": True,
                         "not_in_dashboard": True, "not_in_run_all": True,
                         "deceleration_not_buy_signal": True},
     }
+
+
+def _format_structure(cs):
+    """Format curve structure data into MD table string."""
+    if not cs or not cs.get('detail'):
+        return "\n| — | — | — | 数据不可用 |\n"
+    lines = ["\n| 合约 | 今日 | 参考日 | 偏离 |",
+             "|------|------|--------|------|"]
+    for d in cs['detail']:
+        lines.append(f"| {d['contract']} | {d['today_pct']:.3f}% | {d['ref_pct']:.3f}% | {d['dev_bp']:+.1f}bp |")
+    status = "✅ 全线低于参考峰" if cs.get('all_below_ref') else "⚠️ 仍有合约高于参考峰"
+    lines.append("")
+    lines.append(f"> {status}：{cs['n_below']}/{cs['n_contracts']} 合约低于参考峰，平均偏离 {cs['avg_deviation_bp']:+.1f}bp")
+    return "\n" + "\n".join(lines)
 
 
 def write_outputs(r):
@@ -480,6 +563,11 @@ def write_outputs(r):
 | HY OAS | {cu['hy_oas_bp'] or 'N/A'} bp |
 | DGS10 | {cu['dgs10_pct'] or 'N/A'}% |
 | Real Yield Nowcast | {cu['real_yield_nowcast_pct'] or 'N/A'}% |
+
+---
+
+## 曲线结构 — 逐合约对比今日 vs 参考峰 ({s.get('curve_structure',{}).get('ref_date','N/A')})
+""" + _format_structure(s.get('curve_structure', {})) + f"""
 
 ---
 
