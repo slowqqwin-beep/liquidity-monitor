@@ -675,6 +675,109 @@ def write_outputs(r):
     return jp, mp
 
 
+def _write_web_json(r):
+    """转换嵌套分析结果为网页 JS 期望的扁平 JSON"""
+    s, sh, rp = r, r["last_formal_shock"], r["recent_60d_peak"]
+    cu, st, cs, cd = r["current"], r["state"], r.get("curve_structure", {}) or {}, r.get("contract_diffs", []) or []
+
+    # ── Z26-H27-M27 曲线数据 ──
+    curve_comparison = []
+    curve_bp_changes = []
+    contracts_zmh = ["SR3Z2026", "SR3H2027", "SR3M2027"]
+    ref_date_for_zmh = None
+    try:
+        if LONG_PATH.exists():
+            long_all = pd.read_csv(LONG_PATH, parse_dates=["date"])
+            long_all = long_all.sort_values("date")
+            all_dates = sorted(long_all["date"].dt.date.unique())
+            # 最近 5 个交易日
+            recent = all_dates[-5:]
+            for d in recent:
+                snap = long_all[long_all["date"].dt.date == d]
+                rates = {}
+                for c in contracts_zmh:
+                    row = snap[snap["contract"] == c]
+                    rates[c[3:]] = round(float(row["implied_rate"].values[0]), 4) if len(row) > 0 else None
+                curve_comparison.append({"date": str(d), "label": str(d), "rates": rates})
+            # BP 变化 vs 最早日
+            if len(recent) >= 2:
+                first_date = recent[0]
+                latest_date = recent[-1]
+                first_snap = long_all[long_all["date"].dt.date == first_date]
+                latest_snap = long_all[long_all["date"].dt.date == latest_date]
+                for c in contracts_zmh:
+                    fv = first_snap[first_snap["contract"] == c]["implied_rate"]
+                    lv = latest_snap[latest_snap["contract"] == c]["implied_rate"]
+                    if len(fv) > 0 and len(lv) > 0:
+                        curve_bp_changes.append({
+                            "label": f"{c[3:]} ({first_date}→{latest_date})",
+                            "bp_change": round(float(lv.values[0] - fv.values[0]) * 100, 1)
+                        })
+            if all_dates:
+                ref_date_for_zmh = str(all_dates[-2])  # 前一天作为参考
+    except Exception:
+        pass
+
+    # ── 信号矩阵 ──
+    signal_matrix = [
+        {"condition":"信用不扩 + SR3 钝化","meaning":"鹰派动能衰竭，但短端预期尚未回落"},
+        {"condition":"信用不扩 + SR3 level repair + real yield 不再创新高","meaning":"短端预期已明显回落，信用未恶化"},
+        {"condition":"信用不扩 + SR3 benign repair + 分子兑现","meaning":"软着陆情景：利率回落 + 信用收窄"},
+        {"condition":"SR3 钝化但不修复","meaning":"暂停后利率继续上行，不构成拐点信号"},
+    ]
+
+    web = {
+        "generated_at": r["generated_at"],
+        "data_date": r["data_date"],
+        "reference_peak": r["reference_mode"],
+        "status": "Research-Only",
+        "state": st["state_label"],
+        "state_note": r["action"],
+        "hawkish_impulse": st.get("in_hawkish_impulse", False),
+        "deceleration": st.get("deceleration_detected", False) or st.get("structural_easing_detected", False),
+        "deceleration_since": st.get("decel_start_date") or (cs.get("ref_date") if st.get("structural_easing_detected") else None),
+        "level_repair": st.get("level_repair_detected", False),
+        "classification": st["repair_classification"],
+        "classification_reason": st["repair_classification_reason"],
+        "repair": st.get("repair_detected", False),
+        "repair_start_date": st.get("repair_start_date"),
+        "repair_magnitude_bp": st.get("repair_bp_from_peak", 0),
+        "mixed_repair_warning": "mixed_repair 不是买入信号；它只表示 SR3 冲击已钝化但尚未完成 level repair，且 benign repair 条件未完全满足。" if st["repair_classification"] == "mixed_repair" else "",
+        "near_rate": cu["near_rate_pct"],
+        "drawdown_from_peak_bp": cu["decline_from_ref_peak_bp"],
+        "daily_change_bp": cu.get("curve_move_bp"),
+        "five_day_change_bp": cu.get("curve_move_5d_sum_bp"),
+        "high_plateau": cu.get("on_elevated_plateau", False),
+        "hy_oas": cu.get("hy_oas_bp"),
+        "dgs10": cu.get("dgs10_pct"),
+        "real_yield_nowcast": cu.get("real_yield_nowcast_pct"),
+        "constraints": {
+            "research_only": True,
+            "standalone_sr3_watch": True,
+            "no_risk_os": True,
+            "no_existing_dashboard_merge": True,
+            "no_run_all": True,
+            "no_position_impact": True,
+            "deceleration_not_buy_signal": True,
+        },
+        "reference_peaks": [
+            {"source":"Formal Shock","date":sh["date"],"distance":f"{sh['days_ago']}d",
+             "near_rate":sh["peak_near_rate_pct"],"height":f"{sh['shock_height_bp']}bp"},
+            {"source":"Recent 60d Peak","date":rp["date"],"distance":f"{rp['days_ago']}d",
+             "near_rate":rp["near_rate_pct"],"height":"—"},
+        ],
+        "signal_matrix": signal_matrix,
+        "curve_comparison": curve_comparison,
+        "curve_bp_changes": curve_bp_changes,
+        "curve_warning": None if curve_comparison else "Z26-H27-M27 曲线数据不可用",
+        "contract_diffs": cd,
+    }
+    web_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "sr3_repair_watch_latest.json"
+    with open(web_path, "w", encoding="utf-8") as f:
+        json.dump(web, f, indent=2, ensure_ascii=False, default=str)
+    return web_path
+
+
 def main():
     # ── Step 0: 从 TradingView CSV 自动同步新数据到 sr3_long + 重算特征 ──
     _sync_from_tradingview()
@@ -694,12 +797,12 @@ def main():
     import shutil
     root_copy = PROJECT_ROOT / "_sr3_watch.md"
     shutil.copy(mp, root_copy)
-    # 同步到 SR3 网页 → docs/sr3-watch/data/
+    # 同步到 SR3 网页 → docs/sr3-watch/data/（扁平 JSON + MD）
     web_data = PROJECT_ROOT / "docs" / "sr3-watch" / "data"
     web_data.mkdir(parents=True, exist_ok=True)
-    shutil.copy(jp, web_data / "sr3_repair_watch_latest.json")
     shutil.copy(mp, web_data / "sr3_repair_watch_latest.md")
-    print(f"\nDone: {jp}\n      {mp}\n      → {root_copy}\n      → {web_data}")
+    web_json = _write_web_json(r)
+    print(f"\nDone: {jp}\n      {mp}\n      → {root_copy}\n      → {web_json}")
 
 
 if __name__ == "__main__":
