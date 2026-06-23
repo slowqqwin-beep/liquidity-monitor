@@ -72,6 +72,11 @@ function boolText(v){
 }
 
 async function loadData(){
+  // 优先用本地 JS 嵌入数据（绕过 file:// CORS）
+  if(window.SR3_DATA && typeof window.SR3_DATA === "object" && window.SR3_DATA.data_date){
+    console.log("[SR3] Using embedded SR3_DATA (local file mode)");
+    return window.SR3_DATA;
+  }
   try{
     const res = await fetch(JSON_URL, {cache:"no-store"});
     if(!res.ok) throw new Error(`JSON fetch failed: ${res.status}`);

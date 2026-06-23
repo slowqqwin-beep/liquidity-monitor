@@ -775,6 +775,9 @@ def _write_web_json(r):
     web_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "sr3_repair_watch_latest.json"
     with open(web_path, "w", encoding="utf-8") as f:
         json.dump(web, f, indent=2, ensure_ascii=False, default=str)
+    # 同时写 JS 版本，绕过本地 file:// 的 CORS 限制
+    js_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "sr3_data.js"
+    js_path.write_text("window.SR3_DATA = " + json.dumps(web, indent=2, ensure_ascii=False, default=str) + ";", encoding="utf-8")
     return web_path
 
 

@@ -1,4 +1,4 @@
-{
+window.SR3_DATA = {
   "generated_at": "2026-06-23T17:10:29.897439",
   "data_date": "2026-06-23",
   "reference_peak": "formal shock",
@@ -179,4 +179,4 @@
       "implied_chg_bp": -4.5
     }
   ]
-}
+};
