@@ -103,6 +103,14 @@ A 美元资金管道 → B 信用融资条件 → C 长端利率定价 → D 外
 
 | 日期 | commit | 内容 |
 |------|--------|------|
+| 06-23 | `34b060c` | feat: **SR3 Watch Dashboard v7** — 独立网页看板全链路：TradingView M2026 曲线自动同步、Z26-H27-M27 远期曲线、三层事件基准线(Event Baseline 6/16 / Hike-over Peak 6/22 / Repair Start 6/23)、2s10s 双轴利率+利差(29.7bp 牛陡)、分类详情含 event level repair 状态 |
+| 06-23 | `34b060c` | feat: `scripts/sr3_repair_watch.py` — SR3 全链路自动化：TradingView CSV 直接读取(废除 sofr_sr3.csv)、列名自动清洗、已到期合约过滤、series.json 兜底(macro fallback)、曲线结构对比(全合约 vs 参考峰)、合约日差价表 |
+| 06-23 | `34b060c` | feat: SR3 结构松动检测 — 全合约逐日对比参考峰，7/7 合约低于 6/22 峰 → State 2 Deceleration，结构信号先于动能信号 |
+| 06-23 | `34b060c` | fix: 2s10s 计算修复 — detect_twos10s_columns 文件名识别 US10Y、ten-two 优先于 spread 列、448.5bp→29.7bp、牛陡判定 |
+| 06-23 | `34b060c` | fix: `fetch_data.py` OUT_DIR 路径 bug 修复 — 从 `liquidity-dashboard\liquidity-dashboard\data\` → `v3.5\data\` |
+| 06-23 | `34b060c` | chore: `_patch.py` 永久补丁脚本 — 每次解压新 ZIP 后自动应用 M2026 曲线源、2s10s 列检测、spread 优先级等四行补丁 |
+| 06-23 | — | note: SR3 三层基准口径确立 — Event Baseline(6/16, FOMC 前) ≠ Cycle Baseline(5月, 旧降息预期)。当前 event level repair: 否，距基准 ~20bp |
+| 06-23 | — | note: v4-v7 ZIP 增量演进路径：v4 当前事件修复 → v5 price-over/hike-over 口径 → v6 事件参考线表 → v7 事件卡片化展示 |
 | 06-22 | `1f152c7` | feat: **TLT Leg-2 spec v6** — `docs/tlt_leg2_spec.md` z⊕level veto (gate=400bp, high_floor=750bp) + Phase 3 三叉判据预注册 (GO/NO-GO/INSUFFICIENT, N_decisive 地板, episode 去重, 中性带) |
 | 06-22 | `1f152c7` | feat: `scripts/compute_credit_stress_z.py` — z+level veto 计算 → `data/credit_stress_z.csv` |
 | 06-22 | `1f152c7` | feat: `scripts/validate_credit_veto.py` — Phase 2 验收 16 PASS / 0 FAIL / 2 DEFERRED (Test C + 2019 deferred→Phase 3) |
@@ -425,4 +433,4 @@ repair_type = benign / malign / mixed / unavailable
 
 ---
 
-*封版日期: 2026-06-22 21:40 | 最后更新: 2026-06-22 (TLT Leg-2 spec v6 + Phase 1/2 DONE + H=45% Batch-1) | 下次运行窗口: 周二 06-23 | v3.5 / v3.5.1 + TLT Leg-2*
+*封版日期: 2026-06-23 21:05 | 最后更新: 2026-06-23 (SR3 Watch Dashboard v7 + 2s10s fix + fetch_data path fix + _patch.py) | 下次运行窗口: 周三 06-24 | v3.5 / v3.5.1 + TLT Leg-2 + SR3 Watch*
