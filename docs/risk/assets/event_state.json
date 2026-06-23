@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-22",
+  "generated_at": "2026-06-23",
   "generator": "Risk OS Orchestrator v2.0 — SSoT",
   "_version": "v2.0",
   "_note": "⚠️ 唯一权威状态输出。三套输入系统(Fed Reaction/ABCD/risk_dashboard) 降级为信号提供层，不得输出最终结论。下游只能读取 risk_os_final，不得重算。",
-  "date": "2026-06-22",
-  "regime": "R4 防御",
+  "date": "2026-06-23",
+  "regime": "R4 防御 ⚠️",
   "regime_key": "R4",
   "systemic_classification": "NON-SYSTEMIC WATCH",
   "systemic_confirmed": false,
@@ -16,8 +16,8 @@
   "cross_domain_signals": 3,
   "red_count": 2,
   "risk_os_final": {
-    "date": "2026-06-22",
-    "final_regime": "R4 防御",
+    "date": "2026-06-23",
+    "final_regime": "R4 防御 ⚠️",
     "final_regime_key": "R4",
     "final_systemic_classification": "NON-SYSTEMIC WATCH",
     "systemic_confirmed": false,
@@ -26,16 +26,25 @@
       "hedge": "45%",
       "cash": "30%"
     },
-    "final_hero": "R4 防御 · NON-SYSTEMIC WATCH — C(实际利率)+A(流动性)双红→防御仓位，但系统性能确认未达成",
-    "final_judgement": "A/C双红→R4 防御模式；T2流动性已触发·部分压力（EFFR-IORB=-2.0bp DUR5=3/3）、但T1信用未触发、T3跨资产未触发，不满足系统性风险三端共振定义。实际利率高压+流动性部分压力使仓位进入防御，但信用未坏、跨境未扩散→仍为非系统性观察。",
-    "confidence": "high",
+    "final_hero": "R4 防御 ⚠️ · NON-SYSTEMIC WATCH — C(实际利率)+A(流动性)双红→防御仓位，但系统性能确认未达成",
+    "final_judgement": "A/C双红→R4 防御 ⚠️模式；T2流动性已触发·部分压力（EFFR-IORB=-2.0bp DUR5=3/3）、但T1信用未触发、T3跨资产未触发，不满足系统性风险三端共振定义。实际利率高压+流动性部分压力使仓位进入防御，但信用未坏、跨境未扩散→仍为非系统性观察。 ⚠️数据滞后，regime/red_count可能基于过期数据。结论置信度打折。需重抓fetch_data。",
+    "confidence": "low",
     "data_quality": {
-      "stale": false,
-      "stale_series": [],
+      "stale": true,
+      "stale_series": [
+        "BAMLC0A0CM (last: 2026-06-17, 6d stale)",
+        "BAMLH0A0HYM2 (last: 2026-06-17, 6d stale)",
+        "DFII10 (last: 2026-06-17, 6d stale)",
+        "DGS10 (last: 2026-06-17, 6d stale)",
+        "DGS2 (last: 2026-06-17, 6d stale)",
+        "EFFR (last: 2026-06-17, 6d stale)",
+        "SOFR (last: 2026-06-17, 6d stale)",
+        "VIXCLS (last: 2026-06-17, 6d stale)"
+      ],
       "missing_series": [],
-      "data_degraded": false,
-      "impact": "",
-      "note": "数据质量正常"
+      "data_degraded": true,
+      "impact": "数据质量问题，VTS/CASC/双探针互锁不能用于系统性确认。systemic_confirmed严格为false，等fetch_data重抓。",
+      "note": "⚠️ 数据质量降级：数据滞后(8项): BAMLC0A0CM (last: 2026-06-17, 6d stale), BAMLH0A0HYM2 (last: 2026-06-17, 6d stale), DFII10 (last: 2026-06-17, 6d stale), DGS10 (last: 2026-06-17, 6d stale)"
     },
     "source_votes": {
       "fed_reaction": "hawkish pressure (DGS2-IORB high) | vol calm | credit gate: complacent/improving",
@@ -108,7 +117,7 @@
   "stage_assessment": {
     "current_stage": "前端事件风险 + 第一层利率冲击",
     "not_yet_stage": "系统性风险",
-    "final_judgement": "A/C双红→R4 防御模式；T2流动性已触发·部分压力（EFFR-IORB=-2.0bp DUR5=3/3）、但T1信用未触发、T3跨资产未触发，不满足系统性风险三端共振定义。实际利率高压+流动性部分压力使仓位进入防御，但信用未坏、跨境未扩散→仍为非系统性观察。",
+    "final_judgement": "A/C双红→R4 防御 ⚠️模式；T2流动性已触发·部分压力（EFFR-IORB=-2.0bp DUR5=3/3）、但T1信用未触发、T3跨资产未触发，不满足系统性风险三端共振定义。实际利率高压+流动性部分压力使仓位进入防御，但信用未坏、跨境未扩散→仍为非系统性观察。 ⚠️数据滞后，regime/red_count可能基于过期数据。结论置信度打折。需重抓fetch_data。",
     "systemic_upgrade_conditions": {
       "credit_widening": false,
       "liquidity_sustained": true,
