@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-06-23T17:10:29.897439",
+  "generated_at": "2026-06-23T17:20:15.011874",
   "data_date": "2026-06-23",
   "data_age_days": 0,
   "reference_mode": "formal shock",
   "last_formal_shock": {
-    "date": "2026-06-09",
-    "days_ago": 10,
-    "peak_near_rate_pct": 3.71,
-    "shock_height_bp": 8.0,
+    "date": "2026-05-22",
+    "days_ago": 24,
+    "peak_near_rate_pct": 3.725,
+    "shock_height_bp": 7.0,
     "still_active": true
   },
   "recent_60d_peak": {
@@ -20,7 +20,7 @@
     "near_rate_pct": 3.79,
     "curve_move_bp": -2.88,
     "curve_move_5d_sum_bp": 10.38,
-    "decline_from_ref_peak_bp": -8.0,
+    "decline_from_ref_peak_bp": -6.5,
     "on_elevated_plateau": true,
     "hy_oas_bp": 266.0,
     "hy_oas_available": false,
@@ -32,16 +32,23 @@
     "state_label": "State 2: Deceleration",
     "in_hawkish_impulse": false,
     "structural_easing_detected": true,
-    "deceleration_detected": false,
-    "decel_start_date": null,
+    "deceleration_detected": true,
+    "decel_start_date": "2026-05-26",
     "level_repair_detected": false,
-    "repair_detected": false,
-    "repair_start_date": null,
-    "repair_bp_from_peak": 0.0,
-    "repair_classification": "structural_easing",
-    "repair_classification_reason": "全线合约低于参考峰(2026-06-09)，但 5日累计仍正向 — 结构松动先于动能"
+    "repair_detected": true,
+    "repair_start_date": "2026-05-26",
+    "repair_bp_from_peak": 5.0,
+    "repair_classification": "mixed_repair",
+    "repair_classification_reason": "Mixed signals, no clear benign/malign pattern"
   },
   "contract_diffs": [
+    {
+      "contract": "SR3M2026",
+      "close": 96.2875,
+      "close_chg": 0.0075,
+      "implied_rate_pct": 3.7125,
+      "implied_chg_bp": -0.75
+    },
     {
       "contract": "SR3N2026",
       "close": 96.21,
@@ -72,10 +79,10 @@
     },
     {
       "contract": "SR3H2027",
-      "close": 96.2875,
-      "close_chg": 0.0075,
-      "implied_rate_pct": 3.7125,
-      "implied_chg_bp": -0.75
+      "close": 95.865,
+      "close_chg": 0.055,
+      "implied_rate_pct": 4.135,
+      "implied_chg_bp": -5.5
     },
     {
       "contract": "SR3M2027",
@@ -92,18 +99,24 @@
       "implied_chg_bp": -4.5
     }
   ],
-  "action": "短端预期：全线合约低于参考峰（结构松动），但动能信号仍在鹰派区；结构性下降领先",
+  "action": "短端预期：已钝化（曲线移动 <1.5bp），但尚未出现实质性/持续修复",
   "curve_structure": {
     "ref_date": "2026-06-22",
     "today_date": "2026-06-23",
-    "n_contracts": 7,
-    "n_below": 7,
+    "n_contracts": 8,
+    "n_below": 8,
     "n_above": 0,
-    "avg_deviation_bp": -3.14,
+    "avg_deviation_bp": -3.44,
     "all_below_ref": true,
     "detail": [
       {
         "contract": "SR3H2027",
+        "today_pct": 4.135,
+        "ref_pct": 4.19,
+        "dev_bp": -5.5
+      },
+      {
+        "contract": "SR3M2026",
         "today_pct": 3.7125,
         "ref_pct": 3.72,
         "dev_bp": -0.75

@@ -13,10 +13,8 @@ from daily_report import (
     load_data, compute_vintages, compute_v35_triggers,
     compute_abcd_signals, compute_casc, compute_vts, compute_rcv,
     compute_vts_rcv_interlock, apply_casc_gate, compute_position,
-    read_ssot_position,
     compute_rate_path_proxy, compute_trigger_proximity,
-    compute_real_yield_nowcast, compute_curve_regime,
-    rate_path_direction_label,
+    compute_real_yield_nowcast,
 )
 
 DATA_DIR   = Path(__file__).resolve().parent / "data"
@@ -26,21 +24,11 @@ def _light_color(l: str) -> str:
     m = {"🔴":"red","🟠":"orange","🟡":"yellow","🟢":"green","⚠️":"yellow"}
     return m.get(l, "gray")
 
-
 # ═══════════════════════════════════════════════════════════════════════════
 # Verdict 映射 — 唯一入口，与 compute_vts_rcv_interlock() 的 state 全集保持覆盖
 # ═══════════════════════════════════════════════════════════════════════════
 
-VERDICTS_MD = {
-    "systemic":     "系统已进入系统性风险阶段。VTS倒挂+RCV长端/全曲线→Role B确认触发。激进降风险。",
-    "pre-systemic": "前端压力积聚，未进系统性。等RCV翻long-led或acute-broad叠VTS倒挂→升档。",
-    "front":        "双探针前端一致·近端事件非系统性。等CPI/Fed落地看前端是fade还是扩散。要盯的翻转点：RCV→long-led/acute-broad叠VTS倒挂→agree-systemic。",
-    "divergent":    "VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。",
-    "calm":         "双端平静·无双探针共振。系统性风险维度=低，不触发额外动作。",
-    "N/A":          "VTS/RCV数据缺失 — 无法判定系统性状态。等数据恢复。",
-}
-
-VERDICTS_PNG = {
+VERDICTS = {
     "systemic":     "[!] SYSTEMIC CONFIRMED -- VTS inversion + RCV long/acute-broad. Defend. Role B triggered.",
     "pre-systemic": "Front stress accumulating, NOT systemic yet. Watch RCV→long-led or acute-broad + VTS inverted → upgrade.",
     "front":        "Non-systemic front event. Await CPI/Fed → front will either fade or spread. Key flip: RCV→long-led/acute-broad + VTS inverted.",
@@ -49,41 +37,31 @@ VERDICTS_PNG = {
     "N/A":          "VTS/RCV data missing — cannot confirm or refute systemic. Watch for data return.",
 }
 
+def map_lock_to_verdict(lock_state: str, vts_structure: str) -> str:
+    """将互锁 state 映射为 verdict 字符串。stg_key 枚举全集：
+    systemic / pre-systemic / front / divergent / N/A / calm
 
-def _lock_to_stg_key(lock_state: str, vts_structure: str) -> str:
-    """将互锁 state 映射为 verdict 键。
-    
-    stg_key 枚举全集：systemic / pre-systemic / front / divergent / N/A / calm
-    必须与 compute_vts_rcv_interlock() 可能产出的 state 全集保持一一对应。
+    缺键时返回可见告警 fallback（不返回空串，防 PNG 空白）。
     """
     if lock_state == "agree-systemic":
-        return "systemic"
-    if vts_structure in ("倒挂", "倒挂·急性"):
-        return "pre-systemic"
-    if lock_state == "agree-front":
-        return "front"
-    if lock_state == "divergent":
-        return "divergent"
-    if lock_state in ("N/A", "vts_missing"):
-        return "N/A"
-    return "calm"
-
-
-def get_verdict_md(lock_state: str, vts_structure: str) -> str:
-    """MD 报告中文 verdict，缺键时返回高亮告警而非空串。"""
-    key = _lock_to_stg_key(lock_state, vts_structure)
-    return VERDICTS_MD.get(key, f"[!] VERDICT KEY MISSING: key='{key}' lock_state='{lock_state}'")
-
-def get_verdict_png(lock_state: str, vts_structure: str) -> str:
-    """PNG 看板英文 verdict，缺键时返回高亮告警而非空串。"""
-    key = _lock_to_stg_key(lock_state, vts_structure)
-    return VERDICTS_PNG.get(key, f"[!] VERDICT KEY MISSING: key='{key}' lock_state='{lock_state}'")
-
+        stg_key = "systemic"
+    elif vts_structure in ("倒挂", "倒挂·急性"):
+        stg_key = "pre-systemic"
+    elif lock_state == "agree-front":
+        stg_key = "front"
+    elif lock_state == "divergent":
+        stg_key = "divergent"
+    elif lock_state in ("N/A", "vts_missing"):
+        stg_key = "N/A"
+    else:
+        stg_key = "calm"
+    fallback = f"[!] VERDICT KEY MISSING: stg_key='{stg_key}' lock_state='{lock_state}' — report bug"
+    return VERDICTS.get(stg_key, fallback)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Markdown Dashboard
 # ═══════════════════════════════════════════════════════════════════════════
-def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, *, nowcast=None, curve=None):
+def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, *, nowcast=None):
     a,b,c,d = abcd["A"],abcd["B"],abcd["C"],abcd["D"]
     cross, red_n = abcd["cross_domain_count"], abcd["red_domain_count"]
     reg, reg_key = pos["label"], pos["regime_key"]
@@ -97,10 +75,8 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     lock_state = lock.get("state","N/A")
     vix9d_r = vts.get("ratio_vix9d_vix")
     vix9d_r_str = f"{vix9d_r:.3f}" if vix9d_r is not None else "N/A"
-    rp_gap = rate_path.get("gap_bp")
-    rp_label = rate_path.get("direction_label", rate_path.get("level_label", "N/A"))
+    rp_gap, rp_label = rate_path.get("gap_bp"), rate_path.get("level_label","N/A")
     rp_5d = rate_path.get("gap_5d_chg")
-    _, rp_arrow = rate_path_direction_label(rp_5d) if rp_5d is not None else ("", "")
 
     # Systemic stage — describes systemic-risk dimension only; never outputs position advice
     # v3.5.1: VTS=N/A explicitly gated (not folded into calm). stage_l emoji removed (stage_c provides it).
@@ -124,12 +100,18 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     else:
         stage, stage_l, stage_c = "calm", "无双探针共振·前端事件未扩散", "🟢"
 
-    # Verdict — 统一入口 get_verdict_md()，枚举全集覆盖，缺键高亮告警
+    # Verdict — systemic-risk dimension; 仓位归 §0.6 瀑布管
+    verdicts = {
+        "systemic": "系统已进入系统性风险阶段。VTS倒挂+RCV长端/全曲线→Role B确认触发。激进降风险。",
+        "pre-systemic": "前端压力积聚，未进系统性。等RCV翻long-led或acute-broad叠VTS倒挂→升档。",
+        "front": "双探针前端一致·近端事件非系统性。等CPI/Fed落地看前端是fade还是扩散。要盯的翻转点：RCV→long-led/acute-broad叠VTS倒挂→agree-systemic。",
+        "divergent": "VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。",
+        "calm": "双端平静·无双探针共振。系统性风险维度=低，不触发额外动作。",
+    }
 
     lines = []
     lines.append(f"# 🛡️ 前端风险 → 系统性风险 演化看板\n")
     lines.append(f"> **{run_date}** | Regime: **{reg}** | P={pos['Primary']}% / H={pos['Hedge']}% / C={pos['Cash']}% | 跨域信号={cross} | 🔴={red_n}\n")
-    lines.append(f"> ⚠️ 显示用 · 权威裁决以 Risk Dashboard (risk_os_state_machine SSoT) 为准 — 若与 dashboard.js 显示的 regime/仓位不一致，以 dashboard 为准\n")
 
     # ① Near-term event risk
     lines.append("---\n## ① 近端事件风险\n")
@@ -156,7 +138,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     if casc.get("legs",{}).get("FX",{}).get("mutated"): sig.append("FX突变✅")
     lines.append(f"| 市场信号 | {'·'.join(sig) if sig else '无跨资产确认'} |")
     rp_gap_str = f"{rp_gap:.1f}" if rp_gap is not None else "N/A"
-    lines.append(f"| 利率路径 | DGS2−IORB={rp_gap_str}bp{' · 5dΔ'+f'{rp_5d:+.1f}'+'bp '+rp_arrow if rp_5d is not None else ''} · [{rp_label} · 代理非OIS] |\n")
+    lines.append(f"| 利率路径 | DGS2−IORB={rp_gap_str}bp {rp_label}{' 5dΔ'+str(rp_5d)+'bp' if rp_5d else ''} |\n")
 
     # ② First-layer transmission
     lines.append("---\n## ② 第一层传导\n")
@@ -175,28 +157,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     lines.append(f"| A 资金管道 | EFFR-IORB | {effr_v}bp | {effr_l} | {dur5_e}/5 {'✅' if dur5_e>=5 else ''} | 资金管道偏紧 |")
     a_sofr = a["details"].get("SOFR-IORB",{})
     sofr_v = a_sofr.get("value_bp",0) or 0
-    lines.append(f"| A 拆借 | SOFR-IORB | {sofr_v}bp | {a_sofr.get('light','N/A')} | — | 拆借市场 |")
-
-    # ── 2s10s 曲线结构（② 子项） ──
-    if curve and curve.get("spread_2s10s_bp") is not None:
-        c_y2 = curve.get("yield_2y"); c_y10 = curve.get("yield_10y"); c_y30 = curve.get("yield_30y")
-        c_s = curve.get("spread_2s10s_bp"); c_s5 = curve.get("spread_5s30s_bp")
-        c_d5 = curve.get("chg_5d_bp"); c_reg = curve.get("regime", "N/A")
-        c_steep = curve.get("steepness", "N/A"); c_sig = curve.get("signal")
-        y2s = f"{c_y2:.2f}%" if c_y2 is not None else "N/A"
-        y10s = f"{c_y10:.2f}%" if c_y10 is not None else "N/A"
-        y30s = f"{c_y30:.2f}%" if c_y30 is not None else "N/A"
-        ss = f"{c_s:+.0f}bp" if c_s is not None else "N/A"
-        d5s = f"{c_d5:+.0f}bp" if c_d5 is not None else "N/A"
-        lines.append(f"| — | 2Y | {y2s} | — | — | — |")
-        lines.append(f"| — | 10Y | {y10s} | — | — | — |")
-        lines.append(f"| — | 30Y | {y30s} | — | — | — |")
-        lines.append(f"| — | **2s10s Spread** | **{ss}** | — | — | Δ5d {d5s} · {c_reg}({c_steep}) |")
-        if c_s5 is not None:
-            lines.append(f"| — | 5s30s Spread | {c_s5:+.0f}bp | — | — | — |")
-        if c_sig:
-            lines.append(f"| — | **信号** | **{c_sig}** | — | — | — |")
-        lines.append("")  # separator before next section
+    lines.append(f"| A 拆借 | SOFR-IORB | {sofr_v}bp | {a_sofr.get('light','N/A')} | — | 拆借市场 |\n")
 
     # ③ Systemic triggers
     lines.append("---\n## ③ 系统性风险触发器\n")
@@ -257,8 +218,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
             lines.append(f"| C Nowcast | {nowcast['nowcast_level_light']} {nc_level} · 方向数据累积中(<5d历史) |")
         else:
             lines.append(f"| C Nowcast | {nowcast['nowcast_level_light']} {nc_level} · 方向{nc_dir} |")
-    verdict_md = get_verdict_md(lock_state, vts.get("structure",""))
-    lines.append(f"\n> **最终判断**：{verdict_md}\n")
+    lines.append(f"\n> **最终判断**：{verdicts.get(stage,'')}\n")
 
     lines.append(f"---\n*ABCD v3.5.1 风险演化看板 | {run_date} | FRED+Yahoo*")
     return "\n".join(lines)
@@ -299,6 +259,7 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
     elif vts.get("structure","") in ("倒挂","倒挂·急性"): stage_s, stage_t = "#FF8C00","PRE-SYSTEMIC · VTS Inverted"
     elif lock_state == "agree-front": stage_s, stage_t = "#FFD700","FRONT-EVENT · Non-Systemic"
     elif lock_state == "divergent": stage_s, stage_t = "#FFD700","DIVERGENT · Single-Asset Technical"
+    elif lock_state in ("N/A", "vts_missing"): stage_s, stage_t = "#6E7681","N/A · DATA MISSING"
     else: stage_s, stage_t = "#2E8B57","CALM · No Probe Resonance"
 
     fig = plt.figure(figsize=(10.55, 14.91), dpi=120, facecolor="#0D1117")
@@ -319,7 +280,8 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
     # ① Event Risk
     ax1 = fig.add_subplot(gs[1],facecolor="#161B22"); ax1.set_xlim(0,10); ax1.set_ylim(0,9); ax1.axis("off")
     txt(ax1,0.3,8.3,"① NEAR-TERM EVENT RISK",13,blue,True)
-    front_s = vts.get("front_structure","N/A"); vix9d = vts.get("ratio_vix9d_vix")
+    front_s = vts.get("front_structure","N/A"); vix9d = vts.get("ratio_vix9d_vix"); vts_r_raw = vts.get("ratio_vix_vix3m")
+    vts_r_str = f"{vts_r_raw:.3f}" if vts_r_raw is not None else "N/A"
     vix9d_str = f"{vix9d:.3f}" if vix9d is not None else "N/A"
     txt(ax1,0.3,7.0,f"Event: VIX9D/VIX={vix9d_str} * {front_s}  |  VIX={vix_val:.1f}(5dD{vix_leg.get('delta_5d',0):+.1f})  |  MOVE={move_val:.0f}  |  Rate: DGS2-IORB={rp_gap_str}bp",9.5,tc_mid)
     # CASC confirmation badgelist
@@ -368,9 +330,9 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
 
     box(ax3,0.3,7.0,3.0,3.5,t_a_c,t_a_c); box(ax3,3.6,7.0,3.0,3.5,t_b_c,t_b_c); box(ax3,6.9,7.0,3.0,3.5,t_c_c,t_c_c)
     for i,(lb,lc,cv,detail) in enumerate([
-        ("A: CREDIT",t_a_c, "NOT TRIGGERED" if t_a_c=="#2E8B57" else "PARTIAL" if t_a_c=="#FF8C00" else "TRIGGERED", "HY/IG OAS complacent"),
-        ("B: LIQUIDITY",t_b_c, "PARTIAL" if t_b_c=="#FF8C00" else "TRIGGERED" if t_b_c=="#DC143C" else "NOT TRIGGERED", f"EFFR-IORB={effr_v}bp DUR5={dur5_e}/5"),
-        ("C: CROSS-ASSET",t_c_c, "TRIGGERED" if t_c_c=="#DC143C" else "MONITOR" if t_c_c=="#FF8C00" else "NOT TRIGGERED", f"CASC{casc_conf}/4·VTS={vts.get('structure','N/A')}"),
+        ("T1: CREDIT (B)",t_a_c, "NOT TRIGGERED" if t_a_c=="#2E8B57" else "PARTIAL" if t_a_c=="#FF8C00" else "TRIGGERED", "HY/IG OAS complacent"),
+        ("T2: LIQUIDITY (A)",t_b_c, "PARTIAL" if t_b_c=="#FF8C00" else "TRIGGERED" if t_b_c=="#DC143C" else "NOT TRIGGERED", f"EFFR-IORB={effr_v}bp DUR5={dur5_e}/5"),
+        ("T3: CROSS-ASSET (C)",t_c_c, "TRIGGERED" if t_c_c=="#DC143C" else "MONITOR" if t_c_c=="#FF8C00" else "NOT TRIGGERED", f"CASC{casc_conf}/4·VTS={vts.get('structure','N/A')}"),
     ]):
         x0 = 0.3 + i*3.3
         txt(ax3,x0+0.3,9.7,lb,10,lc,True); txt(ax3,x0+0.3,9.0,detail,9,tc_dim); txt(ax3,x0+0.3,7.5,cv,9,lc,True)
@@ -388,7 +350,7 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
     metrics = [
         (f"Regime: {reg} ({reg_key})", f"Cross={cross} * RED={red_n}"),
         (f"Position: P={pos['Primary']}% / H={pos['Hedge']}% / C={pos['Cash']}%", f"Baseline: R2=55/25/20"),
-        (f"VTS: {vts.get('structure','N/A')} · Front={vts.get('front_structure','N/A')}", f"VIX/VIX3M={vts.get('ratio_vix_vix3m','N/A')}"),
+        (f"VTS: {vts.get('structure','N/A')} · Front={vts.get('front_structure','N/A')}", f"VIX/VIX3M={vts_r_str}"),
         (f"RCV: {rcv.get('character','N/A')} · 2y/30y={rcv.get('ratio_2y_30y','N/A')}", f"sev={rcv.get('severity','N/A')} tilt={rcv.get('tilt','N/A')}"),
         (f"Interlock: {lock_state}", lock.get('state_label','N/A')),
         (f"C-end: {casc_label[:60]}", f"CASC {casc_conf}/4"),
@@ -396,8 +358,8 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
     for i,(l,r) in enumerate(metrics):
         txt(ax4,0.6,y0-i*1.05,l,9.5,tc_dark); txt(ax4,6.0,y0-i*1.05,r,9,tc_dim)
 
-    # Verdict — 统一入口 get_verdict_png()，枚举全集覆盖，缺键高亮告警
-    verdict_text = get_verdict_png(lock_state, vts.get("structure",""))
+    # Verdict — 统一入口 map_lock_to_verdict()，枚举全集覆盖，缺键高亮告警
+    verdict_text = map_lock_to_verdict(lock_state, vts.get("structure",""))
     box(ax4,0.3,1.5,9.4,1.8,stage_s,stage_s,0.1)
     txt(ax4,0.6,2.8,f"VERDICT: {verdict_text}",10,tc_dark,True)
 
@@ -428,28 +390,20 @@ def main():
     abcd = compute_abcd_signals(raw)
     casc = compute_casc(raw, v35, abcd)
     abcd = apply_casc_gate(abcd, casc)
-    pos = read_ssot_position()
-    if pos is None:
-        pos = compute_position(abcd, v35, casc=casc)
+    pos = compute_position(abcd, v35, casc=casc)
     rate_path = compute_rate_path_proxy(raw)
 
     vts = casc.get("vts", compute_vts(raw))
     rcv = casc.get("rcv", compute_rcv(raw))
     lock = casc.get("vts_rcv_lock", compute_vts_rcv_interlock(vts, rcv))
     nowcast = compute_real_yield_nowcast(raw)
-    curve   = compute_curve_regime(raw)
 
-    # 1) Markdown (dated archive)
-    md = format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, nowcast=nowcast, curve=curve)
+    # 1) Markdown
+    md = format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, lock, rate_path, nowcast=nowcast)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     md_path = REPORT_DIR / f"risk_dashboard_{run_date}.md"
     md_path.write_text(md, encoding="utf-8")
     print(f"[Dashboard MD saved to {md_path}]")
-
-    # 1b) Sync latest snapshot → risk_dashboard_latest.md (build_site.py source)
-    latest_path = REPORT_DIR.parent / "risk_dashboard_latest.md"
-    latest_path.write_text(md, encoding="utf-8")
-    print(f"[Dashboard MD synced to {latest_path}]")
 
     # 2) PNG
     png_path = REPORT_DIR / f"risk_dashboard_{run_date}.png"

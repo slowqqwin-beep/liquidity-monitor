@@ -1,22 +1,22 @@
 window.SR3_DATA = {
-  "generated_at": "2026-06-23T17:10:29.897439",
+  "generated_at": "2026-06-23T17:20:15.011874",
   "data_date": "2026-06-23",
   "reference_peak": "formal shock",
   "status": "Research-Only",
   "state": "State 2: Deceleration",
-  "state_note": "短端预期：全线合约低于参考峰（结构松动），但动能信号仍在鹰派区；结构性下降领先",
+  "state_note": "短端预期：已钝化（曲线移动 <1.5bp），但尚未出现实质性/持续修复",
   "hawkish_impulse": false,
   "deceleration": true,
-  "deceleration_since": "2026-06-22",
+  "deceleration_since": "2026-05-26",
   "level_repair": false,
-  "classification": "structural_easing",
-  "classification_reason": "全线合约低于参考峰(2026-06-09)，但 5日累计仍正向 — 结构松动先于动能",
-  "repair": false,
-  "repair_start_date": null,
-  "repair_magnitude_bp": 0.0,
-  "mixed_repair_warning": "",
+  "classification": "mixed_repair",
+  "classification_reason": "Mixed signals, no clear benign/malign pattern",
+  "repair": true,
+  "repair_start_date": "2026-05-26",
+  "repair_magnitude_bp": 5.0,
+  "mixed_repair_warning": "mixed_repair 不是买入信号；它只表示 SR3 冲击已钝化但尚未完成 level repair，且 benign repair 条件未完全满足。",
   "near_rate": 3.79,
-  "drawdown_from_peak_bp": -8.0,
+  "drawdown_from_peak_bp": -6.5,
   "daily_change_bp": -2.88,
   "five_day_change_bp": 10.38,
   "high_plateau": true,
@@ -35,10 +35,10 @@ window.SR3_DATA = {
   "reference_peaks": [
     {
       "source": "Formal Shock",
-      "date": "2026-06-09",
-      "distance": "10d",
-      "near_rate": 3.71,
-      "height": "8.0bp"
+      "date": "2026-05-22",
+      "distance": "24d",
+      "near_rate": 3.725,
+      "height": "7.0bp"
     },
     {
       "source": "Recent 60d Peak",
@@ -71,64 +71,71 @@ window.SR3_DATA = {
       "date": "2026-06-16",
       "label": "2026-06-16",
       "rates": {
-        "Z2026": 3.885,
-        "H2027": 3.6675,
-        "M2027": 3.94
+        "Z26": 3.885,
+        "H27": 3.94,
+        "M27": 3.94
       }
     },
     {
       "date": "2026-06-17",
       "label": "2026-06-17",
       "rates": {
-        "Z2026": 4.035,
-        "H2027": 3.7,
-        "M2027": 4.08
+        "Z26": 4.035,
+        "H27": 4.095,
+        "M27": 4.08
       }
     },
     {
       "date": "2026-06-18",
       "label": "2026-06-18",
       "rates": {
-        "Z2026": 4.095,
-        "H2027": 3.715,
-        "M2027": 4.11
+        "Z26": 4.095,
+        "H27": 4.145,
+        "M27": 4.11
       }
     },
     {
       "date": "2026-06-22",
       "label": "2026-06-22",
       "rates": {
-        "Z2026": 4.125,
-        "H2027": 3.72,
-        "M2027": 4.175
+        "Z26": 4.125,
+        "H27": 4.19,
+        "M27": 4.175
       }
     },
     {
       "date": "2026-06-23",
       "label": "2026-06-23",
       "rates": {
-        "Z2026": 4.075,
-        "H2027": 3.7125,
-        "M2027": 4.125
+        "Z26": 4.075,
+        "H27": 4.135,
+        "M27": 4.125
       }
     }
   ],
   "curve_bp_changes": [
     {
-      "label": "Z2026 (2026-06-16→2026-06-23)",
+      "label": "Z26 (2026-06-16→2026-06-23)",
       "bp_change": 19.0
     },
     {
-      "label": "H2027 (2026-06-16→2026-06-23)",
-      "bp_change": 4.5
+      "label": "H27 (2026-06-16→2026-06-23)",
+      "bp_change": 19.5
     },
     {
-      "label": "M2027 (2026-06-16→2026-06-23)",
+      "label": "M27 (2026-06-16→2026-06-23)",
       "bp_change": 18.5
     }
   ],
   "curve_warning": null,
   "contract_diffs": [
+    {
+      "contract": "SR3M2026",
+      "close": 96.2875,
+      "close_chg": 0.0075,
+      "implied_rate_pct": 3.7125,
+      "implied_chg_bp": -0.75
+    },
     {
       "contract": "SR3N2026",
       "close": 96.21,
@@ -159,10 +166,10 @@ window.SR3_DATA = {
     },
     {
       "contract": "SR3H2027",
-      "close": 96.2875,
-      "close_chg": 0.0075,
-      "implied_rate_pct": 3.7125,
-      "implied_chg_bp": -0.75
+      "close": 95.865,
+      "close_chg": 0.055,
+      "implied_rate_pct": 4.135,
+      "implied_chg_bp": -5.5
     },
     {
       "contract": "SR3M2027",

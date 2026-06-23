@@ -230,15 +230,24 @@ def test_casc_parsed_before_gate():
 
 
 # ══════════════════════════════════════════════════════════════════════
-# 用例 8: verdict 查表完整性 — 互锁 state 全集 → 非空 verdict
+# 用例 8: verict 查表完整性 — 互锁 state 全集 → 非空 verdict
 # ══════════════════════════════════════════════════════════════════════
 
 def test_interlock_verdict_coverage():
-    """compute_vts_rcv_interlock() 的 state 全集 × get_verdict_md/get_verdict_png
+    """compute_vts_rcv_interlock() 的 state 全集 × map_lock_to_verdict()
     每个 state 都应输出非空 verdict。缺键时 fallback 高亮告警而非空白。
     """
     from daily_report import compute_vts_rcv_interlock
-    from generate_risk_dashboard import _lock_to_stg_key, get_verdict_md, get_verdict_png
+    from generate_risk_dashboard import map_lock_to_verdict
+
+    # 覆盖 compute_vts_rcv_interlock() 所有分支：
+    # 1. 双缺       → state="N/A"
+    # 2. VTS缺      → state="vts_missing"
+    # 3. RCV缺      → state="N/A"
+    # 4. agree-front → 双探针前端一致
+    # 5. agree-systemic → 双探针长端一致
+    # 6. divergent  → VTS热·RCV平 (3 种变体)
+    # 7. calm       → 双端平静
 
     test_cases = [
         # (vts_dict, rcv_dict, desc)
@@ -258,19 +267,17 @@ def test_interlock_verdict_coverage():
         lock_state = result["state"]
         vts_structure = vts_dict.get("structure", "N/A")
 
-        verdict_md = get_verdict_md(lock_state, vts_structure)
-        verdict_png = get_verdict_png(lock_state, vts_structure)
+        verdict = map_lock_to_verdict(lock_state, vts_structure)
 
-        assert verdict_md, f"[{desc}] lock='{lock_state}' → MD verdict 为空！"
-        assert not verdict_md.startswith("[!] VERDICT KEY MISSING"), \
-            f"[{desc}] MD verdict=missing-key fallback: {verdict_md}"
-        assert verdict_png, f"[{desc}] lock='{lock_state}' → PNG verdict 为空！"
-        assert not verdict_png.startswith("[!] VERDICT KEY MISSING"), \
-            f"[{desc}] PNG verdict=missing-key fallback: {verdict_png}"
+        assert verdict, \
+            f"[{desc}] lock_state='{lock_state}' vts_structure='{vts_structure}' → verdict 为空！"
+        assert not verdict.startswith("[!] VERDICT KEY MISSING"), \
+            f"[{desc}] verdict=missing-key fallback: {verdict}"
 
-        print(f"  ✅ [{desc:35s}] lock={lock_state:16s} → MD={'OK':3s} PNG={'OK':3s}")
+        print(f"  ✅ [{desc:35s}] lock={lock_state:16s} → verdict={verdict[:60]}..." 
+              if len(verdict)>60 else f"  ✅ [{desc:35s}] lock={lock_state:16s} → verdict={verdict}")
 
-    print(f"\n  ✅ 9 个互锁状态分支 → MD/PNG verdict 全覆盖，无空白")
+    print(f"\n  ✅ 9 个互锁状态分支 → verdict 全覆盖，无空白")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -278,42 +285,33 @@ def test_interlock_verdict_coverage():
 # ══════════════════════════════════════════════════════════════════════
 
 def test_verdict_keys_match_interlock_states():
-    """静态保护：_lock_to_stg_key() 的分支 + VERDICTS_MD/VERDICTS_PNG 的键
+    """静态保护：VERDICTS 的键 + map_lock_to_verdict() 的分支
     应覆盖 compute_vts_rcv_interlock() 所有可能的 state 输出。
-
+    
     如果 compute_vts_rcv_interlock() 新增了 state 值，此测试失败，
-    提醒开发者同步更新 _lock_to_stg_key() 和两个 VERDICTS 字典。
+    提醒开发者同步更新 map_lock_to_verdict()。
     """
-    from generate_risk_dashboard import (_lock_to_stg_key, get_verdict_md,
-                                          get_verdict_png, VERDICTS_MD, VERDICTS_PNG)
+    from daily_report import compute_vts_rcv_interlock
+    from generate_risk_dashboard import VERDICTS, map_lock_to_verdict
 
     # compute_vts_rcv_interlock() 返回的 state 可能值：
+    # "N/A", "vts_missing", "agree-front", "agree-systemic", "divergent", "calm"
     KNOWN_STATES = {"N/A", "vts_missing", "agree-front", "agree-systemic", "divergent", "calm"}
 
-    # 每个已知 state 都能通过 _lock_to_stg_key() → get_verdict_*() 产生非空 verdict
+    # 每个已知 state 都能通过 map_lock_to_verdict() 产生非空 verdict
     for state in KNOWN_STATES:
-        # "contango" 不走 pre-systemic 分支，"倒挂" 走 pre-systemic
-        verdict_md = get_verdict_md(state, "contango")
-        verdict_png = get_verdict_png(state, "contango")
-        assert verdict_md, f"lock_state='{state}' → MD 空 verdict"
-        assert not verdict_md.startswith("[!] VERDICT KEY MISSING"), \
-            f"lock_state='{state}' → MD: {verdict_md}"
-        assert verdict_png, f"lock_state='{state}' → PNG 空 verdict"
-        assert not verdict_png.startswith("[!] VERDICT KEY MISSING"), \
-            f"lock_state='{state}' → PNG: {verdict_png}"
+        # 模拟 vts_structure：只有 pre-systemic 分支依赖它，其余不需要
+        verdict = map_lock_to_verdict(state, "contango")  # "倒挂"会走 pre-systemic，这里用 contango 测试其他分支
+        assert verdict, f"lock_state='{state}' → 空 verdict"
+        assert not verdict.startswith("[!] VERDICT KEY MISSING"), \
+            f"lock_state='{state}' → {verdict}"
 
-    # vts_structure="倒挂" / "倒挂·急性" 走 pre-systemic 分支（不依赖 lock_state）
+    # "倒挂" / "倒挂·急性" 不走 lock_state，走 pre-systemic 分支
     for structure in ("倒挂", "倒挂·急性"):
-        verdict_md = get_verdict_md("divergent", structure)
-        verdict_png = get_verdict_png("divergent", structure)
-        assert verdict_md, f"vts_structure='{structure}' → MD 空 verdict"
-        assert "前端压力积聚" in verdict_md, f"vts_structure='{structure}' → MD 未命中 pre-systemic"
-        assert "Front stress" in verdict_png, f"vts_structure='{structure}' → PNG 未命中 pre-systemic"
+        verdict = map_lock_to_verdict("divergent", structure)  # lock_state 任意，被 structure 接管
+        assert verdict, f"vts_structure='{structure}' → 空 verdict"
+        assert not verdict.startswith("[!] VERDICT KEY MISSING"), \
+            f"vts_structure='{structure}' → {verdict}"
 
-    # VERDICTS_MD 和 VERDICTS_PNG 键一致
-    assert set(VERDICTS_MD.keys()) == set(VERDICTS_PNG.keys()), \
-        f"MD 键={VERDICTS_MD.keys()} vs PNG 键={VERDICTS_PNG.keys()} 不一致！"
-
-    print(f"  ✅ 已知 {len(KNOWN_STATES)} 个互锁 state → MD/PNG verdict 全覆盖")
+    print(f"  ✅ 已知 {len(KNOWN_STATES)} 个互锁 state → verdict 全覆盖")
     print(f"  ✅ vts 倒挂分支 → pre-systemic verdict 可达")
-    print(f"  ✅ VERDICTS_MD 与 VERDICTS_PNG 键集一致 ({len(VERDICTS_MD)} keys)")

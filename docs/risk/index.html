@@ -11,7 +11,7 @@
 <header class="hero">
   <h1>🛡️ Risk Evolution Dashboard</h1>
   <div class="sub">ABCD v3.5 · 前端风险 → 系统性风险演化看板</div>
-  <div class="timestamp">2026-06-23 17:12:35 · GitHub Actions</div>
+  <div class="timestamp">2026-06-18 20:38:14 · GitHub Actions</div>
   <nav class="nav-links">
     <a href="../">Fed Reaction Dashboard</a>
     <a href="./" class="active">Risk Dashboard</a>
@@ -23,10 +23,10 @@
   <section>
     <div class="section-head"><h2>① 近端事件风险</h2></div>
     <div class="card signal-grid">
-      <div class="signal-label">事件窗</div><div class="signal-value">美国-个人消费支出物价指数[PCE](同比) T-2 · 新加坡时间 2026-06-25 20:30 · VIX9D/VIX=0.849</div>
-<div class="signal-label">风险性质</div><div class="signal-value">通胀事件 · 近端事件 · 非系统性</div>
-<div class="signal-label">市场信号</div><div class="signal-value">前端未明显定价；暂无跨资产确认</div>
-<div class="signal-label">利率路径</div><div class="signal-value">DGS2−IORB=55.0bp · 5dΔ+7.0bp ▲ · [降息被price out / 加息风险 · 代理非OIS]</div>
+      <div class="signal-label">事件窗</div><div class="signal-value">美国美联储利率决策 T-5 · 新加坡时间 2026-06-17 02:00</div>
+<div class="signal-label">风险性质</div><div class="signal-value">Fed事件 · 近端事件 · 非系统性</div>
+<div class="signal-label">市场信号</div><div class="signal-value">暂无跨资产确认</div>
+<div class="signal-label">利率路径</div><div class="signal-value">DGS2−IORB=48.0bp 降息被price out / 加息风险 5dΔ8.0bp</div>
 
     </div>
   </section>
@@ -35,7 +35,7 @@
   <section>
     <div class="section-head"><h2>② 第一层传导</h2></div>
     <div class="card">
-      <table><thead><tr><th>端</th><th>指标</th><th>当前值</th><th>灯</th><th>DUR5</th><th>状态</th></tr></thead><tbody><tr><td>C 长端利率</td><td>DFII10</td><td>2.23%</td><td><span class="light light-red"></span>🔴</td><td>5/5 ✅</td><td>贴现率压力</td></tr><tr><td>C Nowcast</td><td>Real Yield Nowcast</td><td>2.20%</td><td><span class="light light-red"></span>🔴</td><td>—</td><td>官方DFII10滞后修正・实际利率高压 方向：小幅回落</td></tr><tr><td>A 资金管道</td><td>EFFR-IORB</td><td>-2.0bp</td><td><span class="light light-orange"></span>🟠</td><td>5/5 ✅</td><td>资金管道偏紧</td></tr><tr><td>A 拆借</td><td>SOFR-IORB</td><td>-2.0bp</td><td><span class="light light-orange"></span>🟠</td><td>—</td><td>拆借市场</td></tr><tr><td>—</td><td>2Y</td><td>4.20%</td><td>—</td><td>—</td><td>—</td></tr><tr><td>—</td><td>10Y</td><td>4.49%</td><td>—</td><td>—</td><td>—</td></tr><tr><td>—</td><td>30Y</td><td>4.93%</td><td>—</td><td>—</td><td>—</td></tr><tr><td>—</td><td><strong>2s10s Spread</strong></td><td><strong>+29bp</strong></td><td>—</td><td>—</td><td>Δ5d -6bp · Bear Flattening(Flat)</td></tr><tr><td>—</td><td>5s30s Spread</td><td>+66bp</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>
+      <table><thead><tr><th>端</th><th>指标</th><th>当前值</th><th>灯</th><th>DUR5</th><th>状态</th></tr></thead><tbody><tr><td>C 长端利率</td><td>DFII10</td><td>2.20%</td><td><span class="light light-red"></span>🔴</td><td>5/5 ✅</td><td>贴现率压力</td></tr><tr><td>A 资金管道</td><td>EFFR-IORB</td><td>-3.0bp</td><td><span class="light light-orange"></span>🟠</td><td>5/5 ✅</td><td>资金管道偏紧</td></tr><tr><td>A 拆借</td><td>SOFR-IORB</td><td>-5.0bp</td><td><span class="light light-orange"></span>🟠</td><td>—</td><td>拆借市场</td></tr></tbody></table>
     </div>
   </section>
 
@@ -43,7 +43,7 @@
   <section>
     <div class="section-head"><h2>③ 系统性风险触发器</h2></div>
     <div class="card">
-      <table><thead><tr><th>触发器</th><th>条件</th><th>当前状态</th></tr></thead><tbody><tr><td><strong>T1 信用(B端)</strong></td><td>HY/IG OAS走阔脱离自满</td><td><span class="light light-green"></span>🟢 未触发 (HY/IG ⚠️自满)</td></tr><tr><td><strong>T2 流动性(A端)</strong></td><td>EFFR-IORB <span class="light light-orange"></span>🟠/<span class="light light-red"></span>🔴+DUR5≥5</td><td><span class="light light-orange"></span>🟠 已触发·部分压力 (EFFR-IORB=-2.0bp DUR5=5/5)</td></tr><tr><td><strong>T3 跨资产/跨境</strong></td><td>CASC≥2+VTS+RCV互锁</td><td><span class="light light-green"></span>🟢 未触发 (CASC0/4·VTS=contango·互锁=divergent)</td></tr></tbody></table>
+      <table><thead><tr><th>触发器</th><th>条件</th><th>当前状态</th></tr></thead><tbody><tr><td>T1 信用</td><td>HY/IG OAS走阔脱离自满</td><td><span class="light light-green"></span>🟢 未触发 (HY/IG ⚠️自满)</td></tr><tr><td>T2 流动性</td><td>EFFR-IORB <span class="light light-orange"></span>🟠/<span class="light light-red"></span>🔴+DUR5≥5</td><td><span class="light light-orange"></span>🟠 部分压力 (EFFR-IORB=-3.0bp DUR5=5/5)</td></tr><tr><td>T3 跨资产/跨境</td><td>CASC≥2+VTS+RCV互锁</td><td><span class="light light-green"></span>🟢 未触发 (CASC0/4·VTS=contango·互锁=agree-front)</td></tr></tbody></table>
     </div>
   </section>
 
@@ -51,7 +51,7 @@
   <section>
     <div class="section-head"><h2>④ 系统性风险阶段与最终判断</h2></div>
     <div class="card">
-      <table><thead><tr><th>项目</th><th>状态</th></tr></thead><tbody><tr><td>当前阶段</td><td><span class="light light-yellow"></span>🟡 <strong>单资产技术性·无双探针共振</strong></td></tr><tr><td>Regime</td><td><strong>R4 防御</strong>(R4) · 跨域=2 · <span class="light light-red"></span>🔴=1</td></tr><tr><td>仓位</td><td>P=25% / H=45% / C=30%</td></tr><tr><td>VTS</td><td>contango · 前端=前端平静</td></tr><tr><td>RCV</td><td>elevated-front-tilt · sev=elevated · tilt=front · 2y/30y=2.096 z=3.5</td></tr><tr><td>互锁</td><td>divergent — RCV热·VTS平→利率单资产技术性</td></tr><tr><td>C端</td><td>有序重定价·估值压缩 · 双探针:divergent</td></tr><tr><td>C Nowcast</td><td>官方<span class="light light-red"></span>🔴红灯·Nowcast边际回落 → 估值压力边际缓和</td></tr></tbody></table>
+      <table><thead><tr><th>项目</th><th>状态</th></tr></thead><tbody><tr><td>当前阶段</td><td><span class="light light-yellow"></span>🟡 <strong>近端事件·非系统性</strong></td></tr><tr><td>Regime</td><td><strong>R3 警惕</strong>(R3) · 跨域=2 · <span class="light light-red"></span>🔴=1</td></tr><tr><td>仓位</td><td>P=30% / H=35% / C=35%</td></tr><tr><td>VTS</td><td>contango · 前端=前端急性</td></tr><tr><td>RCV</td><td>elevated-front-tilt · sev=elevated · tilt=front</td></tr><tr><td>互锁</td><td>agree-front — 双探针前端一致·近端事件风险·非系统性</td></tr><tr><td>C端</td><td>有序重定价·估值压缩</td></tr></tbody></table>
     </div>
   </section>
 
@@ -63,7 +63,7 @@
               style="border:0" width="100%" height="500" frameborder="0" scrolling="no"></iframe>
     </div>
   </section>
-<section class="card"><div class="card-title">最终判断</div><p>VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。</p></section>
+<section class="card"><div class="card-title">最终判断</div><p>非系统性·近端事件。双探针前端一致→等CPI/Fed落地看前端是fade还是扩散。要盯的翻转点：RCV→long-led/acute-broad叠VTS倒挂→agree-systemic。</p></section>
 </main>
 
 <footer>

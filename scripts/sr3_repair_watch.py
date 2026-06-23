@@ -45,13 +45,23 @@ MONTH_CODE = {"F":1,"G":2,"H":3,"J":4,"K":5,"M":6,"N":7,"Q":8,"U":9,"V":10,"X":1
 
 
 def _clean_tv_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """清洗 TradingView CSV 列名: 100-SR3X2026 · CME: close → SR3X2026, time→date, close→SR3H2027"""
+    """清洗 TradingView CSV 列名: 100-SR3X2026 · CME: close → SR3X2026, time→date, close→文件名合约码"""
+    # 从文件名提取主合约: 100-CME_DL_SR3M2026, 1D.csv → SR3M2026
+    main_contract = "SR3H2027"  # fallback
+    try:
+        import re as _re
+        m = _re.search(r"SR3\w\d{4}", str(TV_CSV.name))
+        if m:
+            main_contract = m.group(0)
+    except Exception:
+        pass
+
     rename = {}
     for c in df.columns:
         if c == "time":
             rename[c] = "date"
         elif c == "close":
-            rename[c] = "SR3H2027"
+            rename[c] = main_contract  # 动态映射：文件名是什么合约，close 就是什么
         else:
             m = re.match(r"100-(SR3\w\d{4})\s*·\s*CME:\s*close", c)
             if m:
@@ -148,6 +158,8 @@ def _sync_from_tradingview():
     new_features = []
     for dt in new_dates_only:
         grp = new_long[new_long["date"] == dt].sort_values("maturity")
+        # 过滤已到期合约（maturity < data_date）
+        grp = grp[grp["maturity"] >= pd.Timestamp(dt)]
         if len(grp) < 3:
             continue
         rates = grp["implied_rate"].values
@@ -680,10 +692,11 @@ def _write_web_json(r):
     s, sh, rp = r, r["last_formal_shock"], r["recent_60d_peak"]
     cu, st, cs, cd = r["current"], r["state"], r.get("curve_structure", {}) or {}, r.get("contract_diffs", []) or []
 
-    # ── Z26-H27-M27 曲线数据 ──
+    # ── Z26-H27-M27 曲线数据（兼容两种合约名格式）──
     curve_comparison = []
     curve_bp_changes = []
-    contracts_zmh = ["SR3Z2026", "SR3H2027", "SR3M2027"]
+    # Z26/H27/M27 的两种命名：SR3Z2026 / SR3_Z26 等
+    contracts_zmh = [("SR3Z2026","SR3_Z26","Z26"), ("SR3H2027","SR3_H27","H27"), ("SR3M2027","SR3_M27","M27")]
     ref_date_for_zmh = None
     try:
         if LONG_PATH.exists():
@@ -695,9 +708,9 @@ def _write_web_json(r):
             for d in recent:
                 snap = long_all[long_all["date"].dt.date == d]
                 rates = {}
-                for c in contracts_zmh:
-                    row = snap[snap["contract"] == c]
-                    rates[c[3:]] = round(float(row["implied_rate"].values[0]), 4) if len(row) > 0 else None
+                for c_tv, c_usc, label in contracts_zmh:
+                    row = snap[(snap["contract"] == c_tv) | (snap["contract"] == c_usc)]
+                    rates[label] = round(float(row["implied_rate"].values[0]), 4) if len(row) > 0 else None
                 curve_comparison.append({"date": str(d), "label": str(d), "rates": rates})
             # BP 变化 vs 最早日
             if len(recent) >= 2:
@@ -705,12 +718,12 @@ def _write_web_json(r):
                 latest_date = recent[-1]
                 first_snap = long_all[long_all["date"].dt.date == first_date]
                 latest_snap = long_all[long_all["date"].dt.date == latest_date]
-                for c in contracts_zmh:
-                    fv = first_snap[first_snap["contract"] == c]["implied_rate"]
-                    lv = latest_snap[latest_snap["contract"] == c]["implied_rate"]
+                for c_tv, c_usc, label in contracts_zmh:
+                    fv = first_snap[(first_snap["contract"] == c_tv) | (first_snap["contract"] == c_usc)]["implied_rate"]
+                    lv = latest_snap[(latest_snap["contract"] == c_tv) | (latest_snap["contract"] == c_usc)]["implied_rate"]
                     if len(fv) > 0 and len(lv) > 0:
                         curve_bp_changes.append({
-                            "label": f"{c[3:]} ({first_date}→{latest_date})",
+                            "label": f"{label} ({first_date}→{latest_date})",
                             "bp_change": round(float(lv.values[0] - fv.values[0]) * 100, 1)
                         })
             if all_dates:
