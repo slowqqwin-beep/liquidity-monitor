@@ -193,30 +193,20 @@ function renderDetails(data){
   `).join("");
 }
 
-function renderContractDiffs(data){
-  const diffs = (data.contract_diffs || []).filter(d => d.contract !== "SR3M2026");
-  const el = $("constraintList");
-  if(!diffs.length){
-    el.innerHTML = "<div class='empty'>暂无合约数据</div>";
-    return;
-  }
-  const header = document.getElementById("constraintSectionHead");
-  if(header){
-    header.innerHTML = `<h3>合约收盘 & 日变动</h3><span class="tag">Daily Diff</span>`;
-  }
-  el.innerHTML = `<div class="table-wrap compact">
-    <table><thead><tr><th>合约</th><th>收盘价</th><th>日变</th><th>涨跌</th></tr></thead>
-    <tbody>${diffs.map(d => {
-      const chg = d.close_chg;
-      const dir = chg === null ? "—" : (chg > 0 ? '<span class="up">▲涨</span>' : chg < 0 ? '<span class="down">▼跌</span>' : '持平');
-      return `<tr>
-        <td><strong>${escapeHtml(d.contract)}</strong></td>
-        <td>${d.close?.toFixed(4) || "N/A"}</td>
-        <td>${chg !== null ? chg.toFixed(4) : "—"}</td>
-        <td>${dir}</td>
-      </tr>`;
-    }).join("")}</tbody></table></div>`;
-}
+function renderConstraints(data){
+  const constraints = data.constraints || {};
+  const rows = [
+    ["Research-Only", constraints.research_only],
+    ["独立 SR3 Watch 页面", constraints.standalone_sr3_watch],
+    ["不接 Risk OS", constraints.no_risk_os],
+    ["不接旧 dashboard", constraints.no_existing_dashboard_merge],
+    ["不接 run_all.py", constraints.no_run_all],
+    ["不影响仓位", constraints.no_position_impact],
+    ["SR3 deceleration ≠ buy signal", constraints.deceleration_not_buy_signal],
+  ];
+  $("constraintList").innerHTML = rows.map(([k,v]) => `
+    <div class="constraint-row"><span>${escapeHtml(k)}</span><strong class="${v ? "ok" : "bad"}">${v ? "✅" : "❌"}</strong></div>
+  `).join("");
 }
 
 function renderSignalMatrix(data){
@@ -390,7 +380,7 @@ async function main(){
   renderKpis(data);
   renderReferencePeaks(data);
   renderDetails(data);
-  renderContractDiffs(data);
+  renderConstraints(data);
   renderSignalMatrix(data);
 }
 
