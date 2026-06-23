@@ -31,7 +31,7 @@ import requests
 FRED_API_KEY = os.environ.get("FRED_API_KEY", "").strip()
 LOOKBACK_YEARS = int(os.environ.get("LOOKBACK_YEARS", "3"))
 
-OUT_DIR = Path(__file__).resolve().parent.parent / "liquidity-dashboard" / "data"
+OUT_DIR = Path(__file__).resolve().parent / "data"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 START_DATE = (datetime.now(timezone.utc) - timedelta(days=365 * LOOKBACK_YEARS)).strftime("%Y-%m-%d")

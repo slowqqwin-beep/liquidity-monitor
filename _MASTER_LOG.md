@@ -2,7 +2,7 @@
 
 > **单文件全量**：合并架构、版本历史、当前状态、管线速查、已知问题。  
 > **更新规则**：每次封版/重要变更时，在对应节追加条目。  
-> **封版日期**：2026-06-21 21:16 | **版本线**：v3.5.1 (FRED/HY OAS auto-sync + SR3 repair watch + pipeline validate)
+> **封版日期**：2026-06-22 21:40 | **版本线**：v3.5.1 + TLT Leg-2 Spec v6 (Phase 3 三叉判据预注册)
 
 ---
 
@@ -103,6 +103,13 @@ A 美元资金管道 → B 信用融资条件 → C 长端利率定价 → D 外
 
 | 日期 | commit | 内容 |
 |------|--------|------|
+| 06-22 | `1f152c7` | feat: **TLT Leg-2 spec v6** — `docs/tlt_leg2_spec.md` z⊕level veto (gate=400bp, high_floor=750bp) + Phase 3 三叉判据预注册 (GO/NO-GO/INSUFFICIENT, N_decisive 地板, episode 去重, 中性带) |
+| 06-22 | `1f152c7` | feat: `scripts/compute_credit_stress_z.py` — z+level veto 计算 → `data/credit_stress_z.csv` |
+| 06-22 | `1f152c7` | feat: `scripts/validate_credit_veto.py` — Phase 2 验收 16 PASS / 0 FAIL / 2 DEFERRED (Test C + 2019 deferred→Phase 3) |
+| 06-22 | `1f152c7` | fix: 日报从 R3(35/35/30) 修正到 R4(25/45/30) — Yahoo ^VIX/^VIX3M/^VIX9D/^TNX/MOVE 注入 series.json，SSoT 0 stale/0 missing，confidence=high |
+| 06-22 | — | verify: H=45% Batch-1 checklist 全绿 — R4/high confidence/0 stale/cooling=0/DFII10=2.24%>2%，TLT 未触发，BIL 第 1 批下单就位 |
+| 06-22 | — | note: SR3 曲线未接入 dashboard — `data/sofr_curve_spec.md` 规格完整 + `data/sofr_sr3.csv` 有数据，但无实现代码（daily_report/dashboard.js/build_site 均不读），是功能缺口非 bug |
+| 06-22 | — | note: `fetch_data.py` OUT_DIR 路径 bug — 写到 `liquidity-dashboard\liquidity-dashboard\data\` 而非 `v3.5\data\`，Yahoo 未自动并入 series.json，当天手动注入补，待修 |
 | 06-21 | — | feat: `scripts/sync_historical_data.py` — series.json → 历史数据 CSV + fred_live 每日增量同步，接入 CI |
 | 06-21 | — | feat: `scripts/append_sr3_daily.py` — sofr_sr3.csv 10 合约 → sr3_long/sr3_curve_features 每日追加，幂等 |
 | 06-21 | — | feat: `scripts/validate_fred_pipeline.py` — 五路日期同步验收 (series.json/DGS10/HY OAS/panel/daily report)，CI post-check，FRED 链路断链自动报警 |  
@@ -152,10 +159,11 @@ A 美元资金管道 → B 信用融资条件 → C 长端利率定价 → D 外
 - **2026-06-21**：SR3 修复验证研究 + 只读监控上线 — `scripts/sr3_repair_watch.py` 输出 `sr3_repair_watch_latest.{json,md}`，四问实时追踪，双轨参考峰值（formal shock / recent 60d peak），research-only
 - **2026-06-21**：历史数据自动同步 — `scripts/sync_historical_data.py` 每日从 series.json 增量同步到 历史数据/CSV + fred_live，幂等。`build_macro_research_panel.py` 接入 CI 每日自动重建面板。
 - **2026-06-21**：FRED 管线验收 — `scripts/validate_fred_pipeline.py` 五路日期对齐检查，CI 提交前置后检查，任一落后 >1d 即报警。
+- **2026-06-22**：TLT Leg-2 信号建立 — z⊕level veto (gate=400bp/high_floor=750bp)，Phase 1+2 完成，Phase 3 判据预注册 (help/hurt 逐 episode 账，三叉 GO/NO-GO/INSUFFICIENT，N_decisive 地板)。门钉死、可证伪、no-go/insufficient→人眼否决。H=45% Batch-1 下单就位。
 
 ---
 
-## 四、当前状态 (2026-06-20 收盘)
+## 四、当前状态 (2026-06-22 收盘)
 
 ### ABCD 四端快照
 
@@ -163,24 +171,44 @@ A 美元资金管道 → B 信用融资条件 → C 长端利率定价 → D 外
 |----|-----|---------|---------|
 | A 资金管道 | 🟠 | EFFR-IORB=-2bp | DUR5=5/5 ✅ |
 | B 信用条件 | 🟢 | HY OAS=263bp ⚠️自满 | — |
-| C 长端利率 | 🔴 | DFII10=2.23% | DUR5=5/5 ✅ |
+| C 长端利率 | 🔴 | DFII10=2.23% (Nowcast 2.20%) | DUR5=5/5 ✅ |
 | D 外汇扩散 | 🟢 | FXY 5d=-1.0% | — |
 
 ### 综合判定
 
 | 项目 | 值 |
 |------|-----|
-| **Regime** | **R4 防御** |
+| **Regime** | **R4 防御** (confidence=high, SSoT 0 stale) |
 | 仓位 | P=25% / H=45% / C=30% |
 | 跨域信号 | 2 (red=1, orange=1) |
 | 2s10s Spread | +29bp, Bear Flattening (Flat) |
-| Real Yield Nowcast | 2.19% (官方 DFII10=2.23%) |
+| Real Yield Nowcast | 2.20% (官方 DFII10=2.23%, 已校准) |
 | ON RRP | $0.3B (极低) |
-| VTS | N/A ⚠️缺数据 |
+| VTS | contango(0.838) · 前端平静(0.849) |
 | RCV | elevated-front-tilt |
-| 互锁 | vts_missing |
-| SYSTEMIC | 未确认 (WATCH) |
+| 互锁 | divergent — RCV热·VTS平→利率单资产技术性 |
+| SYSTEMIC | 未确认 (NON-SYSTEMIC WATCH) |
 | CASC | 0/4 |
+| TLT cooling | 0/3 (未触发) |
+
+### H=45% 对冲端
+
+| 项目 | 值 |
+|------|-----|
+| SSoT 当日 | ✅ 2026-06-22, 0 stale, 0 missing |
+| Batch-1 checklist | 全绿 (R4/confidence high/cooling=0/DFII10>2%) |
+| 操作 | 卖 20% SGOV → 买 20% BIL (IBKR 单账户) |
+| 缺口 | 45pp → 25pp (Batch-1 后) |
+| TLT | 零仓位，独立触发监控 |
+
+### TLT Leg-2 进度
+
+| Phase | 状态 | 产出 |
+|-------|------|------|
+| Phase 1 | ✅ DONE | `credit_stress_z.csv` (z+level veto) |
+| Phase 2 | ✅ DONE | `credit_veto_validation.json` 16 PASS / 2 DEFERRED |
+| Phase 3 | ⏳ 门已预注册 | spec v6 §5.3.0 三叉 (GO/NO-GO/INSUFFICIENT) |
+| Phase 4 | ⏳ 待 Phase 3 | 管线接入 |
 
 ### 第一层传导路径
 
@@ -273,6 +301,10 @@ copy to _pipeline_snapshots/v1.x/
 | 5 | build-pages.yml step 4 已切 state_machine | ✅ 已修 | — |
 | 6 | fetch_mm_calendar.py embed URL 自动转换 | ✅ 已修 | — |
 | 7 | 2s10s 表格 stray `\n` 断裂 | ✅ 已修 | — |
+| 8 | `fetch_data.py` OUT_DIR 路径 bug | 📋 待修 | 写到 `liquidity-dashboard\liquidity-dashboard\data\` 而非 `v3.5\data\` |
+| 9 | SR3 曲线未接入 dashboard | 📋 功能缺口 | `data/sofr_curve_spec.md` 规格完整，无实现代码 |
+| 10 | TLT Leg-2 Phase 3 backtest | ⏳ 门已预注册 | spec v6 §5.3.0 三叉判据，等跑 |
+| 11 | SR3 数据源切换 | ✅ 已修 (06-23) | `sr3_repair_watch.py` 内置 `_sync_from_tradingview()`，自动读 TV CSV → 清洗列名 → 追加 sr3_long → 重算特征。`sofr_sr3.csv` 已废除 |
 
 ---
 
@@ -393,4 +425,4 @@ repair_type = benign / malign / mixed / unavailable
 
 ---
 
-*封版日期: 2026-06-20 22:37 | 最后更新: 2026-06-21 (SR3 修复验证) | 下次运行窗口: 周一 06-23 | v3.5 / v3.5.1*
+*封版日期: 2026-06-22 21:40 | 最后更新: 2026-06-22 (TLT Leg-2 spec v6 + Phase 1/2 DONE + H=45% Batch-1) | 下次运行窗口: 周二 06-23 | v3.5 / v3.5.1 + TLT Leg-2*

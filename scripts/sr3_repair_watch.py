@@ -13,11 +13,16 @@ SR3 修复监控 — 只读型研究输出
   - Formal Shock: 最后确认的 hawkish shock (5bp+, event_min_gap 去重)
   - Recent 60d Peak: 若 formal shock 距今 > 60d，切换为近期峰值参考
 
+数据源: TradingView 自动导出 (data/历史数据/100-CME_DL_SR3H2027, 1D.csv)
+        每次运行自动清洗列名 → 追加到 sr3_long.csv → 重算 sr3_curve_features.csv
+        (已废除 sofr_sr3.csv 手工录入)
+
 输入: sr3_curve_features.csv + macro_research_panel.csv
 输出: sr3_repair_watch_latest.json + sr3_repair_watch_latest.md
 约束: Research-Only — 不接 Risk OS / dashboard / run_all.py / 仓位
 """
 
+import re
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -29,6 +34,196 @@ IN_DIR = PROJECT_ROOT / "data" / "macro_backtest" / "input"
 PANEL_PATH = PROJECT_ROOT / "data" / "macro_db" / "processed" / "macro_research_panel.csv"
 OUT_DIR = PROJECT_ROOT / "data" / "macro_backtest" / "research"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# ── TradingView CSV 自动同步 ──
+TV_CSV = PROJECT_ROOT / "data" / "历史数据" / "100-CME_DL_SR3H2027, 1D.csv"
+LONG_PATH = IN_DIR / "sr3_long.csv"
+FEAT_PATH = IN_DIR / "sr3_curve_features.csv"
+
+# 月份代码 → 月份数字
+MONTH_CODE = {"F":1,"G":2,"H":3,"J":4,"K":5,"M":6,"N":7,"Q":8,"U":9,"V":10,"X":11,"Z":12}
+
+
+def _clean_tv_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """清洗 TradingView CSV 列名: 100-SR3X2026 · CME: close → SR3X2026, time→date, close→SR3H2027"""
+    rename = {}
+    for c in df.columns:
+        if c == "time":
+            rename[c] = "date"
+        elif c == "close":
+            rename[c] = "SR3H2027"
+        else:
+            m = re.match(r"100-(SR3\w\d{4})\s*·\s*CME:\s*close", c)
+            if m:
+                rename[c] = m.group(1)
+    return df.rename(columns=rename)
+
+
+def _sync_from_tradingview():
+    """从 TradingView CSV 同步新日期到 sr3_long.csv + 重算 sr3_curve_features.csv。
+    幂等：已存在的日期不重复追加。"""
+    if not TV_CSV.exists():
+        print(f"[SR3 Sync] ⚠ TradingView CSV not found: {TV_CSV}")
+        print(f"  → 跳过同步，使用现有 sr3_long.csv / sr3_curve_features.csv")
+        return
+
+    print("[SR3 Sync] Reading TradingView CSV...")
+    raw = pd.read_csv(TV_CSV, low_memory=False)
+    raw = _clean_tv_columns(raw)
+    raw["date"] = pd.to_datetime(raw["date"], errors="coerce")
+    raw = raw[raw["date"].notna()].copy()
+    # 去重列名（e.g. close→SR3H2027 与 100-SR3H2027·CME→SR3H2027 可能冲突）
+    raw = raw.loc[:, ~raw.columns.duplicated()]
+
+    # 找到所有合约列 (SR3*)
+    contract_cols = [c for c in raw.columns if re.match(r"SR3\w\d{4}", c)]
+    if not contract_cols:
+        print("[SR3 Sync] ⚠ No SR3 contract columns found after cleaning.")
+        return
+
+    print(f"  TV date range: {raw['date'].min().date()} ~ {raw['date'].max().date()}")
+    print(f"  Contracts: {len(contract_cols)} ({', '.join(sorted(contract_cols))})")
+
+    # 转长表 (wide → long)
+    records = []
+    for _, row in raw.iterrows():
+        dt = row["date"]
+        for col in contract_cols:
+            val = row[col]
+            if isinstance(val, pd.Series):
+                val = val.iloc[0] if len(val) > 0 else np.nan
+            try:
+                price = float(val)
+            except (ValueError, TypeError):
+                continue
+            if pd.notna(price) and price > 0:
+                contract = col  # e.g. "SR3M2026"
+                month_char = contract[3]  # 'M'
+                year_str = contract[4:]  # '2026'
+                year = int(year_str)
+                month = MONTH_CODE.get(month_char, 1)
+                # TradingView CSV 数值已是利率 (3.xx~4.xx%)，非价格 (96.xx)
+                rate = price
+                records.append({
+                    "date": dt,
+                    "contract": contract,
+                    "maturity": datetime(year, month, 1),
+                    "maturity_year": year,
+                    "maturity_month": month,
+                    "open": np.nan,
+                    "high": np.nan,
+                    "low": np.nan,
+                    "close": 100.0 - rate,  # 价格格式，向下兼容
+                    "implied_rate": rate,     # 利率格式，特征计算用
+                    "volume": np.nan,
+                    "position": np.nan,
+                })
+
+    new_long = pd.DataFrame(records).sort_values(["date", "maturity"]).reset_index(drop=True)
+    new_dates = sorted(new_long["date"].unique())
+    print(f"  Long format: {len(new_long)} rows, {len(new_dates)} dates")
+
+    # 加载现有长表，覆盖重叠日期（TradingView 数据比旧 sofr_sr3 更可靠）
+    if LONG_PATH.exists():
+        existing_long = pd.read_csv(LONG_PATH, parse_dates=["date", "maturity"])
+        old_dates = set(new_long["date"].dt.date)
+        # 删除旧长表中与新数据重叠的日期行
+        existing_long = existing_long[~existing_long["date"].dt.date.isin(old_dates)]
+    else:
+        existing_long = pd.DataFrame()
+
+    new_dates_only = sorted(new_long["date"].unique())
+    print(f"  Dates to upsert: {len(new_dates_only)} ({new_dates_only[0].date()} ~ {new_dates_only[-1].date()})")
+
+    # ── 1. 写入 sr3_long.csv（旧数据去掉重叠日期 + 新数据）──
+    long_cols = ["date","contract","maturity","maturity_year","maturity_month",
+                 "open","high","low","close","implied_rate","volume","position"]
+    updated_long = pd.concat([existing_long, new_long[long_cols]], ignore_index=True)
+    updated_long = updated_long.sort_values(["date","maturity"]).reset_index(drop=True)
+    LONG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    updated_long.to_csv(LONG_PATH, index=False)
+    print(f"  → sr3_long.csv: {len(updated_long):,} rows (replaced {len(old_dates)} overlapping dates)")
+
+    # ── 2. 为所有 TradingView 日期重新计算曲线特征 ──
+    new_features = []
+    for dt in new_dates_only:
+        grp = new_long[new_long["date"] == dt].sort_values("maturity")
+        if len(grp) < 3:
+            continue
+        rates = grp["implied_rate"].values
+        contracts = grp["contract"].values
+        maturities = grp["maturity"].values
+        n = len(rates)
+
+        valid_cutoff = max(1, int(n * 2 / 3))
+        valid_rates = rates[:valid_cutoff]
+        valid_contracts = contracts[:valid_cutoff]
+        valid_maturities = maturities[:valid_cutoff]
+
+        terminal_idx = np.argmin(valid_rates)
+        peak_idx = np.argmax(valid_rates)
+        mid_s = max(0, int(n * 0.2)); mid_e = min(n, int(n * 0.8))
+        mid_mean = np.mean(rates[mid_s:mid_e]) if mid_e > mid_s else np.nan
+
+        z6 = grp[grp["contract"]=="SR3Z2026"]["implied_rate"]
+        m7 = grp[grp["contract"]=="SR3M2027"]["implied_rate"]
+        z6_val = float(z6.values[0]) if len(z6) > 0 else np.nan
+        m7_val = float(m7.values[0]) if len(m7) > 0 else np.nan
+
+        new_features.append({
+            "date": dt,
+            "n_contracts": n,
+            "near_rate": rates[0],
+            "near_contract": contracts[0],
+            "far_rate": rates[-1],
+            "far_contract": contracts[-1],
+            "terminal_rate": valid_rates[terminal_idx],
+            "terminal_contract": valid_contracts[terminal_idx],
+            "terminal_maturity": pd.Timestamp(valid_maturities[terminal_idx]),
+            "peak_rate": valid_rates[peak_idx],
+            "peak_contract": valid_contracts[peak_idx],
+            "peak_maturity": pd.Timestamp(valid_maturities[peak_idx]),
+            "curve_slope_bp": (rates[-1] - rates[0]) * 100,
+            "mid_mean_rate": mid_mean,
+            "z6_rate": z6_val,
+            "m7_rate": m7_val,
+        })
+
+    new_feat_df = pd.DataFrame(new_features).sort_values("date").reset_index(drop=True)
+
+    # ── 3. 合并到 sr3_curve_features.csv + 重算派生列 ──
+    if FEAT_PATH.exists():
+        old_feat = pd.read_csv(FEAT_PATH, parse_dates=["date","terminal_maturity","peak_maturity"])
+    else:
+        old_feat = pd.DataFrame()
+
+    combined_feat = pd.concat([old_feat, new_feat_df], ignore_index=True)
+    combined_feat = combined_feat.sort_values("date").drop_duplicates(subset=["date"], keep="last")
+    combined_feat = combined_feat.sort_values("date").reset_index(drop=True)
+
+    # Recompute derived columns
+    combined_feat["near_rate_chg"] = combined_feat["near_rate"].diff()
+    combined_feat["far_rate_chg"] = combined_feat["far_rate"].diff()
+    combined_feat["terminal_rate_chg"] = combined_feat["terminal_rate"].diff()
+    combined_feat["peak_rate_chg"] = combined_feat["peak_rate"].diff()
+    combined_feat["mid_mean_chg"] = combined_feat["mid_mean_rate"].diff()
+    combined_feat["z6_m7_spread"] = combined_feat["z6_rate"] - combined_feat["m7_rate"]
+    combined_feat["curve_move_bp"] = (
+        (combined_feat["near_rate_chg"] + combined_feat["far_rate_chg"]) / 2.0 * 100
+    )
+    combined_feat["curve_move_5d_vol"] = combined_feat["curve_move_bp"].rolling(5).std()
+    combined_feat["curve_move_20d_vol"] = combined_feat["curve_move_bp"].rolling(20).std()
+    combined_feat["curve_move_5d_sum"] = combined_feat["curve_move_bp"].rolling(5).sum()
+    combined_feat["curve_move_20d_sum"] = combined_feat["curve_move_bp"].rolling(20).sum()
+
+    FEAT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    combined_feat.to_csv(FEAT_PATH, index=False, float_format="%.6f")
+    print(f"  → sr3_curve_features.csv: {len(combined_feat):,} rows (+{len(new_feat_df)})")
+
+    latest = combined_feat.iloc[-1]
+    print(f"  Latest: date={latest['date'].date()}, near_rate={latest['near_rate']:.4f}%, "
+          f"curve_move_bp={latest['curve_move_bp']:.2f}, curve_move_5d_sum={latest['curve_move_5d_sum']:.2f}")
+    print(f"[SR3 Sync] Done.\n")
 
 PARAMS = {
     "shock_5d_min_bp": 4.0, "shock_1d_min_bp": 3.0,
@@ -334,6 +529,9 @@ def write_outputs(r):
 
 
 def main():
+    # ── Step 0: 从 TradingView CSV 自动同步新数据到 sr3_long + 重算特征 ──
+    _sync_from_tradingview()
+
     print("[SR3 Watch] Loading...")
     df = load_data()
     print(f"  {df['date'].min().date()} ~ {df['date'].max().date()} ({len(df)} days)")
@@ -345,7 +543,11 @@ def main():
     r = analyze(df, ls)
     print(f"  State: {r['state']['state_label']} | {r['state']['repair_classification']}")
     jp, mp = write_outputs(r)
-    print(f"\nDone: {jp}\n      {mp}")
+    # 拷贝到项目根目录方便直接打开
+    import shutil
+    root_copy = PROJECT_ROOT / "_sr3_watch.md"
+    shutil.copy(mp, root_copy)
+    print(f"\nDone: {jp}\n      {mp}\n      → {root_copy}")
 
 
 if __name__ == "__main__":

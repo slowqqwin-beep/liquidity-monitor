@@ -21,3 +21,6 @@ data/macro_db/db/*.duckdb
 !data/macro_db/audit/*.md
 !data/macro_db/audit/*.json
 !data/macro_db/metadata/*.json
+
+# 自动生成拷贝文件（每次跑脚本会覆盖）
+_sr3_watch.md

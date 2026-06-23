@@ -1,26 +1,26 @@
 {
-  "generated_at": "2026-06-21T21:04:22.260191",
-  "data_date": "2026-06-18",
-  "data_age_days": 3,
-  "reference_mode": "recent 60d peak",
+  "generated_at": "2026-06-23T11:41:35.403754",
+  "data_date": "2026-06-23",
+  "data_age_days": 0,
+  "reference_mode": "formal shock",
   "last_formal_shock": {
-    "date": "2023-09-11",
-    "days_ago": 697,
-    "peak_near_rate_pct": 5.3225,
-    "shock_height_bp": 8.5,
-    "still_active": false
+    "date": "2026-05-22",
+    "days_ago": 24,
+    "peak_near_rate_pct": 3.725,
+    "shock_height_bp": 9.5,
+    "still_active": true
   },
   "recent_60d_peak": {
-    "date": "2026-06-18",
-    "days_ago": 0,
-    "near_rate_pct": 3.715,
-    "used_as_reference": true
+    "date": "2026-06-22",
+    "days_ago": 1,
+    "near_rate_pct": 3.8025,
+    "used_as_reference": false
   },
   "current": {
-    "near_rate_pct": 3.715,
-    "curve_move_bp": 14.68,
-    "curve_move_5d_sum_bp": 13.88,
-    "decline_from_ref_peak_bp": 0.0,
+    "near_rate_pct": 3.8,
+    "curve_move_bp": -1.38,
+    "curve_move_5d_sum_bp": 11.88,
+    "decline_from_ref_peak_bp": -7.5,
     "on_elevated_plateau": true,
     "hy_oas_bp": null,
     "hy_oas_available": false,
@@ -28,19 +28,19 @@
     "real_yield_nowcast_pct": null
   },
   "state": {
-    "state_number": 1,
-    "state_label": "State 1: Hawkish Impulse",
-    "in_hawkish_impulse": true,
-    "deceleration_detected": false,
-    "decel_start_date": null,
+    "state_number": 2,
+    "state_label": "State 2: Deceleration",
+    "in_hawkish_impulse": false,
+    "deceleration_detected": true,
+    "decel_start_date": "2026-05-28",
     "level_repair_detected": false,
-    "repair_detected": false,
-    "repair_start_date": null,
-    "repair_bp_from_peak": 0.0,
-    "repair_classification": "still_in_impulse",
-    "repair_classification_reason": "Still in hawkish impulse phase"
+    "repair_detected": true,
+    "repair_start_date": "2026-05-28",
+    "repair_bp_from_peak": 9.25,
+    "repair_classification": "mixed_repair",
+    "repair_classification_reason": "Mixed signals, no clear benign/malign pattern"
   },
-  "action": "禁止抄底 AI 硬件链；维持防御；只观察信用和实际利率",
+  "action": "短端预期：已钝化（曲线移动 <1.5bp），但尚未出现实质性/持续修复",
   "constraints": {
     "research_only": true,
     "not_in_risk_os": true,

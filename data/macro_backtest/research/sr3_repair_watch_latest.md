@@ -1,13 +1,13 @@
 # SR3 修复监控 — 当前状态
 
-> **生成时间**: 2026-06-21T21:04:22 | **数据日**: 2026-06-18（3d ago）
-> **参考峰值**: recent 60d peak | **状态**: Research-Only
+> **生成时间**: 2026-06-23T11:41:35 | **数据日**: 2026-06-23（0d ago）
+> **参考峰值**: formal shock | **状态**: Research-Only
 
 ---
 
-## 🔴 State 1: Hawkish Impulse
+## 🟡 State 2: Deceleration
 
-> 禁止抄底 AI 硬件链；维持防御；只观察信用和实际利率
+> 短端预期：已钝化（曲线移动 <1.5bp），但尚未出现实质性/持续修复
 
 ---
 
@@ -15,10 +15,10 @@
 
 | # | 问题 | 答案 |
 |---|------|------|
-| 1 | 处于 hawkish impulse？ | **是 🔴** |
-| 2 | 进入 deceleration？ | **否** |
+| 1 | 处于 hawkish impulse？ | **否** |
+| 2 | 进入 deceleration？ | **是 🟡 — 2026-05-28** |
 | 3 | 发生 level repair？ | **否** |
-| 4 | 修复分类 | **still_in_impulse** |
+| 4 | 修复分类 | **mixed_repair** |
 
 ---
 
@@ -26,10 +26,10 @@
 
 | 来源 | 日期 | 距今 | near_rate | 高度 |
 |------|------|------|-----------|------|
-| Formal Shock | 2023-09-11 | 697d | 5.3225% | 8.5bp |
-| Recent 60d Peak | 2026-06-18 | 0d | 3.715% | — |
+| Formal Shock | 2026-05-22 | 24d | 3.725% | 9.5bp |
+| Recent 60d Peak | 2026-06-22 | 1d | 3.8025% | — |
 
-当前使用: **recent 60d peak**
+当前使用: **formal shock**
 
 ---
 
@@ -37,10 +37,10 @@
 
 | 指标 | 值 |
 |------|-----|
-| near_rate | 3.715% |
-| 较参考峰回落 | 0.0 bp |
-| 当日变动 | 14.68 bp |
-| 5d 累计 | 13.88 bp |
+| near_rate | 3.8% |
+| 较参考峰回落 | -7.5 bp |
+| 当日变动 | -1.38 bp |
+| 5d 累计 | 11.88 bp |
 | 高台 (>3.5%) | ⚠️ 是 |
 | HY OAS | N/A bp |
 | DGS10 | N/A% |
@@ -52,23 +52,25 @@
 
 | 项目 | 值 |
 |------|-----|
-| 分类 | **still_in_impulse** |
-| 原因 | Still in hawkish impulse phase |
+| 分类 | **mixed_repair** |
+| 原因 | Mixed signals, no clear benign/malign pattern |
 | level_repair | ❌ |
-| repair | ❌ |
-| 修复起始日 | N/A |
-| 修复幅度 | 0.0 bp |
+| repair | ✅ |
+| 修复起始日 | 2026-05-28 |
+| 修复幅度 | 9.25 bp |
+
+⚠️ **注意**：当前分类为 `mixed_repair`，不代表买入信号；它只表示 SR3 冲击已钝化但尚未完成 level repair，且 benign repair 条件未完全满足。
 
 ---
 
-## 执行规则速查
+## 信号组合速查 (research-only — 非交易指令)
 
-| 条件 | 允许动作 |
+| 条件 | 信号含义 |
 |------|---------|
-| 信用不扩 + SR3 钝化 | 只观察/极小仓试探 |
-| 信用不扩 + SR3 level repair + real yield 不再创新高 | 正式买入 |
-| 信用不扩 + SR3 benign repair + 分子兑现 | 加仓趋势 |
-| SR3 钝化但不修复 | **不得加仓** |
+| 信用不扩 + SR3 钝化 | 鹰派动能衰竭，但短端预期尚未回落 |
+| 信用不扩 + SR3 level repair + real yield 不再创新高 | 短端预期已明显回落，信用未恶化 |
+| 信用不扩 + SR3 benign repair + 分子兑现 | 软着陆情景：利率回落 + 信用收窄 |
+| SR3 钝化但不修复 | 暂停后利率继续上行，不构成拐点信号 |
 
 ---
 
@@ -83,4 +85,4 @@
 
 ---
 
-*SR3 Repair Watch — 2026-06-21*
+*SR3 Repair Watch — 2026-06-23*
