@@ -49,7 +49,17 @@ const fallbackData = {
     {code:"M27", label:"Jun-27", contract:"SR3M2027"}
   ],
   curve_comparison: [],
-  curve_bp_changes: []
+  curve_bp_changes: [],
+  twos10s_source_file: null,
+  twos10s_series: [],
+  twos10s_latest: {
+    latest_spread_bp: null,
+    change_1d_bp: null,
+    change_5d_bp: null,
+    structure: "N/A",
+    structure_note: "未提供 2s10s 数据。"
+  },
+  twos10s_warning: "未找到 2s10s TradingView CSV。"
 };
 
 function $(id){ return document.getElementById(id); }
@@ -72,11 +82,6 @@ function boolText(v){
 }
 
 async function loadData(){
-  // 优先用本地 JS 嵌入数据（绕过 file:// CORS）
-  if(window.SR3_DATA && typeof window.SR3_DATA === "object" && window.SR3_DATA.data_date){
-    console.log("[SR3] Using embedded SR3_DATA (local file mode)");
-    return window.SR3_DATA;
-  }
   try{
     const res = await fetch(JSON_URL, {cache:"no-store"});
     if(!res.ok) throw new Error(`JSON fetch failed: ${res.status}`);
@@ -221,6 +226,89 @@ function renderSignalMatrix(data){
     <tbody>${rows.map(r => `<tr><td>${escapeHtml(r.condition)}</td><td>${escapeHtml(r.meaning)}</td></tr>`).join("")}</tbody>
   `;
 }
+
+function renderTwos10s(data){
+  const latest = data.twos10s_latest || {};
+  $("twos10sLatest").textContent = latest.latest_spread_bp === null || latest.latest_spread_bp === undefined ? "N/A" : `${Number(latest.latest_spread_bp).toFixed(1)} bp`;
+  $("twos10s1d").textContent = latest.change_1d_bp === null || latest.change_1d_bp === undefined ? "N/A" : `${Number(latest.change_1d_bp).toFixed(1)} bp`;
+  $("twos10s5d").textContent = latest.change_5d_bp === null || latest.change_5d_bp === undefined ? "N/A" : `${Number(latest.change_5d_bp).toFixed(1)} bp`;
+  $("twos10sStructure").textContent = latest.structure || "N/A";
+  $("twos10sNote").textContent = latest.structure_note || data.twos10s_warning || "等待 2s10s 数据。";
+  renderTwos10sChart(data);
+  renderTwos10sTable(data);
+}
+
+function renderTwos10sTable(data){
+  const rows = (data.twos10s_series || []).slice(-10).reverse();
+  const table = $("twos10sTable");
+  if(!rows.length){
+    table.innerHTML = `<thead><tr><th>日期</th><th>2s10s</th><th>10Y</th><th>2Y</th></tr></thead><tbody><tr><td colspan="4">暂无 2s10s 数据</td></tr></tbody>`;
+    return;
+  }
+  table.innerHTML = `
+    <thead><tr><th>日期</th><th>2s10s</th><th>10Y</th><th>2Y</th></tr></thead>
+    <tbody>${rows.map(r => `
+      <tr>
+        <td>${escapeHtml(r.date)}</td>
+        <td>${r.spread_bp === null || r.spread_bp === undefined ? "N/A" : `${Number(r.spread_bp).toFixed(1)} bp`}</td>
+        <td>${r.ten_y === null || r.ten_y === undefined ? "N/A" : `${Number(r.ten_y).toFixed(3)}%`}</td>
+        <td>${r.two_y === null || r.two_y === undefined ? "N/A" : `${Number(r.two_y).toFixed(3)}%`}</td>
+      </tr>`).join("")}</tbody>`;
+}
+
+function renderTwos10sChart(data){
+  const svg = $("twos10sChart");
+  const rows = data.twos10s_series || [];
+  svg.innerHTML = "";
+  if(!rows.length){
+    svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" fill="#92a3bc">暂无 2s10s 数据</text>`;
+    return;
+  }
+
+  const width = 560, height = 220;
+  const margin = {top: 22, right: 20, bottom: 36, left: 54};
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+  const dataRows = rows.slice(-30).filter(r => r.spread_bp !== null && r.spread_bp !== undefined);
+  if(!dataRows.length){
+    svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" fill="#92a3bc">暂无 2s10s 数据</text>`;
+    return;
+  }
+
+  const vals = dataRows.map(r => Number(r.spread_bp));
+  const minV = Math.floor((Math.min(...vals) - 5) / 5) * 5;
+  const maxV = Math.ceil((Math.max(...vals) + 5) / 5) * 5;
+  const x = i => margin.left + (dataRows.length === 1 ? innerW / 2 : innerW * i / (dataRows.length - 1));
+  const y = v => margin.top + (maxV - v) * innerH / (maxV - minV || 1);
+
+  const make = (tag, attrs = {}, text = null) => {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+    if(text !== null) el.textContent = text;
+    svg.appendChild(el);
+    return el;
+  };
+
+  for(let i=0;i<=4;i++){
+    const val = minV + (maxV-minV)*i/4;
+    const yy = y(val);
+    make("line",{x1:margin.left,y1:yy,x2:width-margin.right,y2:yy,stroke:"rgba(148,163,184,.18)","stroke-dasharray":"4 6"});
+    make("text",{x:margin.left-9,y:yy+4,"text-anchor":"end",fill:"#92a3bc","font-size":"10"}, `${val.toFixed(0)}`);
+  }
+
+  const d = dataRows.map((r,i) => `${i===0 ? "M" : "L"} ${x(i)} ${y(Number(r.spread_bp))}`).join(" ");
+  make("path",{d,fill:"none",stroke:"#57d8ff","stroke-width":"2.8","stroke-linecap":"round","stroke-linejoin":"round"});
+  dataRows.forEach((r,i)=>{
+    make("circle",{cx:x(i),cy:y(Number(r.spread_bp)),r:i===dataRows.length-1 ? 4.8 : 3.2,fill:"#57d8ff",stroke:"#07101f","stroke-width":"1.2"});
+  });
+
+  const last = dataRows[dataRows.length-1];
+  make("text",{x:width-margin.right,y:margin.top+12,"text-anchor":"end",fill:"#cfe6ff","font-size":"12","font-weight":"900"}, `Latest: ${Number(last.spread_bp).toFixed(1)} bp`);
+  make("text",{x:margin.left,y:height-10,fill:"#92a3bc","font-size":"10"}, `${dataRows[0].date} → ${last.date}`);
+}
+
 
 function renderCurveTable(data){
   const rows = data.curve_comparison || [];
@@ -380,7 +468,7 @@ async function main(){
   renderKpis(data);
   renderReferencePeaks(data);
   renderDetails(data);
-  renderConstraints(data);
+  renderTwos10s(data);
   renderSignalMatrix(data);
 }
 

@@ -99,3 +99,44 @@ scripts/build_sr3_watch_dashboard.py
 - 不接 Risk OS
 - 不接 run_all.py
 - 不影响仓位
+
+
+## 2s10s 曲线结构模块
+
+网页不再显示“约束确认”卡片模块，改为显示：
+
+```text
+2s10s 曲线结构
+```
+
+每天可从 TradingView 下载 2s10s CSV 放到仓库根目录，推荐命名：
+
+```text
+2s10s.csv
+```
+
+也支持：
+
+```text
+US10Y-US02Y, 1D.csv
+TVC_US10Y-US02Y, 1D.csv
+tradingview_2s10s.csv
+```
+
+支持两种格式：
+
+1. 只有 spread close：
+   - `time`
+   - `close`
+   - 文件名包含 `2s10s` 或 `US10Y-US02Y`
+2. 同时有 10Y / 2Y close：
+   - `time`
+   - `US10Y ... close`
+   - `US02Y ... close`
+
+如果只有 spread，页面判断变陡/变平。  
+如果同时有 10Y 和 2Y，页面进一步判断：
+
+```text
+熊平 / 熊陡 / 牛平 / 牛陡
+```

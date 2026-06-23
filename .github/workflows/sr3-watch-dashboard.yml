@@ -35,6 +35,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add docs/sr3-watch scripts/build_sr3_watch_dashboard.py .github/workflows/sr3-watch-dashboard.yml README_SR3_WATCH.md
+          git add docs/sr3-watch scripts/build_sr3_watch_dashboard.py .github/workflows/sr3-watch-dashboard.yml
           git diff --cached --quiet || git commit -m "update standalone SR3 watch dashboard"
           git push

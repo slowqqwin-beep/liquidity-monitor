@@ -99,10 +99,39 @@
 
         <div class="panel">
           <div class="section-head">
-            <h3>约束确认</h3>
-            <span class="tag">Boundary</span>
+            <div>
+              <h3>2s10s 曲线结构</h3>
+              <p class="muted">每日下载 TradingView 2s10s 后，用这里判断曲线是变陡、变平，或进一步识别熊平/熊陡/牛平/牛陡。</p>
+            </div>
+            <span class="tag">Curve Structure</span>
           </div>
-          <div class="constraint-list" id="constraintList"></div>
+
+          <div class="twos10s-hero">
+            <div>
+              <span>最新 2s10s</span>
+              <strong id="twos10sLatest">N/A</strong>
+            </div>
+            <div>
+              <span>日变动</span>
+              <strong id="twos10s1d">N/A</strong>
+            </div>
+            <div>
+              <span>5日变动</span>
+              <strong id="twos10s5d">N/A</strong>
+            </div>
+            <div>
+              <span>结构判断</span>
+              <strong id="twos10sStructure">N/A</strong>
+            </div>
+          </div>
+
+          <p class="structure-note" id="twos10sNote">等待 2s10s 数据。</p>
+          <div class="mini-chart-card">
+            <svg id="twos10sChart" role="img" aria-label="2s10s curve structure history"></svg>
+          </div>
+          <div class="table-wrap compact twos10s-table-wrap">
+            <table id="twos10sTable"></table>
+          </div>
         </div>
       </section>
 
@@ -126,7 +155,6 @@
     </footer>
   </div>
 
-  <script src="./data/sr3_data.js"></script>
   <script src="./assets/sr3-watch.js"></script>
 </body>
 </html>
