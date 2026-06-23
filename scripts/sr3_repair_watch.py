@@ -451,12 +451,63 @@ def analyze(df, last_shock):
         st, sl, act = 1, "State 1: Hawkish Impulse", "短端预期：鹰派冲击未消退；曲线仍在上行或高台维持"
 
     lr = df.iloc[li]
-    ho = lr.get("BAMLH0A0HYM2", None)
-    ho = round(float(ho), 2) if not pd.isna(ho) else None
-    d10 = lr.get("DGS10", None)
-    d10 = round(float(d10), 2) if not pd.isna(d10) else None
-    ry = lr.get("real_yield_nowcast", None)
-    ry = round(float(ry), 4) if not pd.isna(ry) else None
+    # ── Macro fallback: 面板未追到时从 series.json 兜底 ──
+    def _macro_fallback(key, pre_key=None):
+        v = lr.get(pre_key or key, None)
+        if v is not None and not pd.isna(v):
+            return v
+        try:
+            series = json.loads((PROJECT_ROOT / "data" / "series.json").read_text(encoding="utf-8"))
+            items = series.get(key, [])
+            if items:
+                return float(items[-1].get("value", items[-1] if isinstance(items[-1], (int, float)) else np.nan))
+        except Exception:
+            pass
+        return None
+    ho = _macro_fallback("BAMLH0A0HYM2")
+    ho = round(float(ho), 2) if ho is not None else None
+    d10 = _macro_fallback("DGS10")
+    d10 = round(float(d10), 2) if d10 is not None else None
+    # Real Yield Nowcast: DGS10 − T10YIE
+    try:
+        series = json.loads((PROJECT_ROOT / "data" / "series.json").read_text(encoding="utf-8"))
+        items_d10 = series.get("DGS10", [])
+        items_be = series.get("T10YIE", [])
+        if items_d10 and items_be:
+            ry_val = float(items_d10[-1].get("value", 0)) - float(items_be[-1].get("value", 0))
+            ry = round(ry_val, 4)
+        elif not pd.isna(lr.get("real_yield_nowcast")):
+            ry = round(float(lr["real_yield_nowcast"]), 4)
+        else:
+            ry = None
+    except Exception:
+        ry = None
+
+    # ── 合约日差价：今日全合约 close vs 前一交易日 ──
+    contract_diffs = []
+    if LONG_PATH.exists():
+        long_all = pd.read_csv(LONG_PATH, parse_dates=["date"])
+        long_all = long_all.sort_values(["date", "maturity"])
+        today_date = pd.Timestamp(ld).date() if hasattr(ld, 'date') else pd.Timestamp(ld).date()
+        today_rows = long_all[long_all["date"].dt.date == today_date]
+        if len(today_rows) > 0:
+            prev_date = sorted(long_all["date"].dt.date.unique())[-2]
+            prev_rows = long_all[long_all["date"].dt.date == prev_date]
+            merged = today_rows[["contract","close","implied_rate"]].merge(
+                prev_rows[["contract","close","implied_rate"]],
+                on="contract", suffixes=("", "_prev"), how="left"
+            )
+            for _, r in merged.iterrows():
+                prev_close = r.get("close_prev")
+                chg = float(r["close"] - prev_close) if pd.notna(prev_close) and pd.notna(r["close"]) else None
+                chg_bp = (float(r["implied_rate"] - r["implied_rate_prev"]) * 100) if pd.notna(r.get("implied_rate_prev")) and pd.notna(r["implied_rate"]) else None
+                contract_diffs.append({
+                    "contract": r["contract"],
+                    "close": round(float(r["close"]), 4),
+                    "close_chg": round(chg, 4) if chg is not None else None,
+                    "implied_rate_pct": round(float(r["implied_rate"]), 4),
+                    "implied_chg_bp": round(chg_bp, 2) if chg_bp is not None else None,
+                })
 
     return {
         "generated_at": datetime.now().isoformat(),
@@ -486,12 +537,26 @@ def analyze(df, last_shock):
                   "repair_detected": repair, "repair_start_date": str(rsd.date()) if rsd else None,
                   "repair_bp_from_peak": round(float(rbp), 2),
                   "repair_classification": cls, "repair_classification_reason": reason},
+        "contract_diffs": contract_diffs,
         "action": act,
         "curve_structure": struct or {},
         "constraints": {"research_only": True, "not_in_risk_os": True,
                         "not_in_dashboard": True, "not_in_run_all": True,
                         "deceleration_not_buy_signal": True},
     }
+
+
+def _format_diffs(cd):
+    """Format contract diff data into MD table string."""
+    if not cd:
+        return "| — | — | — | — | 数据不可用 |\n"
+    lines = ["\n| 合约 | 收盘价 | 日变 | 隐含利率 | 日变(bp) |",
+             "|------|--------|------|----------|----------|"]
+    for d in cd:
+        chg_str = f"{d['close_chg']:+.4f}" if d.get('close_chg') is not None else "—"
+        bp_str = f"{d['implied_chg_bp']:+.1f}" if d.get('implied_chg_bp') is not None else "—"
+        lines.append(f"| {d['contract']} | {d['close']:.4f} | {chg_str} | {d['implied_rate_pct']:.3f}% | {bp_str} |")
+    return "\n" + "\n".join(lines)
 
 
 def _format_structure(cs):
@@ -597,14 +662,8 @@ def write_outputs(r):
 
 ---
 
-## 约束确认
-
-| 约束 | 状态 |
-|------|------|
-| Research-Only | ✅ |
-| 不接 Risk OS / dashboard / run_all.py | ✅ |
-| 不影响仓位 | ✅ |
-| SR3 deceleration ≠ buy signal | ✅ |
+## 合约收盘价 & 日变动
+""" + _format_diffs(s.get('contract_diffs', [])) + f"""
 
 ---
 

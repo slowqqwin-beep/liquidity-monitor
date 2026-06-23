@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-23T16:36:32.232463",
+  "generated_at": "2026-06-23T16:46:52.950082",
   "data_date": "2026-06-23",
   "data_age_days": 0,
   "reference_mode": "formal shock",
@@ -22,10 +22,10 @@
     "curve_move_5d_sum_bp": 10.38,
     "decline_from_ref_peak_bp": -8.0,
     "on_elevated_plateau": true,
-    "hy_oas_bp": null,
+    "hy_oas_bp": 266.0,
     "hy_oas_available": false,
-    "dgs10_pct": null,
-    "real_yield_nowcast_pct": null
+    "dgs10_pct": 4.46,
+    "real_yield_nowcast_pct": 2.23
   },
   "state": {
     "state_number": 2,
@@ -41,6 +41,57 @@
     "repair_classification": "structural_easing",
     "repair_classification_reason": "全线合约低于参考峰(2026-06-09)，但 5日累计仍正向 — 结构松动先于动能"
   },
+  "contract_diffs": [
+    {
+      "contract": "SR3N2026",
+      "close": 96.21,
+      "close_chg": 0.0125,
+      "implied_rate_pct": 3.79,
+      "implied_chg_bp": -1.25
+    },
+    {
+      "contract": "SR3Q2026",
+      "close": 96.135,
+      "close_chg": 0.015,
+      "implied_rate_pct": 3.865,
+      "implied_chg_bp": -1.5
+    },
+    {
+      "contract": "SR3U2026",
+      "close": 96.07,
+      "close_chg": 0.035,
+      "implied_rate_pct": 3.93,
+      "implied_chg_bp": -3.5
+    },
+    {
+      "contract": "SR3Z2026",
+      "close": 95.92,
+      "close_chg": 0.045,
+      "implied_rate_pct": 4.08,
+      "implied_chg_bp": -4.5
+    },
+    {
+      "contract": "SR3H2027",
+      "close": 96.2875,
+      "close_chg": 0.0075,
+      "implied_rate_pct": 3.7125,
+      "implied_chg_bp": -0.75
+    },
+    {
+      "contract": "SR3M2027",
+      "close": 95.87,
+      "close_chg": 0.045,
+      "implied_rate_pct": 4.13,
+      "implied_chg_bp": -4.5
+    },
+    {
+      "contract": "SR3U2027",
+      "close": 95.93,
+      "close_chg": 0.045,
+      "implied_rate_pct": 4.07,
+      "implied_chg_bp": -4.5
+    }
+  ],
   "action": "短端预期：全线合约低于参考峰（结构松动），但动能信号仍在鹰派区；结构性下降领先",
   "curve_structure": {
     "ref_date": "2026-06-22",
