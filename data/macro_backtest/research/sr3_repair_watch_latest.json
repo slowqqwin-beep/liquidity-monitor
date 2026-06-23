@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-23T16:46:52.950082",
+  "generated_at": "2026-06-23T16:52:52.206472",
   "data_date": "2026-06-23",
   "data_age_days": 0,
   "reference_mode": "formal shock",
@@ -58,17 +58,17 @@
     },
     {
       "contract": "SR3U2026",
-      "close": 96.07,
-      "close_chg": 0.035,
-      "implied_rate_pct": 3.93,
-      "implied_chg_bp": -3.5
+      "close": 96.075,
+      "close_chg": 0.04,
+      "implied_rate_pct": 3.925,
+      "implied_chg_bp": -4.0
     },
     {
       "contract": "SR3Z2026",
-      "close": 95.92,
-      "close_chg": 0.045,
-      "implied_rate_pct": 4.08,
-      "implied_chg_bp": -4.5
+      "close": 95.925,
+      "close_chg": 0.05,
+      "implied_rate_pct": 4.075,
+      "implied_chg_bp": -5.0
     },
     {
       "contract": "SR3H2027",
@@ -79,10 +79,10 @@
     },
     {
       "contract": "SR3M2027",
-      "close": 95.87,
-      "close_chg": 0.045,
-      "implied_rate_pct": 4.13,
-      "implied_chg_bp": -4.5
+      "close": 95.875,
+      "close_chg": 0.05,
+      "implied_rate_pct": 4.125,
+      "implied_chg_bp": -5.0
     },
     {
       "contract": "SR3U2027",
@@ -99,7 +99,7 @@
     "n_contracts": 7,
     "n_below": 7,
     "n_above": 0,
-    "avg_deviation_bp": -2.93,
+    "avg_deviation_bp": -3.14,
     "all_below_ref": true,
     "detail": [
       {
@@ -110,9 +110,9 @@
       },
       {
         "contract": "SR3M2027",
-        "today_pct": 4.13,
+        "today_pct": 4.125,
         "ref_pct": 4.175,
-        "dev_bp": -4.5
+        "dev_bp": -5.0
       },
       {
         "contract": "SR3N2026",
@@ -128,9 +128,9 @@
       },
       {
         "contract": "SR3U2026",
-        "today_pct": 3.93,
+        "today_pct": 3.925,
         "ref_pct": 3.965,
-        "dev_bp": -3.5
+        "dev_bp": -4.0
       },
       {
         "contract": "SR3U2027",
@@ -140,9 +140,9 @@
       },
       {
         "contract": "SR3Z2026",
-        "today_pct": 4.08,
+        "today_pct": 4.075,
         "ref_pct": 4.125,
-        "dev_bp": -4.5
+        "dev_bp": -5.0
       }
     ]
   },
