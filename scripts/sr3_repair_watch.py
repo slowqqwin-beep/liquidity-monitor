@@ -355,12 +355,15 @@ def analyze(df, last_shock):
     ld = df["date"].iloc[li]
     ds = li - si
 
-    # Recent 60d peak as fallback reference
+    # Recent 60d peak as fallback reference (EXCLUDE today: peak can't be "0d ago")
     rws = max(0, li - 60)
-    rdf = df.iloc[rws:li + 1]
-    rpi = rdf["near_rate"].idxmax()
-    rpr = df["near_rate"].iloc[rpi]
-    rpd = df["date"].iloc[rpi]
+    rdf = df.iloc[rws:li]  # exclude today (index li) so reference peak ≠ today
+    if len(rdf) > 0:
+        rpi = rdf["near_rate"].idxmax()
+        rpr = df["near_rate"].iloc[rpi]
+        rpd = df["date"].iloc[rpi]
+    else:
+        rpi, rpr, rpd = li, df["near_rate"].iloc[li], df["date"].iloc[li]
 
     use_formal = ds <= 60
     ref_rate = shock_peak if use_formal else rpr
@@ -551,6 +554,9 @@ def analyze(df, last_shock):
                     "implied_chg_bp": round(chg_bp, 2) if chg_bp is not None else None,
                 })
 
+    # ── 逐合约 FOMC 修复表：baseline (06-16) → peak (06-22) → now ──
+    retracement = _compute_retracement(ld)
+
     # US trade date: China morning download → previous day's US close
     # TradingView bar labeled N = US trading day N-1 (from China timezone perspective)
     us_trade_date = (ld - pd.Timedelta(days=1)).date()
@@ -583,12 +589,54 @@ def analyze(df, last_shock):
                   "repair_bp_from_peak": round(float(rbp), 2),
                   "repair_classification": cls, "repair_classification_reason": reason},
         "contract_diffs": contract_diffs,
+        "retracement": retracement,
         "action": act,
         "curve_structure": struct or {},
         "constraints": {"research_only": True, "not_in_risk_os": True,
                         "not_in_dashboard": True, "not_in_run_all": True,
                         "deceleration_not_buy_signal": True},
     }
+
+
+def _compute_retracement(latest_date):
+    """逐合约 FOMC retracement: baseline (06-16) → peak (06-22) → now.
+    Returns list of {contract, baseline, peak, now, overshoot_bp, retraced_bp, repair_pct}."""
+    if not LONG_PATH.exists():
+        return []
+    try:
+        long_all = pd.read_csv(LONG_PATH, parse_dates=["date"])
+        long_all = long_all.sort_values(["date", "maturity"])
+        baseline_dt = pd.Timestamp("2026-06-16")
+        peak_dt = pd.Timestamp("2026-06-22")
+        now_dt = pd.Timestamp(latest_date).date() if hasattr(latest_date, 'date') else pd.Timestamp(latest_date).date()
+
+        def _get_rates(dt):
+            rows = long_all[long_all["date"].dt.date == (dt.date() if hasattr(dt, 'date') else dt)]
+            return {r["contract"]: r["implied_rate"] for _, r in rows.iterrows()
+                    if pd.notna(r.get("implied_rate"))}
+
+        bl = _get_rates(baseline_dt)
+        pk = _get_rates(peak_dt)
+        nw = _get_rates(now_dt)
+
+        result = []
+        for ct in sorted(set(bl) & set(pk) & set(nw)):
+            b, p, n = bl[ct], pk[ct], nw[ct]
+            over = round((p - b) * 100, 1)
+            retr = round((p - n) * 100, 1)
+            pct = round(retr / over * 100, 1) if over > 0.5 else None
+            result.append({
+                "contract": ct,
+                "baseline_pct": round(float(b), 4),
+                "peak_pct": round(float(p), 4),
+                "now_pct": round(float(n), 4),
+                "overshoot_bp": over,
+                "retraced_bp": retr,
+                "repair_pct": pct,
+            })
+        return result
+    except Exception:
+        return []
 
 
 def _format_diffs(cd):
@@ -819,6 +867,7 @@ def _write_web_json(r):
         "curve_bp_changes": curve_bp_changes,
         "curve_warning": None if curve_comparison else "Z26-H27-M27 曲线数据不可用",
         "contract_diffs": cd,
+        "retracement": r.get("retracement", []),
     }
     web_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "sr3_repair_watch_latest.json"
     with open(web_path, "w", encoding="utf-8") as f:

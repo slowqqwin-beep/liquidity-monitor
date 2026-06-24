@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Shared yfinance Treasury yield fetcher — no local CSV dependency.
-
-Used by both sr3_repair_watch.py (KPIs + classification) and
-build_sr3_watch_dashboard.py (2s10s chart).
-
-Ticker mapping:
-- ^TNX  → 10Y Treasury yield (CBOE index)
-- ZT=F  → 2Y T-Note futures, yield ≈ 100 - price
-- T10YIE → FRED CSV fallback (no real-time alternative)
-"""
+"""Treasury yield fetcher — Yahoo API + Treasury CSV. No local file dependency."""
 
 from __future__ import annotations
 
@@ -25,14 +16,64 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CACHE_PATH = PROJECT_ROOT / "data" / "treasury_yields_cache.json"
 
 
+def _yahoo_chart(ticker: str, period: str = "5d") -> list:
+    """Fetch chart data from Yahoo Finance API."""
+    try:
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range={period}"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            r = json.loads(resp.read())
+        result = r["chart"]["result"][0]
+        timestamps = result["timestamp"]
+        closes = result["indicators"]["quote"][0]["close"]
+        out = []
+        for ts, cl in zip(timestamps, closes):
+            if cl is not None:
+                d = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+                out.append({"date": d, "close": float(cl)})
+        return out
+    except Exception:
+        return []
+
+
+def _treasury_2y() -> Optional[float]:
+    """Fetch latest 2Y Treasury yield from US Treasury CSV."""
+    try:
+        url = ("https://home.treasury.gov/resource-center/data-chart-center/"
+               "interest-rates/daily-treasury-rates.csv/all/2026?"
+               "type=daily_treasury_yield_curve&field_tdr_date_value=2026&_format=csv")
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = resp.read().decode()
+        reader = csv.DictReader(io.StringIO(data))
+        last = None
+        for row in reader:
+            val = row.get("2 Yr", "").strip()
+            if val:
+                last = float(val)
+        return round(last, 3) if last else None
+    except Exception:
+        return None
+
+
+def fetch_latest_yields() -> Tuple[Optional[float], Optional[float]]:
+    """Return (us10y_pct, us2y_pct) from Yahoo API + Treasury."""
+    us10y = None
+    tnx_data = _yahoo_chart("%5ETNX", "2d")
+    if tnx_data:
+        us10y = round(tnx_data[-1]["close"], 2)
+    us2y = _treasury_2y()
+    return us10y, us2y
+
+
 def fetch_t10yie() -> Optional[float]:
-    """Fetch latest T10YIE from FRED web (no API key needed)."""
+    """Fetch latest T10YIE from FRED web."""
     try:
         url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=T10YIE"
         with urllib.request.urlopen(url, timeout=15) as resp:
             data = resp.read().decode()
         reader = csv.reader(io.StringIO(data))
-        next(reader)  # skip header
+        next(reader)
         last_val = None
         for row in reader:
             if len(row) >= 2 and row[1].strip():
@@ -42,126 +83,67 @@ def fetch_t10yie() -> Optional[float]:
         return None
 
 
-def fetch_latest_yields() -> Tuple[Optional[float], Optional[float]]:
-    """Return (us10y_pct, us2y_pct) latest values from yfinance."""
-    try:
-        import yfinance as yf
-        end = datetime.now()
-        start = end - timedelta(days=5)
-        tnx = yf.download("^TNX", start=start.strftime("%Y-%m-%d"),
-                          end=end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
-        us10y = round(float(tnx["Close"].dropna().iloc[-1]), 2) if not tnx.empty else None
-        zt = yf.download("ZT=F", start=start.strftime("%Y-%m-%d"),
-                         end=end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
-        us2y = round(100.0 - float(zt["Close"].dropna().iloc[-1]), 2) if not zt.empty else None
-        return us10y, us2y
-    except Exception:
-        return None, None
-
-
 def fetch_history(days: int = 400) -> list:
-    """Return list of {date, us10y, us2y, spread_bp} from yfinance.
-    Cached to CACHE_PATH, refreshed when cache older than 6 hours.
-    Falls back to local CSV if yfinance fails.
-    """
+    """30min cache + Yahoo/Treasury API. No CSV dependency."""
     now = datetime.now()
+
+    # Fresh cache: return immediately
     if CACHE_PATH.exists():
         try:
             cache = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
             cache_ts = datetime.fromisoformat(cache.get("fetched_at", "2000-01-01"))
-            if (now - cache_ts).total_seconds() < 21600:  # 6h
+            if (now - cache_ts).total_seconds() < 1800:
                 series = cache.get("series", [])
                 return series[-days:] if len(series) > days else series
         except Exception:
             pass
 
+    # Load existing cache as base
+    existing: dict[str, dict] = {}
+    if CACHE_PATH.exists():
+        try:
+            for s in json.loads(CACHE_PATH.read_text(encoding="utf-8")).get("series", []):
+                existing[s["date"]] = s
+        except Exception:
+            pass
+
+    # Overlay Yahoo ^TNX (2d) + ZT=F (5d) + Treasury CSV for 2Y
     try:
-        import yfinance as yf
-        end = now
-        # Fetch in chunks to avoid timeouts
-        all_series = []
-        chunk_days = 120
-        for offset in range(0, days, chunk_days):
-            chunk_end = end - timedelta(days=offset)
-            chunk_start = chunk_end - timedelta(days=chunk_days + 10)
-            tnx = yf.download("^TNX", start=chunk_start.strftime("%Y-%m-%d"),
-                              end=chunk_end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
-            zt = yf.download("ZT=F", start=chunk_start.strftime("%Y-%m-%d"),
-                             end=chunk_end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
-            if tnx.empty or zt.empty:
-                continue
-            tnx = tnx[["Close"]].rename(columns={"Close": "us10y"})
-            zt = zt[["Close"]].rename(columns={"Close": "price"})
-            merged = tnx.join(zt, how="inner")
-            merged["us2y"] = round(100.0 - merged["price"], 2)
-            merged["spread_bp"] = round((merged["us10y"] - merged["us2y"]) * 100, 1)
-            for idx, row in merged.iterrows():
-                date_str = idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx)[:10]
-                all_series.append({
-                    "date": date_str,
-                    "ten_y": round(float(row["us10y"]), 3),
-                    "two_y": round(float(row["us2y"]), 3),
-                    "spread_bp": round(float(row["spread_bp"]), 1),
-                })
+        tnx_data = _yahoo_chart("%5ETNX", "2d")
+        zt_data = _yahoo_chart("ZT=F", "5d")
+        zt_by = {r["date"]: r["close"] for r in (zt_data or [])}
+        t_2y = _treasury_2y()
+        if tnx_data:
+            for r in tnx_data:
+                d = r["date"]
+                ten = round(r["close"], 3)
+                two = existing.get(d, {}).get("two_y") if d in existing else None
+                if two is None and d in zt_by:
+                    two = round(100.0 - zt_by[d], 3)
+                if two is None and t_2y is not None:
+                    two = t_2y
+                if two is not None:
+                    existing[d] = {"date": d, "ten_y": ten, "two_y": two,
+                                   "spread_bp": round((ten - two) * 100, 1)}
+    except Exception:
+        pass
 
-        if not all_series:
-            return _fallback_csv()
+    series = [existing[k] for k in sorted(existing)][-days:]
 
-        # Deduplicate and sort
-        seen = {}
-        for s in all_series:
-            seen[s["date"]] = s
-        series = [seen[k] for k in sorted(seen)]
+    # Recalculate spreads
+    for s in series:
+        if s.get("ten_y") and s.get("two_y"):
+            s["spread_bp"] = round((s["ten_y"] - s["two_y"]) * 100, 1)
 
+    if series:
         CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
         CACHE_PATH.write_text(json.dumps({
-            "fetched_at": now.isoformat(),
-            "series": series,
+            "fetched_at": now.isoformat(), "series": series,
         }, ensure_ascii=False, indent=1), encoding="utf-8")
-        return series[-days:]
-    except Exception:
-        return _fallback_csv()
+
+    return series
 
 
 def _fallback_csv() -> list:
-    """Try local CSV files as last resort."""
-    candidates = [
-        PROJECT_ROOT / "data" / "历史数据" / "TVC_US10Y, 1D.csv",
-        PROJECT_ROOT / "TVC_US10Y, 1D.csv",
-        PROJECT_ROOT / "2s10s.csv",
-    ]
-    for path in candidates:
-        if not path.exists():
-            continue
-        try:
-            import csv
-            with open(path, "r", encoding="utf-8-sig") as f:
-                reader = csv.DictReader(f)
-                rows = list(reader)
-            if not rows or "time" not in rows[0]:
-                continue
-            # Detect columns
-            cols = {"ten": "close", "two": None}
-            for h in rows[0].keys():
-                hl = h.lower().replace(" ", "")
-                if "us02y" in hl or "us2y" in hl:
-                    cols["two"] = h
-            series = []
-            for row in rows:
-                d = row.get("time", "")[:10]
-                try:
-                    ten = float(row.get(cols["ten"], 0))
-                except Exception:
-                    continue
-                try:
-                    two = float(row[cols["two"]]) if cols["two"] else None
-                except Exception:
-                    two = None
-                if two is not None:
-                    spread = round((ten - two) * 100, 1)
-                    series.append({"date": d, "ten_y": round(ten, 3), "two_y": round(two, 3), "spread_bp": spread})
-            if series:
-                return series
-        except Exception:
-            continue
+    """Legacy: kept for build_sr3_watch_dashboard compatibility (twos10s audit)."""
     return []

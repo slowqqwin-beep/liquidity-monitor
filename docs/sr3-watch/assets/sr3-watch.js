@@ -306,6 +306,29 @@ function renderConstraints(data){
   `).join("");
 }
 
+function renderRetracement(data){
+  const rows = data.retracement || [];
+  const table = $("retracementTable");
+  if(!rows.length){
+    table.innerHTML = "<thead><tr><th>合约</th><th>Baseline</th><th>Peak</th><th>Now</th><th>Overshoot</th><th>Retraced</th><th>% Repair</th></tr></thead><tbody><tr><td colspan='7'>暂无数据</td></tr></tbody>";
+    return;
+  }
+  const formatR = (v) => v === null || v === undefined ? "—" : v.toFixed(1);
+  const maxPct = Math.max(...rows.map(r => r.repair_pct || 0));
+  table.innerHTML = `
+    <thead><tr><th>合约</th><th>Baseline</th><th>Peak</th><th>Now</th><th>Overshoot</th><th>Retraced</th><th>% Repair</th></tr></thead>
+    <tbody>${rows.map(r => `
+      <tr>
+        <td><strong>${escapeHtml(r.contract)}</strong></td>
+        <td>${r.baseline_pct.toFixed(3)}%</td>
+        <td>${r.peak_pct.toFixed(3)}%</td>
+        <td>${r.now_pct.toFixed(3)}%</td>
+        <td>${r.overshoot_bp > 0 ? "+" : ""}${formatR(r.overshoot_bp)}bp</td>
+        <td>${r.retraced_bp > 0 ? "-" : "+"}${formatR(Math.abs(r.retraced_bp))}bp</td>
+        <td style="background:linear-gradient(90deg,rgba(74,222,128,${(r.repair_pct||0)/maxPct*0.5}) ${r.repair_pct||0}%,transparent ${r.repair_pct||0}%)">${r.repair_pct === null ? "—" : formatR(r.repair_pct) + "%"}</td>
+      </tr>`).join("")}</tbody>`;
+}
+
 function renderSignalMatrix(data){
   const rows = data.signal_matrix && data.signal_matrix.length ? data.signal_matrix : [
     {condition:"信用不扩 + SR3 钝化", meaning:"鹰派动能衰竭，但短端预期尚未回落"},
@@ -636,6 +659,7 @@ async function main(){
   renderReferencePeaks(data);
   renderDetails(data);
   renderTwos10s(data);
+  renderRetracement(data);
   renderSignalMatrix(data);
 }
 
