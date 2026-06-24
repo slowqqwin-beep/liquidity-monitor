@@ -157,6 +157,21 @@ def last_value(series: list[dict]) -> float | None:
     return series[-1]["value"] if series else None
 
 
+def _value_on_date(series: list[dict], target_date: str) -> float | None:
+    """Get value from series matching target_date, or latest if no exact match."""
+    if not series:
+        return None
+    for item in reversed(series):
+        if item.get("date") == target_date:
+            return item.get("value")
+    # No exact match: return latest date that's <= target_date
+    for item in reversed(series):
+        if item.get("date", "") <= target_date:
+            return item.get("value")
+    return None
+
+
+
 def last_date(series: list[dict]) -> str | None:
     return series[-1]["date"] if series else None
 
@@ -193,9 +208,30 @@ def get_us10y_realtime() -> float | None:
 
 
 def get_us2y_realtime() -> float | None:
-    """US02Y from yfinance ZT=F futures (yield ≈ 100 - price)."""
+    """US02Y: yfinance ZT=F → TradingView CSV → None (then FRED DGS2 in caller)."""
     v = _yf_fetch("ZT=F")
-    return round(100.0 - v, 2) if v else None
+    if v is not None:
+        return round(100.0 - v, 2)
+    # Try TradingView CSV (same-day, no FRED lag)
+    for csv_path in [
+        Path(__file__).resolve().parent / "data" / "历史数据" / "TVC_US10Y, 1D.csv",
+        Path(__file__).resolve().parent / "2s10s.csv",
+    ]:
+        try:
+            import csv as _csv
+            with open(csv_path, "r", encoding="utf-8-sig") as f:
+                rows = list(_csv.DictReader(f))
+            if not rows:
+                continue
+            last = rows[-1]
+            # Find US02Y column: 'US02Y · TVC: close' or similar
+            for key, val in last.items():
+                kl = key.lower().replace(" ", "")
+                if ("us02y" in kl or "us2y" in kl) and val.strip():
+                    return round(float(val), 2)
+        except Exception:
+            continue
+    return None
 
 
 def _nth_value_from_end(series: list[dict], n: int) -> float | None:
@@ -1172,11 +1208,12 @@ def compute_v35_triggers(data: dict) -> dict:
     hyg_val = last_value(hyg) or 0
     fxy_val = last_value(fxy) or 0
 
-    # Compute SOFR-IORB spread
-    sofr = data.get(SOFR_ID, [])
-    iorb = data.get(IORB_ID, [])
-    sofr_val  = last_value(sofr) or 0
-    iorb_val  = last_value(iorb) or 0
+    # Compute SOFR-IORB spread (date-matched IORB)
+    sofr_s = data.get(SOFR_ID, [])
+    iorb_s = data.get(IORB_ID, [])
+    sofr_val  = last_value(sofr_s) or 0
+    sofr_d    = last_date(sofr_s) if sofr_s else None
+    iorb_val  = _value_on_date(iorb_s, sofr_d) if sofr_d else last_value(iorb_s) or 0
     sofr_iorb_bp = (sofr_val - iorb_val) * 100
 
     # --- Drawdown Warning (primary) ---
@@ -1319,12 +1356,13 @@ def compute_rate_path_proxy(data: dict) -> dict:
     dgs2_s = data.get(DGS2_ID, [])
     iorb_s = data.get(IORB_ID, [])
 
-    # yfinance US02Y first (no FRED lag)
+    # US02Y: yfinance ZT=F → TV CSV → FRED DGS2
     us2y = get_us2y_realtime()
-    us2y_source = "yfinance ZT=F"
     if us2y is None:
         us2y = last_value(dgs2_s)
-        us2y_source = "FRED DGS2"
+        us2y_source = "FRED DGS2 (lag)"
+    else:
+        us2y_source = "TradingView/yfinance"
 
     iorb = last_value(iorb_s)
 
@@ -1487,12 +1525,18 @@ def compute_abcd_signals(data: dict) -> dict:
     wres_s     = data.get("WRESBAL", [])
 
     effr     = last_value(effr_s)
-    iorb     = last_value(iorb_s)
+    effr_d   = last_date(effr_s) if effr_s else None
     sofr     = last_value(sofr_s)
+    sofr_d   = last_date(sofr_s) if sofr_s else None
+    iorb     = last_value(iorb_s)
     wresbal  = last_value(wres_s)
 
-    effr_iorb_bp = round((effr - iorb) * 100, 1) if (effr is not None and iorb is not None) else None
-    sofr_iorb_bp = round((sofr - iorb) * 100, 1) if (sofr is not None and iorb is not None) else None
+    # Date-matched IORB: avoid cross-date comparison when IORB is fresher
+    iorb_effr = _value_on_date(iorb_s, effr_d) if effr_d else iorb
+    iorb_sofr = _value_on_date(iorb_s, sofr_d) if sofr_d else iorb
+
+    effr_iorb_bp = round((effr - iorb_effr) * 100, 1) if (effr is not None and iorb_effr is not None) else None
+    sofr_iorb_bp = round((sofr - iorb_sofr) * 100, 1) if (sofr is not None and iorb_sofr is not None) else None
     reserve_t    = round(wresbal / 1_000_000, 2) if wresbal else None
 
     # 20d changes
@@ -1507,8 +1551,12 @@ def compute_abcd_signals(data: dict) -> dict:
     a_sofr = classify_traffic_light(sofr_iorb_bp, A_THRESHOLDS["SOFR_IORB"])
     a_res  = classify_traffic_light(reserve_t, A_THRESHOLDS["Reserve"])
 
-    # DUR5: EFFR-IORB in 🟠 range (-3 to 0bp) or 🔴 (>0bp)
-    effr_iorb_raw = [(d["value"] - iorb) * 100 for d in effr_s if iorb is not None] if effr_s and iorb is not None else []
+    # DUR5: EFFR-IORB in 🟠 range (-3 to 0bp) or 🔴 (>0bp) — date-matched IORB
+    effr_iorb_raw = []
+    for d in (effr_s or []):
+        matched_iorb = _value_on_date(iorb_s, d.get("date", ""))
+        if matched_iorb is not None:
+            effr_iorb_raw.append((d["value"] - matched_iorb) * 100)
     dur5_effr = 0
     if effr_iorb_raw:
         count = 0
