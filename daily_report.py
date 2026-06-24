@@ -161,6 +161,43 @@ def last_date(series: list[dict]) -> str | None:
     return series[-1]["date"] if series else None
 
 
+# ── yfinance 实时回退：series.json 中的 DGS10/DGS2 滞后 1-2 天 ──
+_yf_cache: dict[str, float | None] = {}
+_yf_ts: datetime | None = None
+
+
+def _yf_fetch(ticker: str) -> float | None:
+    """Get latest close from yfinance, cached 5 minutes."""
+    global _yf_cache, _yf_ts
+    now = datetime.now()
+    if _yf_ts and (now - _yf_ts).total_seconds() < 300:
+        return _yf_cache.get(ticker)
+    try:
+        import yfinance as yf
+        end = now
+        start = end - timedelta(days=5)
+        df = yf.download(ticker, start=start.strftime("%Y-%m-%d"),
+                         end=end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
+        val = float(df["Close"].dropna().iloc[-1]) if not df.empty else None
+        _yf_cache[ticker] = val
+        _yf_ts = now
+        return val
+    except Exception:
+        return None
+
+
+def get_us10y_realtime() -> float | None:
+    """US10Y from yfinance ^TNX, auto-converted from CBOE scale."""
+    v = _yf_fetch("^TNX")
+    return round(v, 2) if v else None
+
+
+def get_us2y_realtime() -> float | None:
+    """US02Y from yfinance ZT=F futures (yield ≈ 100 - price)."""
+    v = _yf_fetch("ZT=F")
+    return round(100.0 - v, 2) if v else None
+
+
 def _nth_value_from_end(series: list[dict], n: int) -> float | None:
     """Get value n positions from end (0 = last, 1 = second-to-last, etc)."""
     if len(series) > n:
@@ -372,24 +409,29 @@ def compute_real_yield_nowcast(data: dict) -> dict:
     t10yie_s = data.get("T10YIE", [])
     bei_date_raw = last_date(t10yie_s) if t10yie_s else None
 
-    # ── 1. US10Y nominal (date-matched to BEI when possible) ──
-    # Key insight: real_yield_nowcast = US10Y − T10YIE, so both must be
-    # on the same date.  FRED T10YIE (BEI) is often 1 day fresher than
-    # DGS10.  Use Futu IEF to forward-estimate US10Y to BEI date.
+    # ── 1. US10Y nominal — yfinance ^TNX first (no FRED lag) ──
     selected = False
 
-    # Tier 0: BEI date > DGS10 date → estimate 10Y to BEI date via Futu IEF
-    if (dgs10_date and dgs10_val is not None and bei_date_raw
+    # Tier 0: yfinance ^TNX (same-day US10Y, beats all FRED sources)
+    yf_us10y = get_us10y_realtime()
+    if yf_us10y is not None:
+        result["us10y_latest"] = yf_us10y
+        result["us10y_latest_date"] = datetime.now().strftime("%Y-%m-%d")
+        result["us10y_source"] = "yfinance ^TNX (实时)"
+        selected = True
+
+    # Tier 1: BEI date > DGS10 date → estimate 10Y via Futu IEF
+    if not selected and (dgs10_date and dgs10_val is not None and bei_date_raw
             and bei_date_raw > dgs10_date):
         ief_est = _estimate_us10y_from_futu(
             dgs10_val, dgs10_date, target_date=bei_date_raw)
         if ief_est is not None:
             result["us10y_latest"] = ief_est
-            result["us10y_latest_date"] = bei_date_raw  # ISO date = BEI date
+            result["us10y_latest_date"] = bei_date_raw
             result["us10y_source"] = f"Futu IEF estimate for {bei_date_raw} (anchor DGS10 {dgs10_date})"
             selected = True
 
-    # Tier 1: DGS10 already covers BEI date → use DGS10 directly
+    # Tier 2: DGS10 already covers BEI date → use DGS10 directly
     if not selected and dgs10_date and dgs10_val is not None:
         if (bei_date_raw and dgs10_date >= bei_date_raw) or dgs10_date:
             result["us10y_latest"] = round(dgs10_val, 2)
@@ -1267,20 +1309,27 @@ def _classify_rate_path_level(gap_bp: float) -> str:
 
 
 def compute_rate_path_proxy(data: dict) -> dict:
-    """利率路径(代理): DGS2 − IORB → 市场预期未来~2年平均政策利率 − 当前政策利率。
+    """利率路径(代理): US02Y − IORB → 市场预期未来~2年平均政策利率 − 当前政策利率。
 
     纯观察项，绝不进 regime、不进仓位、不参与打分。
     含期限溢价 → 方向/变化比绝对水平更可靠。
     标签含"代理非OIS"，禁止写成 OIS / 精确路径。
+    US02Y 优先用 yfinance 实时值（无 FRED 滞后）。
     """
     dgs2_s = data.get(DGS2_ID, [])
     iorb_s = data.get(IORB_ID, [])
 
-    dgs2 = last_value(dgs2_s)
+    # yfinance US02Y first (no FRED lag)
+    us2y = get_us2y_realtime()
+    us2y_source = "yfinance ZT=F"
+    if us2y is None:
+        us2y = last_value(dgs2_s)
+        us2y_source = "FRED DGS2"
+
     iorb = last_value(iorb_s)
 
     # N/A if either is missing
-    if dgs2 is None or iorb is None:
+    if us2y is None or iorb is None:
         return {
             "gap_bp": None, "gap_5d_chg": None,
             "level_label": "N/A(数据缺失)",
@@ -1288,9 +1337,10 @@ def compute_rate_path_proxy(data: dict) -> dict:
             "direction_str": "",
             "display_str": "利率路径(代理): N/A(数据缺失)",
             "dgs2_pct": None, "iorb_pct": None,
+            "us2y_source": us2y_source,
         }
 
-    gap_bp = round((dgs2 - iorb) * 100, 1)
+    gap_bp = round((us2y - iorb) * 100, 1)
 
     # 5d change: gap today − gap 5 trading days ago
     dgs2_5d_ago = n_day_ago(dgs2_s, 5)
@@ -1313,7 +1363,7 @@ def compute_rate_path_proxy(data: dict) -> dict:
     else:
         direction_str = f"5dΔ {gap_5d_chg:+.1f}bp {arrow}"
 
-    display_str = f"利率路径(代理) | DGS2−IORB = {gap_bp}bp | {direction_str} | [{direction_label} · 代理非OIS]"
+    display_str = f"利率路径(代理) | US02Y−IORB = {gap_bp}bp | {direction_str} | [{direction_label} · 代理非OIS]"
 
     return {
         "gap_bp": gap_bp,
@@ -1322,8 +1372,9 @@ def compute_rate_path_proxy(data: dict) -> dict:
         "direction_label": direction_label,
         "direction_str": direction_str,
         "display_str": display_str,
-        "dgs2_pct": round(dgs2, 3),
+        "dgs2_pct": round(us2y, 3),
         "iorb_pct": round(iorb, 3),
+        "us2y_source": us2y_source,
     }
 
 

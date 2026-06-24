@@ -44,6 +44,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from _treasury_yields import fetch_history
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "docs" / "sr3-watch" / "data"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -57,25 +59,23 @@ MD_CANDIDATES = [
 ]
 
 CSV_CANDIDATES = [
+    ROOT / "data" / "历史数据" / "100-CME_DL_SR3M2026, 1D.csv",
+    ROOT / "data" / "历史数据" / "100-CME_DL_SR3H2027, 1D.csv",
     ROOT / "100-CME_DL_SR3M2026, 1D.csv",
     ROOT / "100-CME_DL_SR3H2027, 1D.csv",
 ]
 
 TWOS10S_CANDIDATES = [
+    ROOT / "data" / "历史数据" / "TVC_US10Y, 1D.csv",
+    ROOT / "TVC_US10Y, 1D.csv",
     ROOT / "2s10s.csv",
     ROOT / "twos10s.csv",
-    ROOT / "tradingview_2s10s.csv",
+    ROOT / "data/2s10s.csv",
+    ROOT / "data/twos10s.csv",
     ROOT / "US10Y-US02Y, 1D.csv",
     ROOT / "TVC_US10Y-US02Y, 1D.csv",
     ROOT / "TVC_US10Y-TVC_US02Y, 1D.csv",
-    ROOT / "data/2s10s.csv",
-    ROOT / "data/twos10s.csv",
-    ROOT / "data/tradingview_2s10s.csv",
-    ROOT / "data/US10Y-US02Y, 1D.csv",
     ROOT / "docs/sr3-watch/data/2s10s.csv",
-    ROOT / "docs/sr3-watch/data/twos10s.csv",
-    ROOT / "docs/sr3-watch/data/tradingview_2s10s.csv",
-    ROOT / "docs/sr3-watch/data/US10Y-US02Y, 1D.csv",
 ]
 
 
@@ -602,18 +602,24 @@ def detect_twos10s_columns(headers: List[str], source: Path) -> Dict[str, Option
             out["spread"] = h
             break
     for h, low in lower_map.items():
-        if ("us10y" in low or "dgs10" in low or "10y" in low) and "close" in low:
-            out["ten"] = h
-            break
-    for h, low in lower_map.items():
-        if ("us02y" in low or "us2y" in low or "dgs2" in low or "2y" in low) and "close" in low:
+        if ("us02y" in low or "us2y" in low or "dgs2" in low or "2y" in low):
             out["two"] = h
             break
+    # TVC_US10Y file: "close" is US10Y, "US02Y · TVC: close" is US02Y
     fname = source.name.lower().replace(" ", "")
+    if out["two"] is not None:
+        if "close" in headers:
+            out["ten"] = "close"
+    else:
+        for h, low in lower_map.items():
+            if ("us10y" in low or "dgs10" in low or "10y" in low) and "close" in low:
+                out["ten"] = h
+                break
     if out["ten"] is None and "close" in headers and ("us10y" in fname or "10y" in fname):
         out["ten"] = "close"
     if out["ten"] is None and out["two"] is not None and "close" in headers:
         out["ten"] = "close"
+    # Only treat close as spread for dedicated spread files, not TVC_US10Y
     if out["spread"] is None and "close" in headers and any(k in fname for k in ["2s10s", "twos10s", "us10y-us02y", "us10y-us2y"]):
         out["spread"] = "close"
     return out
@@ -769,30 +775,68 @@ def write_twos10s_audit_csv(series: List[Dict[str, Any]]) -> None:
             writer.writerow([row.get("date"), row.get("spread_bp"), row.get("ten_y"), row.get("two_y")])
 
 def build() -> None:
+    # Step 1: Load base data from sr3_repair_watch.py output (preserves contract_diffs and state fields)
+    base_json = ROOT / "data" / "macro_backtest" / "research" / "sr3_repair_watch_latest.json"
+    if base_json.exists():
+        data = json.loads(base_json.read_text(encoding="utf-8"))
+        data["field_warnings"] = []
+        # Flatten nested fields from sr3_repair_watch.py into top-level for JS consumption
+        current = data.get("current", {})
+        if "us10y" not in data:
+            data["us10y"] = current.get("us10y_pct")
+        if "t10yie" not in data:
+            data["t10yie"] = current.get("t10yie_pct")
+        if "real_yield_nowcast" not in data:
+            data["real_yield_nowcast"] = current.get("real_yield_pct")
+    else:
+        data = parse_report_md("")
+        data["field_warnings"] = ["sr3_repair_watch.json 缺失，先跑 sr3_repair_watch.py"]
+
+    # Step 2: Overlay md parsing for classification / state freshness
     md_path = first_existing(MD_CANDIDATES)
     if md_path:
         md = md_path.read_text(encoding="utf-8")
         shutil.copy2(md_path, OUT_DIR / "sr3_repair_watch_latest.md")
-        data = parse_report_md(md)
-    else:
-        data = parse_report_md("")
-        data["field_warnings"].append("未找到 sr3_repair_watch_latest.md，当前为 fallback/降级展示。")
+        md_data = parse_report_md(md)
+        for key in md_data:
+            if md_data[key] is not None and key not in ("curve_comparison", "curve_bp_changes",
+                "curve_warning", "twos10s_series", "twos10s_latest", "twos10s_warning",
+                "us10y", "t10yie", "real_yield_nowcast"):
+                data[key] = md_data[key]
 
+    # Step 3: Curve comparison + current event repair (derive from curve data, dynamic each day)
     csv_path = first_existing(CSV_CANDIDATES)
     data.update(parse_curve_csv(csv_path))
     data.update(derive_current_event_repair(data.get("curve_comparison") or []))
 
-    twos10s_path = find_twos10s_source()
-    data.update(parse_twos10s_csv(twos10s_path))
+    # Step 4: 2s10s curve structure (yfinance, no local CSV needed)
+    hist = fetch_history(400)
+    twos10s_series = [{"date": r["date"], "spread_bp": r["spread_bp"],
+                        "ten_y": r.get("ten_y"), "two_y": r.get("two_y")} for r in hist]
+    twos10s_latest = classify_curve_structure(twos10s_series)
+    data["twos10s_series"] = twos10s_series
+    data["twos10s_latest"] = twos10s_latest
+    data["twos10s_source_file"] = "yfinance (^TNX + ZT=F)"
+    # Sync us10y from 2s10s cache (same source, consistent with table)
+    if twos10s_series:
+        last = twos10s_series[-1]
+        data["us10y"] = last.get("ten_y")
+    data["twos10s_warning"] = None if twos10s_series else "yfinance 抓取失败"
 
+    # Write outputs
     out_json = OUT_DIR / "sr3_repair_watch_latest.json"
     out_json.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    # Also write embedded JS for file:// CORS bypass
+    js_path = OUT_DIR / "sr3_data.js"
+    js_path.write_text("window.SR3_DATA = " + json.dumps(data, ensure_ascii=False, indent=2, default=str) + ";", encoding="utf-8")
+
     print(f"[SR3 Watch] wrote {out_json.relative_to(ROOT)}")
+    print(f"[SR3 Watch] wrote {js_path.relative_to(ROOT)}")
     print(f"[SR3 Watch] wrote {(OUT_DIR / 'sr3_repair_watch_latest.md').relative_to(ROOT)}")
     print(f"[SR3 Watch] wrote {(OUT_DIR / 'sr3_curve_z26_h27_m27.csv').relative_to(ROOT)}")
     print(f"[SR3 Watch] curve source: {csv_path.relative_to(ROOT) if csv_path else 'N/A'}")
-    print(f"[SR3 Watch] 2s10s source: {twos10s_path.relative_to(ROOT) if twos10s_path else 'N/A'}")
+    print(f"[SR3 Watch] 2s10s source: yfinance (^TNX + ZT=F)")
 
     warnings = data.get("field_warnings") or []
     if warnings:

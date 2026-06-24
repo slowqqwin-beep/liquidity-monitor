@@ -231,8 +231,8 @@ function renderCoreCards(es) {
     status: fe.label || '前端平稳',
     statusColor: feIntensity === 'red' ? 'stress' : feIntensity === 'orange' ? 'orange' : 'good',
     detail: fe.active
-      ? `DGS2−IORB=${fe.evidence?.dgs2_iorb_bp || '—'}bp，VIX=${fe.evidence?.vix || '—'}。${(fe.sources || []).join('；')}`
-      : '无近端事件信号。DGS2−IORB 未倒挂，VIX 处于低位。',
+      ? `US02Y−IORB=${fe.evidence?.dgs2_iorb_bp || '—'}bp，VIX=${fe.evidence?.vix || '—'}。${(fe.sources || []).join('；')}`
+      : '无近端事件信号。US02Y−IORB 未倒挂，VIX 处于低位。',
   });
 
   // 2 — 实际利率 / 估值挤压（独立卡片）
@@ -246,10 +246,10 @@ function renderCoreCards(es) {
     const spreadBp = rs.gap_bp != null ? rs.gap_bp : Math.round((nowcast - dfii10) * 100);
     const sign = spreadBp >= 0 ? '+' : '';
     const direction = rs.direction || 'N/A';
-    realDetail += `\nReal Yield Nowcast ${nowcast.toFixed(2)}%（DGS10 − 10Y BEI）`;
+    realDetail += `\nReal Yield Nowcast ${nowcast.toFixed(2)}%（US10Y − T10YIE）`;
     realDetail += `\n差值 ${sign}${spreadBp}bp，${direction}`;
   } else if (nowcast != null) {
-    realDetail += `\nReal Yield Nowcast ${nowcast.toFixed(2)}%（DGS10 − 10Y BEI）`;
+    realDetail += `\nReal Yield Nowcast ${nowcast.toFixed(2)}%（US10Y − T10YIE）`;
   }
   realDetail += `\n⚠️ 官方 DFII10 滞后修正，Nowcast 更实时`;
   if (rs.dur5_confirmed) realDetail += `\nDUR5=${rs.dur5_dfii}/5 已确认`;
@@ -536,7 +536,7 @@ function _whyNearEvent(fe, rs) {
   const dgs2 = fe.evidence?.dgs2_iorb_bp;
   const vix  = fe.evidence?.vix;
   if (fe.active && dgs2 != null && dgs2 > 0) {
-    return `前端DGS2−IORB=${dgs2}bp，市场在定价具体近端利率事件（FOMC/CPI）而非系统性恐慌。VIX=${vix || '—'}，波动率未扩散至远期结构。${rs.active && rs.dfii10_official ? `实际利率DFII10=${rs.dfii10_official}%，估值端承压但非信用主导。` : ''}`;
+    return `前端US02Y−IORB=${dgs2}bp，市场在定价具体近端利率事件（FOMC/CPI）而非系统性恐慌。VIX=${vix || '—'}，波动率未扩散至远期结构。${rs.active && rs.dfii10_official ? `实际利率DFII10=${rs.dfii10_official}%，估值端承压但非信用主导。` : ''}`;
   }
   return `当前市场信号集中在前端利率预期调整上，近端事件（FOMC/CPI）是主要定价因素，尚未扩散为广泛风险规避。`;
 }

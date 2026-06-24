@@ -26,8 +26,9 @@ import re
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import json
+from _treasury_yields import fetch_latest_yields, fetch_history, fetch_t10yie
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 IN_DIR = PROJECT_ROOT / "data" / "macro_backtest" / "input"
@@ -257,9 +258,8 @@ def load_data():
     sr3 = pd.read_csv(feat_path, parse_dates=["date"]).sort_values("date").reset_index(drop=True)
     panel = pd.read_csv(PANEL_PATH, parse_dates=["date"]).sort_values("date").reset_index(drop=True)
     df = sr3.merge(panel[[
-        "date", "BAMLH0A0HYM2", "HY_OAS_available", "DGS10",
-        "HY_OAS_chg_20d", "DGS10_chg_20d",
-        "real_yield_nowcast", "real_yield_basis_diff", "credit_signal_status",
+        "date", "BAMLH0A0HYM2", "HY_OAS_available",
+        "HY_OAS_chg_20d", "credit_signal_status",
     ]], on="date", how="left")
     return df.dropna(subset=["near_rate"]).reset_index(drop=True)
 
@@ -427,19 +427,19 @@ def analyze(df, last_shock):
         if not hoa:
             cls = "unknown_credit_unavailable"; reason = "HY OAS missing — cannot classify"
         else:
-            hoc = rr.get("HY_OAS_chg_20d", 0); dc = rr.get("DGS10_chg_20d", 0)
-            hoc = 0 if pd.isna(hoc) else hoc; dc = 0 if pd.isna(dc) else dc
+            hoc = rr.get("HY_OAS_chg_20d", 0)
+            hoc = 0 if pd.isna(hoc) else hoc
             hoc_bp = hoc * 100
-            dgs10_bp = dc * 100
+            # US10Y 20d change from yfinance (no FRED lag)
             hs = hoc_bp < PARAMS["credit_hyoas_benign_max_bp"]
-            df10 = dgs10_bp < PARAMS["credit_dgs10_declining_bp"]
+            df10 = us10y_20d_bp is not None and us10y_20d_bp < PARAMS["credit_dgs10_declining_bp"]
             hstr = hoc_bp > PARAMS["credit_hyoas_malign_min_bp"]
             if hs and df10:
-                cls = "benign_repair"; reason = "HY OAS stable/declining + DGS10 declining (soft landing)"
+                cls = "benign_repair"; reason = "HY OAS stable/declining + US10Y declining (soft landing)"
             elif hstr:
                 cls = "malign_repair"; reason = "HY OAS widening (credit stress)"
             elif df10:
-                cls = "mixed_repair"; reason = "DGS10 declining but HY OAS moderately widening"
+                cls = "mixed_repair"; reason = "US10Y declining but HY OAS moderately widening"
             else:
                 cls = "mixed_repair"; reason = "Mixed signals, no clear benign/malign pattern"
     elif decel:
@@ -463,6 +463,13 @@ def analyze(df, last_shock):
         st, sl, act = 1, "State 1: Hawkish Impulse", "短端预期：鹰派冲击未消退；曲线仍在上行或高台维持"
 
     lr = df.iloc[li]
+    # ── yfinance 直接抓 US10Y / US02Y / 20d 变动（不依赖本地 CSV）──
+    us10y_yf, us2y_yf = fetch_latest_yields()
+    # 20d change from cached history
+    hist = fetch_history(60)
+    us10y_20d_bp = None
+    if len(hist) >= 21:
+        us10y_20d_bp = round((hist[-1]["ten_y"] - hist[-21]["ten_y"]) * 100, 1)
     # ── Macro fallback: 面板未追到时从 series.json 兜底 ──
     def _macro_fallback(key, pre_key=None):
         v = lr.get(pre_key or key, None)
@@ -478,22 +485,45 @@ def analyze(df, last_shock):
         return None
     ho = _macro_fallback("BAMLH0A0HYM2")
     ho = round(float(ho), 2) if ho is not None else None
-    d10 = _macro_fallback("DGS10")
-    d10 = round(float(d10), 2) if d10 is not None else None
-    # Real Yield Nowcast: DGS10 − T10YIE
-    try:
-        series = json.loads((PROJECT_ROOT / "data" / "series.json").read_text(encoding="utf-8"))
-        items_d10 = series.get("DGS10", [])
-        items_be = series.get("T10YIE", [])
-        if items_d10 and items_be:
-            ry_val = float(items_d10[-1].get("value", 0)) - float(items_be[-1].get("value", 0))
-            ry = round(ry_val, 4)
-        elif not pd.isna(lr.get("real_yield_nowcast")):
-            ry = round(float(lr["real_yield_nowcast"]), 4)
-        else:
-            ry = None
-    except Exception:
-        ry = None
+
+    # ── US10Y：跟 2s10s 缓存同源（yfinance ^TNX，无时滞）──
+    us10y = None
+    if hist:
+        raw = hist[-1].get("ten_y")
+        us10y = round(raw, 3) if raw else None
+    if us10y is None and us10y_yf is not None:
+        us10y = us10y_yf
+    if us10y is None:
+        try:
+            US10Y_PATH = PROJECT_ROOT / "data" / "历史数据" / "TVC_US10Y, 1D.csv"
+            if US10Y_PATH.exists():
+                us10y_df = pd.read_csv(US10Y_PATH)
+                us10y = round(float(us10y_df.iloc[-1]["close"]), 2)
+        except Exception:
+            pass
+    if us10y is None:
+        us10y = _macro_fallback("DGS10")
+        us10y = round(float(us10y), 2) if us10y is not None else None
+
+    # ── T10YIE：FRED 直播（无 API key，备选本地 CSV / series.json）──
+    t10yie = fetch_t10yie()
+    if t10yie is None:
+        T10YIE_PATH = PROJECT_ROOT / "data" / "历史数据" / "T10YIE.csv"
+        try:
+            if T10YIE_PATH.exists():
+                t10yie_df = pd.read_csv(T10YIE_PATH)
+                t10yie = round(float(t10yie_df.iloc[-1]["T10YIE"]), 3)
+        except Exception:
+            pass
+    if t10yie is None:
+        try:
+            series = json.loads((PROJECT_ROOT / "data" / "series.json").read_text(encoding="utf-8"))
+            items = series.get("T10YIE", [])
+            if items:
+                t10yie = round(float(items[-1].get("value", 0)), 3)
+        except Exception:
+            pass
+    real_yield = round(us10y - t10yie, 3) if us10y is not None and t10yie is not None else None
 
     # ── 合约日差价：今日全合约 close vs 前一交易日 ──
     contract_diffs = []
@@ -521,10 +551,13 @@ def analyze(df, last_shock):
                     "implied_chg_bp": round(chg_bp, 2) if chg_bp is not None else None,
                 })
 
+    # US trade date: China morning download → previous day's US close
+    # TradingView bar labeled N = US trading day N-1 (from China timezone perspective)
+    us_trade_date = (ld - pd.Timedelta(days=1)).date()
     return {
         "generated_at": datetime.now().isoformat(),
-        "data_date": str(ld.date()),
-        "data_age_days": (date.today() - ld.date()).days,
+        "data_date": str(us_trade_date),
+        "data_age_days": (date.today() - us_trade_date).days,
         "reference_mode": ref_label,
         "last_formal_shock": {"date": str(shock_date.date()), "days_ago": ds,
                               "peak_near_rate_pct": round(float(shock_peak), 4),
@@ -540,7 +573,7 @@ def analyze(df, last_shock):
                     "on_elevated_plateau": bool(cnr > 3.5),
                     "hy_oas_bp": round(ho * 100, 1) if ho is not None else None,
                     "hy_oas_available": bool(lr.get("HY_OAS_available", False)) if not pd.isna(lr.get("HY_OAS_available")) else False,
-                    "dgs10_pct": d10, "real_yield_nowcast_pct": ry},
+                    "us10y_pct": us10y, "t10yie_pct": t10yie, "real_yield_pct": real_yield},
         "state": {"state_number": st, "state_label": sl,
                   "in_hawkish_impulse": st == 1,
                   "structural_easing_detected": bool(structural_easing),
@@ -638,8 +671,9 @@ def write_outputs(r):
 | 5d 累计 | {cu['curve_move_5d_sum_bp']} bp |
 | 高台 (>3.5%) | {'⚠️ 是' if cu['on_elevated_plateau'] else '否'} |
 | HY OAS | {cu['hy_oas_bp'] or 'N/A'} bp |
-| DGS10 | {cu['dgs10_pct'] or 'N/A'}% |
-| Real Yield Nowcast | {cu['real_yield_nowcast_pct'] or 'N/A'}% |
+| US10Y | {cu['us10y_pct'] or 'N/A'}% |
+| T10YIE | {cu['t10yie_pct'] or 'N/A'}% |
+| Real Yield (10Y-T10YIE) | {cu['real_yield_pct'] or 'N/A'}% |
 
 ---
 
@@ -762,8 +796,9 @@ def _write_web_json(r):
         "five_day_change_bp": cu.get("curve_move_5d_sum_bp"),
         "high_plateau": cu.get("on_elevated_plateau", False),
         "hy_oas": cu.get("hy_oas_bp"),
-        "dgs10": cu.get("dgs10_pct"),
-        "real_yield_nowcast": cu.get("real_yield_nowcast_pct"),
+        "us10y": cu.get("us10y_pct"),
+        "t10yie": cu.get("t10yie_pct"),
+        "real_yield_nowcast": cu.get("real_yield_pct"),
         "constraints": {
             "research_only": True,
             "standalone_sr3_watch": True,
@@ -788,9 +823,6 @@ def _write_web_json(r):
     web_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "sr3_repair_watch_latest.json"
     with open(web_path, "w", encoding="utf-8") as f:
         json.dump(web, f, indent=2, ensure_ascii=False, default=str)
-    # 同时写 JS 版本，绕过本地 file:// 的 CORS 限制
-    js_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "sr3_data.js"
-    js_path.write_text("window.SR3_DATA = " + json.dumps(web, indent=2, ensure_ascii=False, default=str) + ";", encoding="utf-8")
     return web_path
 
 

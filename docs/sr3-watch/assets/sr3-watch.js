@@ -82,12 +82,22 @@ function boolText(v){
 }
 
 async function loadData(){
+  // 优先使用内嵌数据（支持 file:// 协议）
+  if(window.SR3_DATA && window.SR3_DATA.data_date){
+    console.log("[SR3 Watch] Using embedded window.SR3_DATA");
+    return window.SR3_DATA;
+  }
   try{
     const res = await fetch(JSON_URL, {cache:"no-store"});
     if(!res.ok) throw new Error(`JSON fetch failed: ${res.status}`);
     return await res.json();
   }catch(err){
     console.warn(err);
+    // 回退到内嵌数据（即使上方检查失败也再试一次）
+    if(window.SR3_DATA && window.SR3_DATA.data_date){
+      console.log("[SR3 Watch] Fallback to embedded window.SR3_DATA");
+      return window.SR3_DATA;
+    }
     try{
       const res = await fetch(MD_URL, {cache:"no-store"});
       if(res.ok){
@@ -176,8 +186,9 @@ function renderKpis(data){
     {label:"5d 累计", value:fmt(data.five_day_change_bp, " bp", 2), cls:data.five_day_change_bp > 5 ? "warn" : ""},
     {label:"高台 >3.5%", value:boolText(data.high_plateau), cls:data.high_plateau ? "warn" : "good"},
     {label:"HY OAS", value:data.hy_oas === null ? "N/A" : fmt(data.hy_oas, " bp", 1), cls:data.hy_oas === null ? "na" : ""},
-    {label:"DGS10", value:data.dgs10 === null ? "N/A" : fmt(data.dgs10, "%", 3), cls:data.dgs10 === null ? "na" : ""},
-    {label:"Real Yield Nowcast", value:data.real_yield_nowcast === null ? "N/A" : fmt(data.real_yield_nowcast, "%", 3), cls:data.real_yield_nowcast === null ? "na" : ""},
+    {label:"US10Y", value:data.us10y === null ? "N/A" : fmt(data.us10y, "%", 3), cls:data.us10y === null ? "na" : ""},
+    {label:"T10YIE", value:data.t10yie === null ? "N/A" : fmt(data.t10yie, "%", 3), cls:data.t10yie === null ? "na" : ""},
+    {label:"Real Yield", value:data.real_yield_nowcast === null ? "N/A" : fmt(data.real_yield_nowcast, "%", 3), cls:data.real_yield_nowcast === null ? "na" : ""},
   ];
   $("kpiGrid").innerHTML = kpis.map(k => `
     <div class="kpi ${k.cls}">

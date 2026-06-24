@@ -138,7 +138,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     if casc.get("legs",{}).get("FX",{}).get("mutated"): sig.append("FX突变✅")
     lines.append(f"| 市场信号 | {'·'.join(sig) if sig else '无跨资产确认'} |")
     rp_gap_str = f"{rp_gap:.1f}" if rp_gap is not None else "N/A"
-    lines.append(f"| 利率路径 | DGS2−IORB={rp_gap_str}bp {rp_label}{' 5dΔ'+str(rp_5d)+'bp' if rp_5d else ''} |\n")
+    lines.append(f"| 利率路径 | US02Y−IORB={rp_gap_str}bp {rp_label}{' 5dΔ'+str(rp_5d)+'bp' if rp_5d else ''} |\n")
 
     # ② First-layer transmission
     lines.append("---\n## ② 第一层传导\n")
@@ -283,7 +283,7 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
     front_s = vts.get("front_structure","N/A"); vix9d = vts.get("ratio_vix9d_vix"); vts_r_raw = vts.get("ratio_vix_vix3m")
     vts_r_str = f"{vts_r_raw:.3f}" if vts_r_raw is not None else "N/A"
     vix9d_str = f"{vix9d:.3f}" if vix9d is not None else "N/A"
-    txt(ax1,0.3,7.0,f"Event: VIX9D/VIX={vix9d_str} * {front_s}  |  VIX={vix_val:.1f}(5dD{vix_leg.get('delta_5d',0):+.1f})  |  MOVE={move_val:.0f}  |  Rate: DGS2-IORB={rp_gap_str}bp",9.5,tc_mid)
+    txt(ax1,0.3,7.0,f"Event: VIX9D/VIX={vix9d_str} * {front_s}  |  VIX={vix_val:.1f}(5dD{vix_leg.get('delta_5d',0):+.1f})  |  MOVE={move_val:.0f}  |  Rate: US02Y-IORB={rp_gap_str}bp",9.5,tc_mid)
     # CASC confirmation badgelist
     mks=[]
     if vix_leg.get("mutated"): mks.append("VIX")
