@@ -1,5 +1,5 @@
 window.SR3_DATA = {
-  "generated_at": "2026-06-23T20:40:52.168630",
+  "generated_at": "2026-06-24T09:32:09.236774",
   "data_date": "2026-06-23",
   "reference_peak": "formal shock",
   "status": "Research-Only",
