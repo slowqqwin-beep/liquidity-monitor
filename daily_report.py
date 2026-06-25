@@ -181,19 +181,24 @@ _yf_cache: dict[str, float | None] = {}
 _yf_ts: datetime | None = None
 
 
-def _yf_fetch(ticker: str) -> float | None:
-    """Get latest close from yfinance, cached 5 minutes."""
+def _yahoo_fetch(ticker: str) -> float | None:
+    """Fetch latest close from Yahoo Finance API (no yfinance sandbox issue)."""
     global _yf_cache, _yf_ts
     now = datetime.now()
     if _yf_ts and (now - _yf_ts).total_seconds() < 300:
         return _yf_cache.get(ticker)
     try:
-        import yfinance as yf
-        end = now
-        start = end - timedelta(days=5)
-        df = yf.download(ticker, start=start.strftime("%Y-%m-%d"),
-                         end=end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
-        val = float(df["Close"].dropna().iloc[-1]) if not df.empty else None
+        import json as _json, urllib.request as _urllib
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=2d"
+        req = _urllib.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with _urllib.urlopen(req, timeout=10) as resp:
+            r = _json.loads(resp.read())
+        closes = r["chart"]["result"][0]["indicators"]["quote"][0]["close"]
+        last = None
+        for c in closes:
+            if c is not None:
+                last = float(c)
+        val = round(last, 2) if last else None
         _yf_cache[ticker] = val
         _yf_ts = now
         return val
@@ -202,17 +207,13 @@ def _yf_fetch(ticker: str) -> float | None:
 
 
 def get_us10y_realtime() -> float | None:
-    """US10Y from yfinance ^TNX, auto-converted from CBOE scale."""
-    v = _yf_fetch("^TNX")
-    return round(v, 2) if v else None
+    """US10Y from Yahoo API ^TNX."""
+    return _yahoo_fetch("%5ETNX")
 
 
 def get_us2y_realtime() -> float | None:
-    """US02Y: yfinance ZT=F → TradingView CSV → None (then FRED DGS2 in caller)."""
-    v = _yf_fetch("ZT=F")
-    if v is not None:
-        return round(100.0 - v, 2)
-    # Try TradingView CSV (same-day, no FRED lag)
+    """US02Y: TV CSV → Yahoo ZT=F → FRED DGS2."""
+    # Try TradingView CSV first (most accurate, user-downloaded)
     for csv_path in [
         Path(__file__).resolve().parent / "data" / "历史数据" / "TVC_US10Y, 1D.csv",
         Path(__file__).resolve().parent / "2s10s.csv",
@@ -224,13 +225,16 @@ def get_us2y_realtime() -> float | None:
             if not rows:
                 continue
             last = rows[-1]
-            # Find US02Y column: 'US02Y · TVC: close' or similar
             for key, val in last.items():
                 kl = key.lower().replace(" ", "")
                 if ("us02y" in kl or "us2y" in kl) and val.strip():
                     return round(float(val), 2)
         except Exception:
             continue
+    # Yahoo ZT=F fallback
+    v = _yahoo_fetch("ZT=F")
+    if v is not None:
+        return round(100.0 - v, 2)
     return None
 
 
