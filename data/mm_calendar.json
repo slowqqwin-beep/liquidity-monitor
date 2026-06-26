@@ -1,22 +1,5 @@
 [
   {
-    "uid": "6jqamn23sb7boi92q6ruk98oc8@google.com",
-    "date": "2026-06-25",
-    "time_utc": "2026-06-25T12:30:00+00:00",
-    "time_sg": "2026-06-25T20:30:00+08:00",
-    "country": "US",
-    "event": "美国-个人消费支出物价指数[PCE](同比)",
-    "summary": "美国-个人消费支出物价指数[PCE](同比)",
-    "forecast": "4.00%",
-    "previous": "3.77%",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/5/us-price-relative/25/pce-price?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 90,
-    "days_to_event": 0,
-    "score": 90
-  },
-  {
     "uid": "bftq43st5pthk8ok0bctl7cblk@google.com",
     "date": "2026-07-01",
     "time_utc": "2026-07-01T12:15:00+00:00",
@@ -28,6 +11,23 @@
     "previous": "122000.0",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/36/adp?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 85,
+    "days_to_event": 5,
+    "score": 60
+  },
+  {
+    "uid": "nfj4i56r9b1egf9bfpr0mn0210@google.com",
+    "date": "2026-07-02",
+    "time_utc": "2026-07-02T12:30:00+00:00",
+    "time_sg": "2026-07-02T20:30:00+08:00",
+    "country": "US",
+    "event": "美国-失业率",
+    "summary": "美国-失业率",
+    "forecast": "",
+    "previous": "4.30%",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
     "days_to_event": 6,
@@ -47,42 +47,8 @@
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
-    "days_to_event": 7,
-    "score": 50
-  },
-  {
-    "uid": "nfj4i56r9b1egf9bfpr0mn0210@google.com",
-    "date": "2026-07-02",
-    "time_utc": "2026-07-02T12:30:00+00:00",
-    "time_sg": "2026-07-02T20:30:00+08:00",
-    "country": "US",
-    "event": "美国-失业率",
-    "summary": "美国-失业率",
-    "forecast": "",
-    "previous": "4.30%",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 85,
-    "days_to_event": 7,
-    "score": 50
-  },
-  {
-    "uid": "kt0vbpie3k69c2t2fg3coe56lg@google.com",
-    "date": "2026-06-25",
-    "time_utc": "2026-06-25T12:30:00+00:00",
-    "time_sg": "2026-06-25T20:30:00+08:00",
-    "country": "US",
-    "event": "美国-初次申请失业救济金人数",
-    "summary": "美国-初次申请失业救济金人数",
-    "forecast": "225000.0",
-    "previous": "226000.0",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 45,
-    "days_to_event": 0,
-    "score": 45
+    "days_to_event": 6,
+    "score": 55
   },
   {
     "uid": "vu78o35omcpcfk45lemn8q7bmo@google.com",
@@ -98,8 +64,25 @@
     "link": "https://sc.macromicro.me/collections/8/us-industry-relative/54/ism?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 65,
-    "days_to_event": 6,
-    "score": 35
+    "days_to_event": 5,
+    "score": 40
+  },
+  {
+    "uid": "vaqnlkqpt1rmv93u7279dhp4gs@google.com",
+    "date": "2026-07-06",
+    "time_utc": "2026-07-06T14:00:00+00:00",
+    "time_sg": "2026-07-06T22:00:00+08:00",
+    "country": "US",
+    "event": "美国-ISM服务业指数[Services PMI]",
+    "summary": "美国-ISM服务业指数[Services PMI]",
+    "forecast": "",
+    "previous": "54.5",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/8/us-industry-relative/55/ism-nonmanu?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 65,
+    "days_to_event": 10,
+    "score": 15
   },
   {
     "uid": "han5rn7bi2sf0cof6u5292du28@google.com",
@@ -110,13 +93,13 @@
     "event": "美国-初次申请失业救济金人数",
     "summary": "美国-初次申请失业救济金人数",
     "forecast": "",
-    "previous": "",
+    "previous": "215000.0",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 45,
-    "days_to_event": 7,
-    "score": 10
+    "days_to_event": 6,
+    "score": 15
   },
   {
     "uid": "g0o5qej72ua32b5uj7gutqek14@google.com",
@@ -132,7 +115,7 @@
     "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 6,
-    "score": -10
+    "days_to_event": 5,
+    "score": -5
   }
 ]
