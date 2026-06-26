@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-25T12:53:07.756715+00:00",
+  "generated_at": "2026-06-26T09:50:29.243864+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -8,7 +8,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Secured Overnight Financing Rate",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "IORB",
@@ -32,7 +32,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target upper bound",
-      "n_obs": 1096
+      "n_obs": 1095
     },
     {
       "id": "DFEDTARL",
@@ -40,7 +40,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target lower bound",
-      "n_obs": 1096
+      "n_obs": 1095
     },
     {
       "id": "RRPONTSYD",
@@ -56,7 +56,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "Reserves with Fed Reserve Banks ($B)",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "WTREGEN",
@@ -64,7 +64,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "TGA balance at Fed ($B)",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "WALCL",
@@ -72,7 +72,7 @@
       "layer": "L1",
       "unit": "$M",
       "desc": "Total Fed balance sheet",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "BAMLH0A0HYM2",
@@ -168,7 +168,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 746
+      "n_obs": 745
     },
     {
       "id": "MORTGAGE30US",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Freddie Mac 30Y fixed mortgage",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -200,7 +200,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "Bond market implied volatility (via Yahoo ^MOVE)",
-      "n_obs": 744
+      "n_obs": 743
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -240,7 +240,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE VIX 3-Month \u2014 \u00a70.8 VTS term structure",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "^VIX9D",
@@ -248,7 +248,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE VIX 9-Day \u2014 \u00a70.8 VTS front-end signal",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "GOLD_10Y_RATIO",
@@ -264,7 +264,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Plumbing stress: positive = banks lending into repo",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "EFFR_IORB",

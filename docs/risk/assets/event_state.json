@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-25",
+  "generated_at": "2026-06-26",
   "generator": "Risk OS Orchestrator v2.0 — SSoT",
   "_version": "v2.0",
   "_note": "⚠️ 唯一权威状态输出。三套输入系统(Fed Reaction/ABCD/risk_dashboard) 降级为信号提供层，不得输出最终结论。下游只能读取 risk_os_final，不得重算。",
-  "date": "2026-06-25",
+  "date": "2026-06-26",
   "regime": "R4 防御 ⚠️",
   "regime_key": "R4",
   "systemic_classification": "NON-SYSTEMIC WATCH",
@@ -16,7 +16,7 @@
   "cross_domain_signals": 3,
   "red_count": 2,
   "risk_os_final": {
-    "date": "2026-06-25",
+    "date": "2026-06-26",
     "final_regime": "R4 防御 ⚠️",
     "final_regime_key": "R4",
     "final_systemic_classification": "NON-SYSTEMIC WATCH",
@@ -32,15 +32,15 @@
     "data_quality": {
       "stale": true,
       "stale_series": [
-        "MOVE (last: 2026-06-18, 7d stale)",
-        "^TNX (last: 2026-06-18, 7d stale)",
-        "^VIX3M (last: 2026-06-18, 7d stale)",
-        "^VIX9D (last: 2026-06-18, 7d stale)"
+        "MOVE (last: 2026-06-18, 8d stale)",
+        "^TNX (last: 2026-06-18, 8d stale)",
+        "^VIX3M (last: 2026-06-18, 8d stale)",
+        "^VIX9D (last: 2026-06-18, 8d stale)"
       ],
       "missing_series": [],
       "data_degraded": true,
       "impact": "数据质量问题，VTS/CASC/双探针互锁不能用于系统性确认。systemic_confirmed严格为false，等fetch_data重抓。",
-      "note": "⚠️ 数据质量降级：数据滞后(4项): MOVE (last: 2026-06-18, 7d stale), ^TNX (last: 2026-06-18, 7d stale), ^VIX3M (last: 2026-06-18, 7d stale), ^VIX9D (last: 2026-06-18, 7d stale)"
+      "note": "⚠️ 数据质量降级：数据滞后(4项): MOVE (last: 2026-06-18, 8d stale), ^TNX (last: 2026-06-18, 8d stale), ^VIX3M (last: 2026-06-18, 8d stale), ^VIX9D (last: 2026-06-18, 8d stale)"
     },
     "source_votes": {
       "fed_reaction": "hawkish pressure (DGS2-IORB high) | vol calm | credit gate: complacent/improving",
@@ -53,20 +53,20 @@
       "active": true,
       "type": "rate_event",
       "sources": [
-        "DGS2−IORB=51.0bp ▲ [降息被price out / 加息风险 · 代理非OIS]"
+        "DGS2−IORB=46.0bp ▲ [降息被price out / 加息风险 · 代理非OIS]"
       ],
       "intensity": "red",
       "label": "前端急性",
       "evidence": {
-        "vix": 19.5,
-        "dgs2_iorb_bp": 51.0
+        "vix": 18.6,
+        "dgs2_iorb_bp": 46.0
       }
     },
     "rate_shock": {
       "active": true,
-      "dfii10_official": 2.29,
-      "dfii10_nowcast": 2.32,
-      "gap_bp": 3,
+      "dfii10_official": 2.23,
+      "dfii10_nowcast": 2.2,
+      "gap_bp": -3,
       "direction": "基本持平",
       "method": "DGS10 − 10Y BEI",
       "quality_note": "官方DFII10滞后修正，Nowcast更实时",
@@ -91,7 +91,7 @@
       "credit": {
         "active": false,
         "label": "未触发",
-        "evidence": "HY OAS=271bp，仍在自满区"
+        "evidence": "HY OAS=276bp，仍在自满区"
       },
       "liquidity": {
         "active": true,
