@@ -70,6 +70,142 @@ def _clean_tv_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df.rename(columns=rename)
 
 
+
+
+
+CACHE_JSON_PATH = PROJECT_ROOT / "data" / "treasury_yields_cache.json"
+
+
+def _sync_treasury_from_tv(raw: pd.DataFrame):
+    """Extract US10Y/US02Y/US03M/VIX9D/VIX3M/MOVE from TradingView CSV.
+    Updates 2s10s.csv, 2s3m_history.csv, treasury_yields_cache.json, and tv_companion.json."""
+    import csv as _csv
+    col_10y = None; col_2y = None; col_3m = None
+    col_v9d = None; col_v3m = None; col_move = None
+    for c in raw.columns:
+        cl = c.lower().replace(" ", "").replace("·", "").replace(":", "")
+        if "us10y" in cl or "tvcus10y" in cl:
+            col_10y = c
+        elif "us02y" in cl or "tvcus02y" in cl:
+            col_2y = c
+        elif "us03my" in cl or "us03m" in cl:
+            col_3m = c
+        elif "vix9d" in cl or "vix9" in cl:
+            col_v9d = c
+        elif "vix3m" in cl or "vix3" in cl:
+            col_v3m = c
+        elif "move" in cl:
+            col_move = c
+            col_3m = c
+    if not col_10y or not col_2y:
+        return
+
+    latest = raw.iloc[-1]
+    d = str(latest["date"])[:10]
+    ten = round(float(latest[col_10y]), 3)
+    two = round(float(latest[col_2y]), 3)
+    t3m = round(float(latest[col_3m]), 3) if col_3m else None
+    print(f"[SR3 Sync] TV: US10Y={ten}, US02Y={two}, US03M={t3m}, 2s10s={round((ten-two)*100,1)}bp")
+
+    # Write 2s10s.csv (TradingView format)
+    for csv_path in [PROJECT_ROOT / "2s10s.csv"]:
+        existing = []
+        if csv_path.exists():
+            with open(csv_path, "r", encoding="utf-8-sig") as f:
+                for r in _csv.DictReader(f):
+                    existing.append(r)
+        updated = False
+        for r in existing:
+            if r.get("time", "") == d:
+                r["close"] = str(ten)
+                for k in list(r.keys()):
+                    if "us02y" in k.lower().replace(" ", "").replace("·", ""):
+                        r[k] = str(two)
+                updated = True; break
+        if not updated:
+            existing.append({"time": d, "close": str(ten), "US02Y · TVC: close": str(two)})
+        existing.sort(key=lambda x: x.get("time", ""))
+        if existing:
+            headers = list(existing[0].keys())
+            csv_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(csv_path, "w", encoding="utf-8-sig", newline="") as fw:
+                w = _csv.DictWriter(fw, headers); w.writeheader(); w.writerows(existing)
+
+    # Write twos10s_history.csv (audit format)
+    h2_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "twos10s_history.csv"
+    h2_existing = []
+    if h2_path.exists():
+        with open(h2_path, "r", encoding="utf-8-sig") as f:
+            for r in _csv.DictReader(f):
+                h2_existing.append(r)
+    h2_updated = False
+    for r in h2_existing:
+        if r.get("date", "") == d:
+            r["ten_y"] = str(ten); r["two_y"] = str(two)
+            r["spread_bp"] = str(round((ten - two) * 100, 1)); h2_updated = True; break
+    if not h2_updated:
+        h2_existing.append({"date": d, "ten_y": str(ten), "two_y": str(two),
+                            "spread_bp": str(round((ten - two) * 100, 1))})
+    h2_existing.sort(key=lambda x: x["date"])
+    h2_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(h2_path, "w", encoding="utf-8-sig", newline="") as fw:
+        w = _csv.DictWriter(fw, ["date", "ten_y", "two_y", "spread_bp"])
+        w.writeheader(); w.writerows(h2_existing)
+
+    # Write 2Y-3M history
+    if t3m is not None:
+        c3m_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "two_3m_history.csv"
+        existing_3m = []
+        if c3m_path.exists():
+            with open(c3m_path, "r", encoding="utf-8-sig") as f:
+                for r in _csv.DictReader(f):
+                    existing_3m.append(r)
+        for r in existing_3m:
+            if r["date"] == d:
+                r["two_y"] = str(two); r["three_m"] = str(t3m)
+                r["spread_bp"] = str(round((two - t3m) * 100, 1)); break
+        else:
+            existing_3m.append({"date": d, "two_y": str(two), "three_m": str(t3m),
+                                "spread_bp": str(round((two - t3m) * 100, 1))})
+        existing_3m.sort(key=lambda x: x["date"])
+        c3m_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(c3m_path, "w", encoding="utf-8-sig", newline="") as f:
+            w = _csv.DictWriter(f, ["date", "two_y", "three_m", "spread_bp"])
+            w.writeheader(); w.writerows(existing_3m)
+
+    # Update cache
+    try:
+        cache = json.loads(CACHE_JSON_PATH.read_text("utf-8")) if CACHE_JSON_PATH.exists() else {"series": []}
+    except Exception:
+        cache = {"series": []}
+    for s in cache.get("series", []):
+        if s["date"] == d:
+            s["ten_y"] = ten; s["two_y"] = two; s["spread_bp"] = round((ten - two) * 100, 1); break
+    else:
+        cache["series"].append({"date": d, "ten_y": ten, "two_y": two,
+                                "spread_bp": round((ten - two) * 100, 1)})
+    cache["series"].sort(key=lambda x: x["date"])
+    cache["fetched_at"] = datetime.now().isoformat()
+    CACHE_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+    CACHE_JSON_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    # Write TV companion data (VIX9D, VIX3M, MOVE) for daily_report
+    companion_path = PROJECT_ROOT / "data" / "tv_companion.json"
+    tv_data = {"date": d, "us10y": ten, "us02y": two, "us03m": t3m}
+    if col_v9d: tv_data["vix9d"] = round(float(latest[col_v9d]), 1)
+    if col_v3m: tv_data["vix3m"] = round(float(latest[col_v3m]), 1)
+    if col_move: tv_data["move"] = round(float(latest[col_move]), 1)
+    try:
+        existing = json.loads(companion_path.read_text("utf-8")) if companion_path.exists() else []
+    except Exception:
+        existing = []
+    existing = [e for e in existing if e.get("date") != d]
+    existing.append(tv_data)
+    existing.sort(key=lambda x: x["date"])
+    companion_path.write_text(json.dumps(existing, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"[SR3 Sync] TV companion: {tv_data}")
+
+
 def _sync_from_tradingview():
     """从 TradingView CSV 同步新日期到 sr3_long.csv + 重算 sr3_curve_features.csv。
     幂等：已存在的日期不重复追加。"""
@@ -237,6 +373,10 @@ def _sync_from_tradingview():
     print(f"  Latest: date={latest['date'].date()}, near_rate={latest['near_rate']:.4f}%, "
           f"curve_move_bp={latest['curve_move_bp']:.2f}, curve_move_5d_sum={latest['curve_move_5d_sum']:.2f}")
     print(f"[SR3 Sync] Done.\n")
+
+    # ── Extract US10Y/US02Y from TV CSV (if user added TVC:US10Y and TVC:US02Y to chart) ──
+    _sync_treasury_from_tv(raw)
+
 
 PARAMS = {
     "shock_5d_min_bp": 4.0, "shock_1d_min_bp": 3.0,

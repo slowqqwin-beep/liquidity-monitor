@@ -306,6 +306,31 @@ function renderConstraints(data){
   `).join("");
 }
 
+function renderTwo3m(data){
+  const series = data.two3m_series || [];
+  const latest = data.two3m_latest || {};
+  $("two3mLatest").textContent = latest.latest_spread_bp === null || latest.latest_spread_bp === undefined ? "N/A" : `${Number(latest.latest_spread_bp).toFixed(1)} bp`;
+  $("two3m1d").textContent = latest.change_1d_bp === null || latest.change_1d_bp === undefined ? "N/A" : `${Number(latest.change_1d_bp).toFixed(1)} bp`;
+  $("two3mStructure").textContent = latest.structure || "N/A";
+  $("two3mNote").textContent = latest.structure_note || "等待 2Y-3M 数据。";
+
+  const tbl = $("two3mTable");
+  const rows = series.slice(-10).reverse();
+  if(!rows.length){
+    tbl.innerHTML = "<thead><tr><th>日期</th><th>2Y-3M</th><th>2Y</th><th>3M</th></tr></thead><tbody><tr><td colspan='4'>暂无数据</td></tr></tbody>";
+    return;
+  }
+  tbl.innerHTML = `
+    <thead><tr><th>日期</th><th>2Y-3M</th><th>2Y</th><th>3M</th></tr></thead>
+    <tbody>${rows.map(r => `
+      <tr>
+        <td>${escapeHtml(r.date)}</td>
+        <td>${r.spread_bp === null ? "N/A" : `${Number(r.spread_bp).toFixed(1)} bp`}</td>
+        <td>${r.two_y === null ? "N/A" : `${Number(r.two_y).toFixed(3)}%`}</td>
+        <td>${r.three_m === null ? "N/A" : `${Number(r.three_m).toFixed(3)}%`}</td>
+      </tr>`).join("")}</tbody>`;
+}
+
 function renderRetracement(data){
   const rows = data.retracement || [];
   const table = $("retracementTable");
@@ -345,32 +370,48 @@ function renderSignalMatrix(data){
 function renderTwos10s(data){
   const latest = data.twos10s_latest || {};
   $("twos10sLatest").textContent = latest.latest_spread_bp === null || latest.latest_spread_bp === undefined ? "N/A" : `${Number(latest.latest_spread_bp).toFixed(1)} bp`;
-  $("twos10sWidening").textContent = latest.widening_state || "N/A";
   $("twos10sD10").textContent = latest.d10_1d_bp === null || latest.d10_1d_bp === undefined ? "N/A" : `${Number(latest.d10_1d_bp).toFixed(1)} bp`;
   $("twos10sD2").textContent = latest.d2_1d_bp === null || latest.d2_1d_bp === undefined ? "N/A" : `${Number(latest.d2_1d_bp).toFixed(1)} bp`;
   $("twos10s5d").textContent = latest.change_5d_bp === null || latest.change_5d_bp === undefined ? "N/A" : `${Number(latest.change_5d_bp).toFixed(1)} bp`;
   $("twos10sStructure").textContent = latest.structure || "N/A";
-  $("twos10sNote").textContent = latest.structure_note || data.twos10s_warning || "等待 2s10s 数据。";
+  $("twos10sNote").textContent = latest.structure_note || data.twos10s_warning || "等待数据。";
+
+  // 2Y-3M
+  const m3latest = data.two3m_latest || {};
+  $("two3mLatest").textContent = m3latest.latest_spread_bp === null || m3latest.latest_spread_bp === undefined ? "N/A" : `${Number(m3latest.latest_spread_bp).toFixed(1)} bp`;
+  $("two3mD3m").textContent = m3latest.d2_1d_bp === null || m3latest.d2_1d_bp === undefined ? "N/A" : `${Number(m3latest.d2_1d_bp).toFixed(1)} bp`;
+  $("two3mStructure").textContent = m3latest.structure || "N/A";
+
   renderTwos10sChart(data);
   renderTwos10sTable(data);
 }
 
 function renderTwos10sTable(data){
   const rows = (data.twos10s_series || []).slice(-10).reverse();
+  const m3Rows = (data.two3m_series || []).slice(-10).reverse();
+  // Merge 3M into 2s10s rows by date
+  const m3ByDate = {};
+  (m3Rows || []).forEach(r => { m3ByDate[r.date] = r; });
+
   const table = $("twos10sTable");
   if(!rows.length){
-    table.innerHTML = `<thead><tr><th>日期</th><th>2s10s</th><th>10Y</th><th>2Y</th></tr></thead><tbody><tr><td colspan="4">暂无 2s10s 数据</td></tr></tbody>`;
+    table.innerHTML = `<thead><tr><th>日期</th><th>2s10s</th><th>10Y</th><th>2Y</th><th>3M</th><th>2s3m</th></tr></thead><tbody><tr><td colspan="6">暂无数据</td></tr></tbody>`;
     return;
   }
   table.innerHTML = `
-    <thead><tr><th>日期</th><th>2s10s</th><th>10Y</th><th>2Y</th></tr></thead>
-    <tbody>${rows.map(r => `
+    <thead><tr><th>日期</th><th>2s10s</th><th>10Y</th><th>2Y</th><th>3M</th><th>2s3m</th></tr></thead>
+    <tbody>${rows.map(r => {
+      const m3 = m3ByDate[r.date];
+      return `
       <tr>
         <td>${escapeHtml(r.date)}</td>
         <td>${r.spread_bp === null || r.spread_bp === undefined ? "N/A" : `${Number(r.spread_bp).toFixed(1)} bp`}</td>
         <td>${r.ten_y === null || r.ten_y === undefined ? "N/A" : `${Number(r.ten_y).toFixed(3)}%`}</td>
         <td>${r.two_y === null || r.two_y === undefined ? "N/A" : `${Number(r.two_y).toFixed(3)}%`}</td>
-      </tr>`).join("")}</tbody>`;
+        <td>${r.three_m === null || r.three_m === undefined ? (m3 ? `${Number(m3.three_m).toFixed(3)}%` : "N/A") : `${Number(r.three_m).toFixed(3)}%`}</td>
+        <td>${m3 ? `${Number(m3.spread_bp).toFixed(1)} bp` : "N/A"}</td>
+      </tr>`;
+    }).join("")}</tbody>`;
 }
 
 function renderTwos10sChart(data){
@@ -382,10 +423,12 @@ function renderTwos10sChart(data){
     return;
   }
 
-  const width = 760, height = 360;
+  const width = 760, height = 480;
   const margin = {top: 24, right: 38, bottom: 42, left: 58};
-  const upper = {top: 34, height: 175};
-  const lower = {top: 252, height: 70};
+  const upper = {top: 34, height: 165};
+  const lower1 = {top: 228, height: 55};
+  const lower2 = {top: 310, height: 55};
+  const lower3 = {top: 392, height: 55};
   const innerW = width - margin.left - margin.right;
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -400,11 +443,13 @@ function renderTwos10sChart(data){
 
   const x = i => margin.left + (rows.length === 1 ? innerW / 2 : innerW * i / (rows.length - 1));
 
-  // Background split: upper yields, lower spread.
+  // Background
   make("rect",{x:0,y:0,width,height,rx:18,fill:"rgba(3,7,18,.10)"});
-  make("text",{x:margin.left,y:18,fill:"#cfe6ff","font-size":"12","font-weight":"900"},"上：10Y 与 2Y 利率曲线");
-  make("text",{x:margin.left,y:238,fill:"#cfe6ff","font-size":"12","font-weight":"900"},"下：2s10s 利差（10Y - 2Y）");
-  make("line",{x1:margin.left,y1:229,x2:width-margin.right,y2:229,stroke:"rgba(148,163,184,.28)","stroke-dasharray":"5 6"});
+  make("text",{x:margin.left,y:18,fill:"#cfe6ff","font-size":"12","font-weight":"900"},"上：10Y / 2Y / 3M 利率曲线");
+  make("text",{x:margin.left,y:214,fill:"#cfe6ff","font-size":"12","font-weight":"900"},"中：2s10s 利差（10Y − 2Y）");
+  make("text",{x:margin.left,y:296,fill:"#cfe6ff","font-size":"12","font-weight":"900"},"下：2s3m 利差（2Y − 3M）");
+  make("line",{x1:margin.left,y1:217,x2:width-margin.right,y2:217,stroke:"rgba(148,163,184,.28)","stroke-dasharray":"5 6"});
+  make("line",{x1:margin.left,y1:299,x2:width-margin.right,y2:299,stroke:"rgba(148,163,184,.28)","stroke-dasharray":"5 6"});
 
   const hasYields = rows.some(r => r.ten_y !== null && r.ten_y !== undefined && r.two_y !== null && r.two_y !== undefined);
 
@@ -413,6 +458,7 @@ function renderTwos10sChart(data){
     rows.forEach(r => {
       if(r.ten_y !== null && r.ten_y !== undefined) yieldVals.push(Number(r.ten_y));
       if(r.two_y !== null && r.two_y !== undefined) yieldVals.push(Number(r.two_y));
+      if(r.three_m !== null && r.three_m !== undefined) yieldVals.push(Number(r.three_m));
     });
     const minY = Math.floor((Math.min(...yieldVals) - 0.03) * 100) / 100;
     const maxY = Math.ceil((Math.max(...yieldVals) + 0.03) * 100) / 100;
@@ -441,8 +487,9 @@ function renderTwos10sChart(data){
 
     drawLine("ten_y", "#60a5fa", 2.8, "10Y");
     drawLine("two_y", "#facc15", 2.8, "2Y");
+    drawLine("three_m", "#fb7185", 2.2, "3M");
 
-    // Fill the latest gap visually between 10Y and 2Y on the last date.
+    // Gap lines
     const last = rows[rows.length-1];
     if(last.ten_y !== null && last.two_y !== null && last.ten_y !== undefined && last.two_y !== undefined){
       const xx = x(rows.length-1);
@@ -452,25 +499,29 @@ function renderTwos10sChart(data){
       make("text",{x:xx-8,y:Math.min(y10,y2)-10,"text-anchor":"end",fill:"#57d8ff","font-size":"11","font-weight":"900"}, `gap ${Number(last.spread_bp).toFixed(1)}bp`);
     }
   }else{
-    make("text",{x:"50%",y:upper.top + upper.height/2,"text-anchor":"middle",fill:"#92a3bc","font-size":"13"},"当前 2s10s CSV 只有利差，没有 2Y/10Y 两条利率曲线");
+    make("text",{x:"50%",y:upper.top + upper.height/2,"text-anchor":"middle",fill:"#92a3bc","font-size":"13"},"暂无 2Y/10Y/3M 利率曲线");
   }
 
-  // Spread lower panel.
+  // Spread panels: 2s10s + 2s3m
   const spreadVals = rows.map(r => Number(r.spread_bp));
   const minS = Math.floor((Math.min(...spreadVals) - 4) / 5) * 5;
   const maxS = Math.ceil((Math.max(...spreadVals) + 4) / 5) * 5;
-  const ySpread = v => lower.top + (maxS - v) * lower.height / (maxS - minS || 1);
 
+  const two3mRows = (data.two3m_series || []).slice(-60);
+  const m3Vals = two3mRows.map(r => Number(r.spread_bp));
+  const m3min = m3Vals.length ? Math.floor((Math.min(...m3Vals) - 4) / 5) * 5 : 0;
+  const m3max = m3Vals.length ? Math.ceil((Math.max(...m3Vals) + 4) / 5) * 5 : 10;
+
+  // 2s10s spread
+  const ySpread = v => lower1.top + (maxS - v) * lower1.height / (maxS - minS || 1);
   for(let i=0;i<=2;i++){
     const val = minS + (maxS-minS)*i/2;
     const yy = ySpread(val);
     make("line",{x1:margin.left,y1:yy,x2:width-margin.right,y2:yy,stroke:"rgba(148,163,184,.14)","stroke-dasharray":"4 6"});
     make("text",{x:margin.left-9,y:yy+4,"text-anchor":"end",fill:"#92a3bc","font-size":"10"}, `${val.toFixed(0)}bp`);
   }
-
   const spreadPath = rows.map((r,i) => `${i===0 ? "M" : "L"} ${x(i)} ${ySpread(Number(r.spread_bp))}`).join(" ");
   make("path",{d:spreadPath,fill:"none",stroke:"#57d8ff","stroke-width":"2.8","stroke-linecap":"round","stroke-linejoin":"round"});
-
   rows.forEach((r,i)=>{
     const curr = Number(r.spread_bp);
     const prev = i > 0 ? Number(rows[i-1].spread_bp) : curr;
@@ -478,25 +529,51 @@ function renderTwos10sChart(data){
     make("circle",{cx:x(i),cy:ySpread(curr),r:i===rows.length-1 ? 4.6 : 3.1,fill,stroke:"#07101f","stroke-width":"1.1"});
   });
 
-  // X labels: first, middle, last.
+  // 2s3m spread
+  if(two3mRows.length > 1){
+    const yM3 = v => lower3.top + (m3max - v) * lower3.height / (m3max - m3min || 1);
+    for(let i=0;i<=2;i++){
+      const val = m3min + (m3max-m3min)*i/2;
+      const yy = yM3(val);
+      make("line",{x1:margin.left,y1:yy,x2:width-margin.right,y2:yy,stroke:"rgba(148,163,184,.14)","stroke-dasharray":"4 6"});
+      make("text",{x:margin.left-9,y:yy+4,"text-anchor":"end",fill:"#92a3bc","font-size":"10"}, `${val.toFixed(0)}bp`);
+    }
+    const m3Path = two3mRows.map((r,i) => `${i===0 ? "M" : "L"} ${x(i)} ${yM3(Number(r.spread_bp))}`).join(" ");
+    make("path",{d:m3Path,fill:"none",stroke:"#a78bfa","stroke-width":"2.8","stroke-linecap":"round","stroke-linejoin":"round"});
+    two3mRows.forEach((r,i)=>{
+      const curr = Number(r.spread_bp);
+      const prev = i > 0 ? Number(two3mRows[i-1].spread_bp) : curr;
+      const fill = curr > prev ? "#54d18a" : curr < prev ? "#ff9d42" : "#a78bfa";
+      make("circle",{cx:x(i),cy:yM3(curr),r:i===two3mRows.length-1 ? 4.6 : 3.1,fill,stroke:"#07101f","stroke-width":"1.1"});
+    });
+  }
+
+  // X labels
   const labelIdxs = Array.from(new Set([0, Math.floor((rows.length-1)/2), rows.length-1]));
   labelIdxs.forEach(i => {
-    make("line",{x1:x(i),y1:upper.top,x2:x(i),y2:lower.top+lower.height,stroke:"rgba(148,163,184,.10)"});
+    make("line",{x1:x(i),y1:upper.top,x2:x(i),y2:lower3.top+lower3.height,stroke:"rgba(148,163,184,.10)"});
     make("text",{x:x(i),y:height-14,"text-anchor":"middle",fill:"#92a3bc","font-size":"10"}, rows[i].date);
   });
 
-  // Legend.
-  const legendX = width - 245;
-  make("rect",{x:legendX,y:10,width:215,height:28,rx:12,fill:"rgba(7,11,20,.55)",stroke:"rgba(148,163,184,.18)"});
+  // Legend
+  const legendX = width - 280;
+  make("rect",{x:legendX,y:10,width:250,height:28,rx:12,fill:"rgba(7,11,20,.55)",stroke:"rgba(148,163,184,.18)"});
   make("circle",{cx:legendX+16,cy:24,r:4,fill:"#60a5fa"});
   make("text",{x:legendX+25,y:28,fill:"#cbd7ea","font-size":"10"},"10Y");
   make("circle",{cx:legendX+70,cy:24,r:4,fill:"#facc15"});
   make("text",{x:legendX+79,y:28,fill:"#cbd7ea","font-size":"10"},"2Y");
-  make("circle",{cx:legendX+124,cy:24,r:4,fill:"#57d8ff"});
-  make("text",{x:legendX+133,y:28,fill:"#cbd7ea","font-size":"10"},"2s10s");
+  make("circle",{cx:legendX+118,cy:24,r:4,fill:"#fb7185"});
+  make("text",{x:legendX+127,y:28,fill:"#cbd7ea","font-size":"10"},"3M");
+  make("circle",{cx:legendX+170,cy:24,r:4,fill:"#57d8ff"});
+  make("text",{x:legendX+179,y:28,fill:"#cbd7ea","font-size":"10"},"2s10s");
+  make("circle",{cx:legendX+228,cy:24,r:4,fill:"#a78bfa"});
+  make("text",{x:legendX+237,y:28,fill:"#cbd7ea","font-size":"10"},"2s3m");
 
-  const latest = rows[rows.length-1];
-  make("text",{x:width-margin.right,y:lower.top+lower.height+20,"text-anchor":"end",fill:"#cfe6ff","font-size":"12","font-weight":"900"}, `Latest spread: ${Number(latest.spread_bp).toFixed(1)} bp`);
+  const last = rows[rows.length-1];
+  make("text",{x:width-margin.right,y:lower1.top+lower1.height+16,"text-anchor":"end",fill:"#cfe6ff","font-size":"11","font-weight":"900"}, `2s10s: ${Number(last.spread_bp).toFixed(1)} bp`);
+  if(two3mRows.length){
+    make("text",{x:width-margin.right,y:lower3.top+lower3.height+16,"text-anchor":"end",fill:"#cfe6ff","font-size":"11","font-weight":"900"}, `2s3m: ${Number(two3mRows[two3mRows.length-1].spread_bp).toFixed(1)} bp`);
+  }
 }
 
 

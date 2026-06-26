@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T18:20:11.014213",
+  "generated_at": "2026-06-26T18:50:33.812355",
   "data_date": "2026-06-25",
   "data_age_days": 1,
   "reference_mode": "recent 60d peak",
@@ -24,9 +24,9 @@
     "on_elevated_plateau": true,
     "hy_oas_bp": 276.0,
     "hy_oas_available": false,
-    "us10y_pct": 4.392,
+    "us10y_pct": 4.378,
     "t10yie_pct": 2.21,
-    "real_yield_pct": 2.182
+    "real_yield_pct": 2.168
   },
   "state": {
     "state_number": 2,

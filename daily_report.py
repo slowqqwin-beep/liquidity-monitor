@@ -206,14 +206,33 @@ def _yahoo_fetch(ticker: str) -> float | None:
         return None
 
 
+def _load_tv_companion() -> dict:
+    """Load latest TV companion data (US10Y/US02Y/VIX/MOVE from TradingView CSV sync)."""
+    tv_path = DATA_DIR / "tv_companion.json"
+    if tv_path.exists():
+        try:
+            data = json.loads(tv_path.read_text(encoding="utf-8"))
+            if data:
+                return data[-1]  # latest entry
+        except Exception:
+            pass
+    return {}
+
+
 def get_us10y_realtime() -> float | None:
-    """US10Y from Yahoo API ^TNX."""
+    """US10Y: TV CSV → Yahoo API ^TNX."""
+    tv = _load_tv_companion()
+    if tv.get("us10y"):
+        return tv["us10y"]
     return _yahoo_fetch("%5ETNX")
 
 
 def get_us2y_realtime() -> float | None:
-    """US02Y: TV CSV → Yahoo ZT=F → FRED DGS2."""
-    # Try TradingView CSV first (most accurate, user-downloaded)
+    """US02Y: TV companion → TV CSV → Yahoo ZT=F → FRED DGS2."""
+    tv = _load_tv_companion()
+    if tv.get("us02y"):
+        return tv["us02y"]
+    # Fallback: TradingView CSV direct
     for csv_path in [
         Path(__file__).resolve().parent / "data" / "历史数据" / "TVC_US10Y, 1D.csv",
         Path(__file__).resolve().parent / "2s10s.csv",
@@ -236,6 +255,21 @@ def get_us2y_realtime() -> float | None:
     if v is not None:
         return round(100.0 - v, 2)
     return None
+
+
+def get_vix3m_realtime() -> float | None:
+    """VIX3M from TV companion."""
+    return _load_tv_companion().get("vix3m")
+
+
+def get_vix9d_realtime() -> float | None:
+    """VIX9D from TV companion."""
+    return _load_tv_companion().get("vix9d")
+
+
+def get_move_realtime() -> float | None:
+    """MOVE from TV companion."""
+    return _load_tv_companion().get("move")
 
 
 def _nth_value_from_end(series: list[dict], n: int) -> float | None:
@@ -1170,7 +1204,8 @@ def compute_hy_stress(data: dict) -> dict:
     move = data.get(MOVE_ID, [])
 
     hy_val  = last_value(hy) or 0
-    move_val = last_value(move) or 0
+    move_tv = get_move_realtime()
+    move_val = move_tv if move_tv else (last_value(move) or 0)
 
     hy_chg_20d = n_day_change(hy, 20) or 0
 
@@ -1207,7 +1242,8 @@ def compute_v35_triggers(data: dict) -> dict:
 
     hy_val  = last_value(hy) or 0
     vix_val = last_value(vix) or 0
-    move_val = last_value(move) or 0
+    move_tv2 = get_move_realtime()
+    move_val = move_tv2 if move_tv2 else (last_value(move) or 0)
     spy_val = last_value(spy) or 0
     hyg_val = last_value(hyg) or 0
     fxy_val = last_value(fxy) or 0
@@ -1862,8 +1898,8 @@ def compute_vts(data: dict) -> dict:
     vix9d_s = data.get(YAHOO_VIX9D_ID, [])
 
     vix_val = last_value(vix_s)
-    vix3m_val = last_value(vix3m_s)
-    vix9d_val = last_value(vix9d_s)
+    vix3m_val = get_vix3m_realtime() or last_value(vix3m_s)
+    vix9d_val = get_vix9d_realtime() or last_value(vix9d_s)
 
     vix3m_available = vix_val is not None and vix3m_val is not None
 

@@ -36,33 +36,31 @@ def _yahoo_chart(ticker: str, period: str = "5d") -> list:
         return []
 
 
-def _treasury_2y() -> Optional[float]:
-    """Fetch latest 2Y Treasury yield from US Treasury CSV."""
+def _fred_2y() -> Optional[float]:
+    """Fetch latest 2Y from FRED DGS2 (no API key)."""
     try:
-        url = ("https://home.treasury.gov/resource-center/data-chart-center/"
-               "interest-rates/daily-treasury-rates.csv/all/2026?"
-               "type=daily_treasury_yield_curve&field_tdr_date_value=2026&_format=csv")
+        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=10) as resp:
             data = resp.read().decode()
-        reader = csv.DictReader(io.StringIO(data))
+        reader = csv.reader(io.StringIO(data))
+        next(reader)
         last = None
         for row in reader:
-            val = row.get("2 Yr", "").strip()
-            if val:
-                last = float(val)
-        return round(last, 3) if last else None
+            if len(row) >= 2 and row[1].strip():
+                last = float(row[1])
+        return round(last, 2) if last else None
     except Exception:
         return None
 
 
 def fetch_latest_yields() -> Tuple[Optional[float], Optional[float]]:
-    """Return (us10y_pct, us2y_pct) from Yahoo API + Treasury."""
+    """Return (us10y_pct, us2y_pct) from Yahoo API + FRED DGS2."""
     us10y = None
     tnx_data = _yahoo_chart("%5ETNX", "2d")
     if tnx_data:
         us10y = round(tnx_data[-1]["close"], 2)
-    us2y = _treasury_2y()
+    us2y = _fred_2y()
     return us10y, us2y
 
 
@@ -98,7 +96,7 @@ def fetch_history(days: int = 400) -> list:
         except Exception:
             pass
 
-    # Load existing cache as base
+    # Load existing cache as base; fallback to twos10s_history.csv
     existing: dict[str, dict] = {}
     if CACHE_PATH.exists():
         try:
@@ -106,25 +104,28 @@ def fetch_history(days: int = 400) -> list:
                 existing[s["date"]] = s
         except Exception:
             pass
+    if not existing:
+        hist_csv = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "twos10s_history.csv"
+        try:
+            with open(hist_csv, "r", encoding="utf-8-sig") as f:
+                for r in csv.DictReader(f):
+                    d = r.get("date", "") or r.get("\ufeffdate", "")
+                    t = float(r.get("ten_y", 0)); w = float(r.get("two_y", 0))
+                    existing[d] = {"date": d, "ten_y": t, "two_y": w,
+                                   "spread_bp": round((t - w) * 100, 1)}
+        except Exception:
+            pass
 
-    # Overlay Yahoo ^TNX (2d) + ZT=F (5d) + Treasury CSV for 2Y
+    # Overlay Yahoo ^TNX (2d); 2Y from FRED DGS2 (fresh fetch)
     try:
         tnx_data = _yahoo_chart("%5ETNX", "2d")
-        zt_data = _yahoo_chart("ZT=F", "5d")
-        zt_by = {r["date"]: r["close"] for r in (zt_data or [])}
-        t_2y = _treasury_2y()
-        if tnx_data:
+        fresh_2y = _fred_2y()
+        if tnx_data and fresh_2y:
             for r in tnx_data:
                 d = r["date"]
                 ten = round(r["close"], 3)
-                two = existing.get(d, {}).get("two_y") if d in existing else None
-                if two is None and d in zt_by:
-                    two = round(100.0 - zt_by[d], 3)
-                if two is None and t_2y is not None:
-                    two = t_2y
-                if two is not None:
-                    existing[d] = {"date": d, "ten_y": ten, "two_y": two,
-                                   "spread_bp": round((ten - two) * 100, 1)}
+                existing[d] = {"date": d, "ten_y": ten, "two_y": fresh_2y,
+                               "spread_bp": round((ten - fresh_2y) * 100, 1)}
     except Exception:
         pass
 

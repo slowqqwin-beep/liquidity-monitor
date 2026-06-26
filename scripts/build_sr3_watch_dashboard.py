@@ -823,6 +823,29 @@ def build() -> None:
         data["us10y"] = last.get("ten_y")
     data["twos10s_warning"] = None if twos10s_series else "yfinance 抓取失败"
 
+    # Step 5: 2Y-3M curve structure + inject 3M into twos10s_series
+    c3m_path = OUT_DIR / "two_3m_history.csv"
+    two3m_series = []
+    three_m_by_date = {}
+    if c3m_path.exists():
+        import csv as _csv
+        with open(c3m_path, "r", encoding="utf-8-sig") as f:
+            for r in _csv.DictReader(f):
+                two3m_series.append({
+                    "date": r["date"],
+                    "spread_bp": float(r["spread_bp"]),
+                    "two_y": float(r.get("two_y", 0)),
+                    "three_m": float(r.get("three_m", 0)),
+                })
+                three_m_by_date[r["date"]] = float(r.get("three_m", 0))
+    two3m_latest = classify_curve_structure(two3m_series) if two3m_series else {"latest_spread_bp": None, "structure": "N/A", "structure_note": "暂无 2Y-3M 数据"}
+    data["two3m_series"] = two3m_series
+    data["two3m_latest"] = two3m_latest
+    data["two3m_source"] = "TradingView CSV (US02Y + US03MY)"
+    # Inject 3M into twos10s_series
+    for s in data.get("twos10s_series", []):
+        s["three_m"] = three_m_by_date.get(s["date"])
+
     # Write outputs
     out_json = OUT_DIR / "sr3_repair_watch_latest.json"
     out_json.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
