@@ -483,15 +483,15 @@ def compute_real_yield_nowcast(data: dict) -> dict:
     t10yie_s = data.get("T10YIE", [])
     bei_date_raw = last_date(t10yie_s) if t10yie_s else None
 
-    # ── 1. US10Y nominal — yfinance ^TNX first (no FRED lag) ──
+    # ── 1. US10Y nominal — TV companion first (same-day, no lag) ──
     selected = False
 
-    # Tier 0: yfinance ^TNX (same-day US10Y, beats all FRED sources)
+    # Tier 0: TV companion (US10Y from user's TradingView CSV)
     yf_us10y = get_us10y_realtime()
     if yf_us10y is not None:
         result["us10y_latest"] = yf_us10y
         result["us10y_latest_date"] = datetime.now().strftime("%Y-%m-%d")
-        result["us10y_source"] = "yfinance ^TNX (实时)"
+        result["us10y_source"] = "TV CSV / Yahoo ^TNX (实时)"
         selected = True
 
     # Tier 1: BEI date > DGS10 date → estimate 10Y via Futu IEF
@@ -1125,76 +1125,89 @@ def compute_dur5_either(series: list[dict], cond_a_fn, cond_b_fn, max_n: int = 5
 # ---------------------------------------------------------------------------
 
 def compute_curve_regime(data: dict) -> dict:
-    """Classify 2s10s curve regime."""
-    dgs2   = data.get(DGS2_ID, [])
-    dgs10  = data.get(DGS10_ID, [])
-    dgs30  = data.get(DGS30_ID, [])
+    """Classify 2s10s + 2s3m curve regime. Uses TV companion + treasury_yields_cache."""
+    tv = _load_tv_companion()
+    y10 = tv.get("us10y"); y2 = tv.get("us02y"); y3m = tv.get("us03m")
 
-    if not dgs2 or not dgs10:
-        return {"regime": "N/A", "reason": "missing yield data", "spread_2s10s_bp": None, "is_steep_steepening": False, "signal": None}
+    # 5d history from treasury_yields_cache
+    try:
+        cache = json.loads((DATA_DIR / "treasury_yields_cache.json").read_text("utf-8"))
+        hist = cache.get("series", [])
+    except Exception:
+        hist = []
 
-    y2  = last_value(dgs2)  or 0
-    y10 = last_value(dgs10) or 0
-    y30 = last_value(dgs30) or 0
+    if not y10 or not y2:
+        dgs2 = data.get(DGS2_ID, []); dgs10 = data.get(DGS10_ID, [])
+        y2 = last_value(dgs2) or 0; y10 = last_value(dgs10) or 0
 
-    spread_2s10s = y10 - y2
-    dgs5_data = data.get(DGS5_ID, [])
-    spread_5s30s = y30 - (last_value(dgs5_data) if dgs5_data else 0)
+    # 2s3m from two_3m_history.csv
+    try:
+        import csv as _csv
+        c3m_path = DATA_DIR.parent / "docs" / "sr3-watch" / "data" / "two_3m_history.csv"
+        if c3m_path.exists():
+            with open(c3m_path, "r", encoding="utf-8-sig") as f:
+                m3r = list(_csv.DictReader(f))
+            if m3r:
+                y3m = float(m3r[-1]["three_m"])
+    except Exception:
+        pass
 
-    # Direction over 5d
-    chg_2 = n_day_change(dgs2, 5) or 0
-    chg_10 = n_day_change(dgs10, 5) or 0
-    chg_spread_5d = n_day_change(dgs10, 5) or 0
-    if chg_spread_5d is None:
-        # Approximate
-        spread_ago = (n_day_ago(dgs10, 5) or y10) - (n_day_ago(dgs2, 5) or y2)
-        chg_spread_5d = spread_2s10s - spread_ago
+    spread_2s10s = (y10 - y2) * 100 if y10 and y2 else None
+    spread_2s3m = ((y2 - y3m) * 100) if y2 and y3m else None
 
-    # Steepening vs flattening
-    if chg_spread_5d > 0.05:
-        direction = "Steepening"
-    elif chg_spread_5d < -0.05:
-        direction = "Flattening"
-    else:
-        direction = "Stable"
+    chg_10_5d, chg_2_5d, chg_spread_5d = 0.0, 0.0, 0.0
+    if len(hist) >= 6:
+        base = hist[-6]
+        chg_10_5d = (y10 - base.get("ten_y", y10)) * 100 if y10 else 0
+        chg_2_5d = (y2 - base.get("two_y", y2)) * 100 if y2 else 0
+        base_s = (base.get("ten_y", 0) - base.get("two_y", 0)) * 100
+        chg_spread_5d = (spread_2s10s or 0) - base_s
 
-    # Bear vs Bull (based on 2Y direction as proxy for policy expectations)
-    if chg_2 > 0.05:
-        bias = "Bear"
-    elif chg_2 < -0.05:
-        bias = "Bull"
-    else:
-        bias = ""
+    chg_3m_5d, chg_2s3m_5d = 0.0, 0.0
+    try:
+        import csv as _csv2
+        c3m_path2 = DATA_DIR.parent / "docs" / "sr3-watch" / "data" / "two_3m_history.csv"
+        if c3m_path2.exists():
+            with open(c3m_path2, "r", encoding="utf-8-sig") as f:
+                m3all = list(_csv2.DictReader(f))
+            if len(m3all) >= 6:
+                mb = m3all[-6]
+                chg_3m_5d = (float(m3all[-1]["three_m"]) - float(mb["three_m"])) * 100
+                chg_2s3m_5d = float(m3all[-1]["spread_bp"]) - float(mb["spread_bp"])
+    except Exception:
+        pass
 
-    if spread_2s10s > 1.5:
-        steepness = "Steep"
-    elif spread_2s10s < 0:
-        steepness = "Inverted"
-    elif spread_2s10s < 0.3:
-        steepness = "Flat"
-    else:
-        steepness = "Normal"
+    if abs(chg_spread_5d) < 1: direction = "Stable"
+    elif chg_spread_5d > 0: direction = "Steepening"
+    else: direction = "Flattening"
 
-    # Special: Bull Steepener = Steep-Steepening exit → historically +1.81% mean 60d
-    is_steep_steepening = spread_2s10s > 1.0 and chg_spread_5d > 0.05 and chg_2 < -0.03
+    if chg_10_5d < -2 and chg_2_5d < -2: bias = "Bull"
+    elif chg_10_5d > 2 and chg_2_5d > 2: bias = "Bear"
+    else: bias = ""
 
     regime = f"{bias} {direction}" if bias else direction
-    if is_steep_steepening:
-        regime = "Steep-Steepening ★"
+
+    if spread_2s10s is None: steepness = "N/A"
+    elif spread_2s10s > 150: steepness = "Steep"
+    elif spread_2s10s < 0: steepness = "Inverted"
+    elif spread_2s10s < 30: steepness = "Flat"
+    else: steepness = "Normal"
 
     return {
         "regime": regime,
-        "spread_2s10s_bp": round(spread_2s10s * 100, 1),
-        "spread_5s30s_bp": round(spread_5s30s * 100, 1) if data.get(DGS5_ID) else None,
-        "yield_2y": round(y2, 2),
-        "yield_10y": round(y10, 2),
-        "yield_30y": round(y30, 2),
-        "chg_5d_bp": round(chg_spread_5d * 100, 1),
-        "chg_2y_5d_bp": round(chg_2 * 100, 1),
-        "chg_10y_5d_bp": round(chg_10 * 100, 1),
+        "spread_2s10s_bp": round(spread_2s10s, 1) if spread_2s10s else None,
+        "spread_2s3m_bp": round(spread_2s3m, 1) if spread_2s3m else None,
+        "yield_2y": round(y2, 3) if y2 else None,
+        "yield_10y": round(y10, 3) if y10 else None,
+        "yield_3m": round(y3m, 3) if y3m else None,
+        "chg_5d_bp": round(chg_spread_5d, 1),
+        "chg_2y_5d_bp": round(chg_2_5d, 1),
+        "chg_10y_5d_bp": round(chg_10_5d, 1),
+        "chg_3m_5d_bp": round(chg_3m_5d, 1),
+        "chg_2s3m_5d_bp": round(chg_2s3m_5d, 1),
         "steepness": steepness,
-        "is_steep_steepening": is_steep_steepening,
-        "signal": "★ 加仓候选 (Steep-Steepening exit 60d)" if is_steep_steepening else None,
+        "is_steep_steepening": False,
+        "signal": None,
     }
 
 
@@ -2367,7 +2380,8 @@ def compute_casc(data: dict, v35: dict, abcd: dict) -> dict:
     fxy_s  = data.get(FXY_ID, [])
 
     vix_val  = last_value(vix_s)
-    move_val = last_value(move_s)
+    move_tv3 = get_move_realtime()
+    move_val = move_tv3 if move_tv3 else (last_value(move_s) or 0)
     fxy_val  = last_value(fxy_s)
 
     # ── §0.8 VTS: compute before CASC legs ──
@@ -4002,31 +4016,45 @@ def format_markdown_report(
     curve_steep = curve.get("steepness", "N/A")
     curve_y2 = curve.get("yield_2y")
     curve_y10 = curve.get("yield_10y")
-    curve_y30 = curve.get("yield_30y")
+    curve_y3m = curve.get("yield_3m")
+    curve_2s3m = curve.get("spread_2s3m_bp")
     curve_chg_5d = curve.get("chg_5d_bp")
     curve_chg_2y = curve.get("chg_2y_5d_bp")
     curve_chg_10y = curve.get("chg_10y_5d_bp")
-    curve_signal = curve.get("signal")
-    # Build summary
+    curve_chg_3m = curve.get("chg_3m_5d_bp")
+    curve_2s3m_5d = curve.get("chg_2s3m_5d_bp")
+    # 30Y from FRED (no TV column) — read series.json directly
+    curve_y30 = None; curve_5s30s = None
+    try:
+        _sj = json.loads((DATA_DIR / "series.json").read_text("utf-8"))
+        _d30 = _sj.get("DGS30", []); _d5 = _sj.get("DGS5", [])
+        curve_y30 = _d30[-1]["value"] if _d30 else None
+        curve_5s30s = round((curve_y30 - _d5[-1]["value"]) * 100, 1) if curve_y30 and _d5 else None
+    except Exception:
+        pass
+    # Build summary — 3 decimal precision, unified with SR3
     spread_str = f"{curve_spread_2s10s:+.0f}bp" if curve_spread_2s10s is not None else "N/A"
-    y2_str = f"{curve_y2:.2f}%" if curve_y2 is not None else "N/A"
-    y10_str = f"{curve_y10:.2f}%" if curve_y10 is not None else "N/A"
+    y2_str = f"{curve_y2:.3f}%" if curve_y2 is not None else "N/A"
+    y10_str = f"{curve_y10:.3f}%" if curve_y10 is not None else "N/A"
+    y3m_str = f"{curve_y3m:.3f}%" if curve_y3m is not None else "N/A"
     y30_str = f"{curve_y30:.2f}%" if curve_y30 is not None else "N/A"
     chg_5d_str = f"{curve_chg_5d:+.0f}bp" if curve_chg_5d is not None else "N/A"
     chg_2y_str = f"{curve_chg_2y:+.0f}bp" if curve_chg_2y is not None else "N/A"
     chg_10y_str = f"{curve_chg_10y:+.0f}bp" if curve_chg_10y is not None else "N/A"
-    spread_5s30s_str = f"{curve_spread_5s30s:+.0f}bp" if curve_spread_5s30s is not None else "N/A"
+    chg_3m_str = f"{curve_chg_3m:+.0f}bp" if curve_chg_3m is not None else "N/A"
+    s2s3m_str = f"{curve_2s3m:+.0f}bp" if curve_2s3m is not None else "N/A"
+    s2s3m_5d_str = f"{curve_2s3m_5d:+.0f}bp" if curve_2s3m_5d is not None else "N/A"
+    s5s30s_str = f"{curve_5s30s:+.0f}bp" if curve_5s30s is not None else "N/A"
     lines.append(f"| 指标 | 当前值 | 5d Δ |")
     lines.append(f"|------|--------|------|")
+    lines.append(f"| 3M | {y3m_str} | {chg_3m_str} |")
     lines.append(f"| 2Y | {y2_str} | {chg_2y_str} |")
     lines.append(f"| 10Y | {y10_str} | {chg_10y_str} |")
     lines.append(f"| 30Y | {y30_str} | — |")
     lines.append(f"| 2s10s Spread | {spread_str} | {chg_5d_str} |")
-    if curve_spread_5s30s is not None:
-        lines.append(f"| 5s30s Spread | {spread_5s30s_str} | — |")
+    lines.append(f"| 5s30s Spread | {s5s30s_str} | — |")
+    lines.append(f"| 2s3m Spread | {s2s3m_str} | {s2s3m_5d_str} |")
     lines.append(f"| **Regime** | **{curve_regime_val}** (形态={curve_steep}) | |")
-    if curve_signal:
-        lines.append(f"| **信号** | **{curve_signal}** | |")
     lines.append("")
     curve_reason = curve.get("reason")
     if curve_reason:

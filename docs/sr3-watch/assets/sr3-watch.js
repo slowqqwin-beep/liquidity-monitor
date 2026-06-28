@@ -379,7 +379,7 @@ function renderTwos10s(data){
   // 2Y-3M
   const m3latest = data.two3m_latest || {};
   $("two3mLatest").textContent = m3latest.latest_spread_bp === null || m3latest.latest_spread_bp === undefined ? "N/A" : `${Number(m3latest.latest_spread_bp).toFixed(1)} bp`;
-  $("two3mD3m").textContent = m3latest.d2_1d_bp === null || m3latest.d2_1d_bp === undefined ? "N/A" : `${Number(m3latest.d2_1d_bp).toFixed(1)} bp`;
+  $("two3mD3m").textContent = m3latest.d3m_1d_bp === null || m3latest.d3m_1d_bp === undefined ? "N/A" : `${Number(m3latest.d3m_1d_bp).toFixed(1)} bp`;
   $("two3mStructure").textContent = m3latest.structure || "N/A";
 
   renderTwos10sChart(data);

@@ -7,10 +7,10 @@
 
 | 维度 | 信号 |
 |------|------|
-| 事件窗 | VIX9D/VIX=nan 前端平静 | VIX=18.4 5dΔ+2.0 |
+| 事件窗 | VIX9D/VIX=0.913 前端平静 | VIX=18.4 5dΔ+2.0 |
 | 风险性质 | 单资产技术性·CASC守卫 |
 | 市场信号 | 无跨资产确认 |
-| 利率路径 | US02Y−IORB=44.0bp 降息被price out / 加息风险 5dΔ-11.0bp |
+| 利率路径 | US02Y−IORB=44.6bp 降息被price out / 加息风险 5dΔ-10.4bp |
 
 ---
 ## ② 第一层传导
@@ -42,7 +42,7 @@
 | VTS | contango · 前端=前端平静 |
 | RCV | elevated-front-tilt · sev=elevated · tilt=front · 2y/30y=1.712 z=1.8 |
 | 互锁 | divergent — RCV热·VTS平→利率单资产技术性 |
-| C端 | 有序重定价·估值压缩 [MOVE-proxy] · 双探针:divergent |
+| C端 | 有序重定价·估值压缩 · 双探针:divergent |
 | C Nowcast | 🔴 实际利率高压 · 方向基本持平 |
 
 > **最终判断**：VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。

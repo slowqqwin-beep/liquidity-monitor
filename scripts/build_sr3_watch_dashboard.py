@@ -839,6 +839,11 @@ def build() -> None:
                 })
                 three_m_by_date[r["date"]] = float(r.get("three_m", 0))
     two3m_latest = classify_curve_structure(two3m_series) if two3m_series else {"latest_spread_bp": None, "structure": "N/A", "structure_note": "暂无 2Y-3M 数据"}
+    # 3M daily change (classify_curve_structure expects ten_y/two_y, not two_y/three_m)
+    if len(two3m_series) >= 2:
+        two3m_latest["d3m_1d_bp"] = round((two3m_series[-1]["three_m"] - two3m_series[-2]["three_m"]) * 100, 1)
+    else:
+        two3m_latest["d3m_1d_bp"] = None
     data["two3m_series"] = two3m_series
     data["two3m_latest"] = two3m_latest
     data["two3m_source"] = "TradingView CSV (US02Y + US03MY)"
