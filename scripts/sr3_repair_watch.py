@@ -396,12 +396,37 @@ def load_data():
     if not feat_path.exists():
         raise FileNotFoundError(f"SR3 features not found: {feat_path}\nRun scripts/reconstruct_sr3_data.py first")
     sr3 = pd.read_csv(feat_path, parse_dates=["date"]).sort_values("date").reset_index(drop=True)
-    panel = pd.read_csv(PANEL_PATH, parse_dates=["date"]).sort_values("date").reset_index(drop=True)
-    df = sr3.merge(panel[[
-        "date", "BAMLH0A0HYM2", "HY_OAS_available",
-        "HY_OAS_chg_20d", "credit_signal_status",
-    ]], on="date", how="left")
-    return df.dropna(subset=["near_rate"]).reset_index(drop=True)
+
+    # Unified macro source: series.json (same as daily_report.py)
+    _SR = PROJECT_ROOT / "data" / "series.json"
+    macro_map: dict = {}
+    if _SR.exists():
+        try:
+            _s = json.loads(_SR.read_text("utf-8"))
+            for key in ["BAMLH0A0HYM2", "HY_OAS_available", "HY_OAS_chg_20d",
+                         "credit_signal_status", "DGS10", "DGS2"]:
+                items = _s.get(key, [])
+                for it in items:
+                    d = it.get("date", "")[:10]
+                    v = it.get("value")
+                    if d and v is not None:
+                        macro_map.setdefault(d, {})[key] = float(v)
+        except Exception:
+            pass
+
+    # Merge macro fields into sr3
+    for col in ["BAMLH0A0HYM2", "HY_OAS_available", "HY_OAS_chg_20d", "credit_signal_status"]:
+        sr3[col] = sr3["date"].apply(lambda d: macro_map.get(str(d)[:10], {}).get(col, np.nan))
+
+    # 20d change from series data (direct compute, not panel)
+    hy_vals = sr3["BAMLH0A0HYM2"].values
+    hy_chg_20d = np.full(len(hy_vals), np.nan)
+    for i in range(20, len(hy_vals)):
+        if pd.notna(hy_vals[i]) and pd.notna(hy_vals[i - 20]):
+            hy_chg_20d[i] = round(float(hy_vals[i] - hy_vals[i - 20]), 6)
+    sr3["HY_OAS_chg_20d"] = hy_chg_20d
+
+    return sr3.dropna(subset=["near_rate"]).reset_index(drop=True)
 
 
 def find_latest_shock(df):

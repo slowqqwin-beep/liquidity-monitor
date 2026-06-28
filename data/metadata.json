@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T09:50:29.243864+00:00",
+  "generated_at": "2026-06-28T07:45:58.886819+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -8,7 +8,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Secured Overnight Financing Rate",
-      "n_obs": 747
+      "n_obs": 746
     },
     {
       "id": "IORB",
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1096
+      "n_obs": 1097
     },
     {
       "id": "EFFR",
@@ -24,7 +24,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Effective Federal Funds Rate",
-      "n_obs": 750
+      "n_obs": 749
     },
     {
       "id": "DFEDTARU",
@@ -48,7 +48,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "Overnight Reverse Repo balance ($B)",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "WRESBAL",
@@ -56,7 +56,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "Reserves with Fed Reserve Banks ($B)",
-      "n_obs": 157
+      "n_obs": 156
     },
     {
       "id": "WTREGEN",
@@ -64,7 +64,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "TGA balance at Fed ($B)",
-      "n_obs": 157
+      "n_obs": 156
     },
     {
       "id": "WALCL",
@@ -72,7 +72,7 @@
       "layer": "L1",
       "unit": "$M",
       "desc": "Total Fed balance sheet",
-      "n_obs": 157
+      "n_obs": 156
     },
     {
       "id": "BAMLH0A0HYM2",
@@ -80,7 +80,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US High Yield OAS",
-      "n_obs": 786
+      "n_obs": 785
     },
     {
       "id": "BAMLC0A0CM",
@@ -88,7 +88,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US Corp OAS",
-      "n_obs": 785
+      "n_obs": 784
     },
     {
       "id": "BAMLEMCBPIOAS",
@@ -96,7 +96,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA EM Corporate OAS",
-      "n_obs": 786
+      "n_obs": 785
     },
     {
       "id": "VIXCLS",
@@ -104,7 +104,15 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 773
+      "n_obs": 772
+    },
+    {
+      "id": "TEDRATE",
+      "label": "TED Spread (legacy)",
+      "layer": "L2",
+      "unit": "%",
+      "desc": "Discontinued but historical reference",
+      "n_obs": 0
     },
     {
       "id": "DGS2",
@@ -112,7 +120,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "2-Year Treasury constant maturity",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "DGS5",
@@ -120,7 +128,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "5-Year Treasury",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "DGS10",
@@ -128,7 +136,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10-Year Treasury",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "DGS30",
@@ -136,7 +144,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "30-Year Treasury",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "DFII10",
@@ -144,7 +152,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10-Year inflation-indexed (real yield)",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "T10YIE",
@@ -152,7 +160,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10Y breakeven inflation",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "T5YIFR",
@@ -160,7 +168,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Cleanest long-term inflation expectation",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "THREEFYTP10",
@@ -168,7 +176,15 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 745
+      "n_obs": 743
+    },
+    {
+      "id": "GOLDAMGBD228NLBM",
+      "label": "Gold (LBMA AM)",
+      "layer": "L3",
+      "unit": "$/oz",
+      "desc": "London Bullion Market AM Fix",
+      "n_obs": 0
     },
     {
       "id": "MORTGAGE30US",
@@ -177,6 +193,14 @@
       "unit": "%",
       "desc": "Freddie Mac 30Y fixed mortgage",
       "n_obs": 157
+    },
+    {
+      "id": "DTWEXBGS",
+      "label": "Broad Dollar Index",
+      "layer": "L3",
+      "unit": "Idx",
+      "desc": "Trade-weighted broad dollar",
+      "n_obs": 744
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -199,16 +223,8 @@
       "label": "MOVE Index",
       "layer": "L2",
       "unit": "",
-      "desc": "Bond market implied volatility (via Yahoo ^MOVE)",
-      "n_obs": 743
-    },
-    {
-      "id": "GOLDAMGBD228NLBM",
-      "label": "Gold (via GLD ETF)",
-      "layer": "L3",
-      "unit": "$/share",
-      "desc": "Gold proxy via SPDR Gold Trust (GLD) - Yahoo",
-      "n_obs": 752
+      "desc": "Bond market implied volatility",
+      "n_obs": 0
     },
     {
       "id": "SPY",
@@ -216,7 +232,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "S&P 500 ETF price - equity risk signal",
-      "n_obs": 752
+      "n_obs": 751
     },
     {
       "id": "HYG",
@@ -224,7 +240,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 752
+      "n_obs": 751
     },
     {
       "id": "FXY",
@@ -232,6 +248,22 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
+      "n_obs": 751
+    },
+    {
+      "id": "GLD",
+      "label": "GLD Close",
+      "layer": "L3",
+      "unit": "$",
+      "desc": "Gold ETF price - cross-asset risk signal",
+      "n_obs": 751
+    },
+    {
+      "id": "^VIX",
+      "label": "VIX",
+      "layer": "L2",
+      "unit": "",
+      "desc": "CBOE Volatility Index - equity fear gauge",
       "n_obs": 752
     },
     {
@@ -239,16 +271,24 @@
       "label": "VIX 3-Month",
       "layer": "L2",
       "unit": "",
-      "desc": "CBOE VIX 3-Month \u2014 \u00a70.8 VTS term structure",
-      "n_obs": 748
+      "desc": "VIX 3-month futures - VTS term structure denominator",
+      "n_obs": 751
     },
     {
       "id": "^VIX9D",
       "label": "VIX 9-Day",
       "layer": "L2",
       "unit": "",
-      "desc": "CBOE VIX 9-Day \u2014 \u00a70.8 VTS front-end signal",
-      "n_obs": 748
+      "desc": "VIX 9-day futures - VTS front-end signal numerator",
+      "n_obs": 751
+    },
+    {
+      "id": "^TNX",
+      "label": "10Y Treasury Yield",
+      "layer": "L1",
+      "unit": "%",
+      "desc": "CBOE 10-Year Treasury Note Yield - curve/carry context",
+      "n_obs": 751
     },
     {
       "id": "GOLD_10Y_RATIO",
@@ -256,7 +296,7 @@
       "layer": "L3",
       "unit": "$/% ",
       "desc": "Gold price divided by 10Y yield - framework switch indicator",
-      "n_obs": 746
+      "n_obs": 0
     },
     {
       "id": "SOFR_IORB",
@@ -264,7 +304,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Plumbing stress: positive = banks lending into repo",
-      "n_obs": 747
+      "n_obs": 746
     },
     {
       "id": "EFFR_IORB",
@@ -272,7 +312,15 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Reserve scarcity: positive = reserves scarce",
-      "n_obs": 750
+      "n_obs": 749
+    },
+    {
+      "id": "MORTGAGE_SPREAD",
+      "label": "30Y Mortgage \u2013 10Y",
+      "layer": "L3",
+      "unit": "bp",
+      "desc": "Real-economy credit transmission",
+      "n_obs": 157
     },
     {
       "id": "HY_IG_RATIO",
@@ -280,7 +328,7 @@
       "layer": "L2",
       "unit": "x",
       "desc": "Risk-tier divergence",
-      "n_obs": 785
+      "n_obs": 784
     },
     {
       "id": "MOVE_PROXY",
@@ -288,7 +336,7 @@
       "layer": "L2",
       "unit": "bp",
       "desc": "20d rolling std of daily DGS2/DGS10 bp changes (33/67 blend), annualized \u2014 fallback when MOVE index unavailable",
-      "n_obs": 728
+      "n_obs": 727
     }
   ]
 }

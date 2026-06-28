@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-26T18:50:33.812355",
+  "generated_at": "2026-06-28T15:49:15.059899",
   "data_date": "2026-06-25",
-  "data_age_days": 1,
+  "data_age_days": 3,
   "reference_mode": "recent 60d peak",
   "last_formal_shock": {
     "date": "2026-03-05",
@@ -22,11 +22,11 @@
     "curve_move_5d_sum_bp": -7.62,
     "decline_from_ref_peak_bp": 3.75,
     "on_elevated_plateau": true,
-    "hy_oas_bp": 276.0,
+    "hy_oas_bp": 278.0,
     "hy_oas_available": false,
     "us10y_pct": 4.378,
-    "t10yie_pct": 2.21,
-    "real_yield_pct": 2.168
+    "t10yie_pct": 2.2,
+    "real_yield_pct": 2.178
   },
   "state": {
     "state_number": 2,
