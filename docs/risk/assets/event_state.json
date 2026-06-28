@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-26",
+  "generated_at": "2026-06-28",
   "generator": "Risk OS Orchestrator v2.0 — SSoT",
   "_version": "v2.0",
   "_note": "⚠️ 唯一权威状态输出。三套输入系统(Fed Reaction/ABCD/risk_dashboard) 降级为信号提供层，不得输出最终结论。下游只能读取 risk_os_final，不得重算。",
-  "date": "2026-06-26",
+  "date": "2026-06-28",
   "regime": "R4 防御 ⚠️",
   "regime_key": "R4",
   "systemic_classification": "NON-SYSTEMIC WATCH",
@@ -16,7 +16,7 @@
   "cross_domain_signals": 3,
   "red_count": 2,
   "risk_os_final": {
-    "date": "2026-06-26",
+    "date": "2026-06-28",
     "final_regime": "R4 防御 ⚠️",
     "final_regime_key": "R4",
     "final_systemic_classification": "NON-SYSTEMIC WATCH",
@@ -32,15 +32,15 @@
     "data_quality": {
       "stale": true,
       "stale_series": [
-        "MOVE (last: 2026-06-18, 8d stale)",
-        "^TNX (last: 2026-06-18, 8d stale)",
-        "^VIX3M (last: 2026-06-18, 8d stale)",
-        "^VIX9D (last: 2026-06-18, 8d stale)"
+        "MOVE (last: 2026-06-18, 10d stale)",
+        "^TNX (last: 2026-06-18, 10d stale)",
+        "^VIX3M (last: 2026-06-18, 10d stale)",
+        "^VIX9D (last: 2026-06-18, 10d stale)"
       ],
       "missing_series": [],
       "data_degraded": true,
       "impact": "数据质量问题，VTS/CASC/双探针互锁不能用于系统性确认。systemic_confirmed严格为false，等fetch_data重抓。",
-      "note": "⚠️ 数据质量降级：数据滞后(4项): MOVE (last: 2026-06-18, 8d stale), ^TNX (last: 2026-06-18, 8d stale), ^VIX3M (last: 2026-06-18, 8d stale), ^VIX9D (last: 2026-06-18, 8d stale)"
+      "note": "⚠️ 数据质量降级：数据滞后(4项): MOVE (last: 2026-06-18, 10d stale), ^TNX (last: 2026-06-18, 10d stale), ^VIX3M (last: 2026-06-18, 10d stale), ^VIX9D (last: 2026-06-18, 10d stale)"
     },
     "source_votes": {
       "fed_reaction": "hawkish pressure (DGS2-IORB high) | vol calm | credit gate: complacent/improving",

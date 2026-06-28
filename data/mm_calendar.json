@@ -7,31 +7,14 @@
     "country": "US",
     "event": "美国-ADP非农就业人口 (月变动)",
     "summary": "美国-ADP非农就业人口 (月变动)",
-    "forecast": "",
+    "forecast": "118000.0",
     "previous": "122000.0",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/36/adp?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
-    "days_to_event": 5,
-    "score": 60
-  },
-  {
-    "uid": "ogeraj1iqk5hfhrss0cf2alrg0@google.com",
-    "date": "2026-07-02",
-    "time_utc": "2026-07-02T12:30:00+00:00",
-    "time_sg": "2026-07-02T20:30:00+08:00",
-    "country": "US",
-    "event": "美国-非农就业人数(月变动)",
-    "summary": "美国-非农就业人数(月变动)",
-    "forecast": "",
-    "previous": "172.0k",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 85,
-    "days_to_event": 6,
-    "score": 55
+    "days_to_event": 3,
+    "score": 70
   },
   {
     "uid": "nfj4i56r9b1egf9bfpr0mn0210@google.com",
@@ -41,14 +24,31 @@
     "country": "US",
     "event": "美国-失业率",
     "summary": "美国-失业率",
-    "forecast": "",
+    "forecast": "4.30%",
     "previous": "4.30%",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
-    "days_to_event": 6,
-    "score": 55
+    "days_to_event": 4,
+    "score": 65
+  },
+  {
+    "uid": "ogeraj1iqk5hfhrss0cf2alrg0@google.com",
+    "date": "2026-07-02",
+    "time_utc": "2026-07-02T12:30:00+00:00",
+    "time_sg": "2026-07-02T20:30:00+08:00",
+    "country": "US",
+    "event": "美国-非农就业人数(月变动)",
+    "summary": "美国-非农就业人数(月变动)",
+    "forecast": "114.0",
+    "previous": "172.0k",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 85,
+    "days_to_event": 4,
+    "score": 65
   },
   {
     "uid": "vu78o35omcpcfk45lemn8q7bmo@google.com",
@@ -58,14 +58,14 @@
     "country": "US",
     "event": "美国-ISM制造业指数[PMI]",
     "summary": "美国-ISM制造业指数[PMI]",
-    "forecast": "",
+    "forecast": "53.7",
     "previous": "54.0",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/8/us-industry-relative/54/ism?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 65,
-    "days_to_event": 5,
-    "score": 40
+    "days_to_event": 3,
+    "score": 50
   },
   {
     "uid": "vaqnlkqpt1rmv93u7279dhp4gs@google.com",
@@ -81,8 +81,8 @@
     "link": "https://sc.macromicro.me/collections/8/us-industry-relative/55/ism-nonmanu?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 65,
-    "days_to_event": 10,
-    "score": 15
+    "days_to_event": 8,
+    "score": 25
   },
   {
     "uid": "han5rn7bi2sf0cof6u5292du28@google.com",
@@ -92,14 +92,14 @@
     "country": "US",
     "event": "美国-初次申请失业救济金人数",
     "summary": "美国-初次申请失业救济金人数",
-    "forecast": "",
+    "forecast": "220000.0",
     "previous": "215000.0",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 45,
-    "days_to_event": 6,
-    "score": 15
+    "days_to_event": 4,
+    "score": 25
   },
   {
     "uid": "g0o5qej72ua32b5uj7gutqek14@google.com",
@@ -115,7 +115,41 @@
     "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 5,
-    "score": -5
+    "days_to_event": 3,
+    "score": 5
+  },
+  {
+    "uid": "55u3el20gskccot3828hdeng8c@google.com",
+    "date": "2026-07-08",
+    "time_utc": "2026-07-08T18:00:00+00:00",
+    "time_sg": "2026-07-09T02:00:00+08:00",
+    "country": "US",
+    "event": "美国美联储会议纪要",
+    "summary": "美国美联储会议纪要",
+    "forecast": "",
+    "previous": "",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/9/us-market-relative/48/target-rate?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 50,
+    "days_to_event": 10,
+    "score": 0
+  },
+  {
+    "uid": "ri1m98p8cl8i3ec66h72rrmbdk@google.com",
+    "date": "2026-07-08",
+    "time_utc": "2026-07-08T14:30:00+00:00",
+    "time_sg": "2026-07-08T22:30:00+08:00",
+    "country": "US",
+    "event": "美国-原油库存(周变动)",
+    "summary": "美国-原油库存(周变动)",
+    "forecast": "",
+    "previous": "-6088.0k",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 20,
+    "days_to_event": 10,
+    "score": -30
   }
 ]
