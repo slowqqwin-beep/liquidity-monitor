@@ -840,6 +840,84 @@ def _format_diffs(cd):
     return "\n" + "\n".join(lines)
 
 
+def _format_yield_curve_section():
+    """Read 2s10s and 2s3m from cache and format MD table."""
+    import csv as _csv
+    lines = []
+
+    # ── 2s10s from treasury_yields_cache ──
+    CACHE_PATH = PROJECT_ROOT / "data" / "treasury_yields_cache.json"
+    ten = two = spread = d10 = d2 = d5 = structure = None
+    try:
+        cache = json.loads(CACHE_PATH.read_text("utf-8"))
+        series = cache.get("series", [])
+        if len(series) >= 6:
+            cur = series[-1]; prev = series[-2]; base5 = series[-6]
+            ten = cur.get("ten_y"); two = cur.get("two_y")
+            spread = round((ten - two) * 100, 1) if ten and two else None
+            d10 = round((ten - prev["ten_y"]) * 100, 1) if ten and prev.get("ten_y") else None
+            d2 = round((two - prev["two_y"]) * 100, 1) if two and prev.get("two_y") else None
+            d5 = round(spread - (base5["ten_y"] - base5["two_y"]) * 100, 1) if spread else None
+            # Structure classification
+            if d10 is not None and d2 is not None:
+                if d10 < 0 and d2 < 0:
+                    if d5 and d5 > 0: structure = "牛陡"
+                    elif d5 and d5 < 0: structure = "牛平"
+                    else: structure = "Bull / 收益率下行"
+                elif d10 > 0 and d2 > 0:
+                    if d5 and d5 > 0: structure = "熊陡"
+                    elif d5 and d5 < 0: structure = "熊平"
+                    else: structure = "Bear / 收益率上行"
+                else:
+                    structure = "Mixed / 混合"
+    except Exception:
+        pass
+
+    # ── 2s3m from two_3m_history.csv ──
+    C3M_PATH = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "two_3m_history.csv"
+    s3m = d3m = d2y = s3m_5d = s3m_struct = None
+    try:
+        if C3M_PATH.exists():
+            with open(C3M_PATH, "r", encoding="utf-8-sig") as f:
+                m3r = list(_csv.DictReader(f))
+            if len(m3r) >= 6:
+                cur3 = m3r[-1]; prev3 = m3r[-2]; base3_5 = m3r[-6]
+                y2_v = float(cur3["two_y"]); y3m_v = float(cur3["three_m"])
+                s3m = round(float(cur3["spread_bp"]), 1)
+                d2y = round((y2_v - float(prev3["two_y"])) * 100, 1)
+                d3m = round((y3m_v - float(prev3["three_m"])) * 100, 1)
+                s3m_5d = round(s3m - float(base3_5["spread_bp"]), 1)
+                if s3m_5d and s3m_5d > 1: s3m_struct = "走阔 / Steepening"
+                elif s3m_5d and s3m_5d < -1: s3m_struct = "收窄 / Flattening"
+                else: s3m_struct = "Stable / 稳定"
+    except Exception:
+        pass
+
+    # ── Build table ──
+    lines.append("| 指标 | 当前 | 日变 | 5日变 | 结构 |")
+    lines.append("|---|---:|---:|---:|")
+    t2s = f"{spread}bp" if spread else "N/A"
+    t3s = f"{s3m}bp" if s3m else "N/A"
+    d10s = f"{d10}bp" if d10 is not None else "N/A"
+    d5s = f"{d5}bp" if d5 is not None else "N/A"
+    lines.append(f"| 2s10s | {t2s} | {d10s} | {d5s} | {structure or 'N/A'} |")
+    d3ms = f"{d3m}bp" if d3m is not None else "N/A"
+    d5_3m = f"{s3m_5d}bp" if s3m_5d is not None else "N/A"
+    lines.append(f"| 2s3m | {t3s} | {d3ms} | {d5_3m} | {s3m_struct or 'N/A'} |")
+
+    # One-liner interpretation
+    if structure and "牛" in str(structure):
+        interp = "✅ 现货曲线确认利率下行"
+    elif structure and "Bear" in str(structure):
+        interp = "🔴 现货曲线未配合SR3修复"
+    else:
+        interp = "🟡 现货曲线混合信号 — SR3修但现货未完全确认"
+
+    lines.append("")
+    lines.append(f"> {interp}")
+    return "\n".join(lines)
+
+
 def _format_structure(cs):
     """Format curve structure data into MD table string."""
     if not cs or not cs.get('detail'):
@@ -912,6 +990,12 @@ def write_outputs(r):
 | Real Yield (10Y-T10YIE) | {cu['real_yield_pct'] or 'N/A'}% |
 
 > * 当日变动来源：{'合约差价表 (contract-level)' if cu.get('contract_daily_bp') else 'sr3_curve_features.csv (near/far avg)'} — 若与下方合约表不一致，以合约表为准。
+
+---
+
+## 收益率曲线结构 — 2s10s / 2s3m
+
+""" + _format_yield_curve_section() + f"""
 
 ---
 

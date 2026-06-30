@@ -1,5 +1,5 @@
 window.SR3_DATA = {
-  "generated_at": "2026-06-30T14:04:14",
+  "generated_at": "2026-06-30T14:17:54",
   "data_date": "2026-06-29",
   "data_age_days": 1,
   "reference_mode": "Current Event Peak (Hike-over)",
