@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-29T23:01:42.482568+00:00",
+  "generated_at": "2026-06-30T23:16:39.037933+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 742
+      "n_obs": 746
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "STABLECOIN_MCAP_B",
