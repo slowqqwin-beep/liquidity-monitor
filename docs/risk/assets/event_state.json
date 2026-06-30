@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-28",
+  "generated_at": "2026-06-30",
   "generator": "Risk OS Orchestrator v2.0 — SSoT",
   "_version": "v2.0",
   "_note": "⚠️ 唯一权威状态输出。三套输入系统(Fed Reaction/ABCD/risk_dashboard) 降级为信号提供层，不得输出最终结论。下游只能读取 risk_os_final，不得重算。",
-  "date": "2026-06-28",
-  "regime": "R4 防御 ⚠️",
+  "date": "2026-06-30",
+  "regime": "R4 防御",
   "regime_key": "R4",
   "systemic_classification": "NON-SYSTEMIC WATCH",
   "systemic_confirmed": false,
@@ -16,8 +16,8 @@
   "cross_domain_signals": 3,
   "red_count": 2,
   "risk_os_final": {
-    "date": "2026-06-28",
-    "final_regime": "R4 防御 ⚠️",
+    "date": "2026-06-30",
+    "final_regime": "R4 防御",
     "final_regime_key": "R4",
     "final_systemic_classification": "NON-SYSTEMIC WATCH",
     "systemic_confirmed": false,
@@ -26,18 +26,16 @@
       "hedge": "45%",
       "cash": "30%"
     },
-    "final_hero": "R4 防御 ⚠️ · NON-SYSTEMIC WATCH — C(实际利率)+A(流动性)双红→防御仓位，但系统性能确认未达成",
-    "final_judgement": "A/C双红→R4 防御 ⚠️模式；T2流动性已触发·部分压力（EFFR-IORB=-2.0bp DUR5=3/3）、但T1信用未触发、T3跨资产未触发，不满足系统性风险三端共振定义。实际利率高压+流动性部分压力使仓位进入防御，但信用未坏、跨境未扩散→仍为非系统性观察。 ⚠️数据不足:缺失序列: MOVE。regime/red_count置信度打折，不排除因数据缺失低估真实风险。需等待fetch_data补全序列。",
-    "confidence": "low",
+    "final_hero": "R4 防御 · NON-SYSTEMIC WATCH — C(实际利率)+A(流动性)双红→防御仓位，但系统性能确认未达成",
+    "final_judgement": "A/C双红→R4 防御模式；T2流动性已触发·部分压力（EFFR-IORB=-2.0bp DUR5=3/3）、但T1信用未触发、T3跨资产未触发，不满足系统性风险三端共振定义。实际利率高压+流动性部分压力使仓位进入防御，但信用未坏、跨境未扩散→仍为非系统性观察。",
+    "confidence": "high",
     "data_quality": {
-      "stale": true,
+      "stale": false,
       "stale_series": [],
-      "missing_series": [
-        "MOVE"
-      ],
-      "data_degraded": true,
-      "impact": "数据质量问题，VTS/CASC/双探针互锁不能用于系统性确认。systemic_confirmed严格为false，等fetch_data重抓。",
-      "note": "⚠️ 数据质量降级：数据缺失(1项): MOVE"
+      "missing_series": [],
+      "data_degraded": false,
+      "impact": "",
+      "note": "数据质量正常"
     },
     "source_votes": {
       "fed_reaction": "hawkish pressure (DGS2-IORB high) | vol calm | credit gate: complacent/improving",
@@ -50,20 +48,20 @@
       "active": true,
       "type": "rate_event",
       "sources": [
-        "DGS2−IORB=44.0bp ▼ [降息预期升温 · 代理非OIS]"
+        "DGS2−IORB=42.0bp ▼ [降息预期升温 · 代理非OIS]"
       ],
       "intensity": "red",
       "label": "前端急性",
       "evidence": {
-        "vix": 18.9,
-        "dgs2_iorb_bp": 44.0
+        "vix": 18.4,
+        "dgs2_iorb_bp": 42.0
       }
     },
     "rate_shock": {
       "active": true,
-      "dfii10_official": 2.19,
-      "dfii10_nowcast": 2.2,
-      "gap_bp": 1,
+      "dfii10_official": 2.18,
+      "dfii10_nowcast": 2.16,
+      "gap_bp": -2,
       "direction": "基本持平",
       "method": "DGS10 − 10Y BEI",
       "quality_note": "官方DFII10滞后修正，Nowcast更实时",
@@ -78,7 +76,7 @@
       "liquidity_buffer_thinning": true,
       "t2_determinable": true,
       "effr_iorb_bp": -2.0,
-      "sofr_iorb_bp": -1.0,
+      "sofr_iorb_bp": -3.0,
       "dur5_effr_iorb": 3,
       "dur5_confirmed": true,
       "main_path": "C先红 → A偏紧 → B未坏 → D未动",
@@ -88,7 +86,7 @@
       "credit": {
         "active": false,
         "label": "未触发",
-        "evidence": "HY OAS=278bp，仍在自满区"
+        "evidence": "HY OAS=283bp，仍在自满区"
       },
       "liquidity": {
         "active": true,
@@ -110,7 +108,7 @@
   "stage_assessment": {
     "current_stage": "前端事件风险 + 第一层利率冲击",
     "not_yet_stage": "系统性风险",
-    "final_judgement": "A/C双红→R4 防御 ⚠️模式；T2流动性已触发·部分压力（EFFR-IORB=-2.0bp DUR5=3/3）、但T1信用未触发、T3跨资产未触发，不满足系统性风险三端共振定义。实际利率高压+流动性部分压力使仓位进入防御，但信用未坏、跨境未扩散→仍为非系统性观察。 ⚠️数据不足:缺失序列: MOVE。regime/red_count置信度打折，不排除因数据缺失低估真实风险。需等待fetch_data补全序列。",
+    "final_judgement": "A/C双红→R4 防御模式；T2流动性已触发·部分压力（EFFR-IORB=-2.0bp DUR5=3/3）、但T1信用未触发、T3跨资产未触发，不满足系统性风险三端共振定义。实际利率高压+流动性部分压力使仓位进入防御，但信用未坏、跨境未扩散→仍为非系统性观察。",
     "systemic_upgrade_conditions": {
       "credit_widening": false,
       "liquidity_sustained": true,

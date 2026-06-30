@@ -96,16 +96,21 @@ def _sync_treasury_from_tv(raw: pd.DataFrame):
             col_v3m = c
         elif "move" in cl:
             col_move = c
-            col_3m = c
     if not col_10y or not col_2y:
         return
 
-    latest = raw.iloc[-1]
+    # Find last row with valid US10Y (06-30 may be empty before US market open)
+    latest = None
+    for i in range(len(raw) - 1, -1, -1):
+        if pd.notna(raw.iloc[i][col_10y]):
+            latest = raw.iloc[i]; break
+    if latest is None:
+        return
     d = str(latest["date"])[:10]
     ten = round(float(latest[col_10y]), 3)
     two = round(float(latest[col_2y]), 3)
-    t3m = round(float(latest[col_3m]), 3) if col_3m else None
-    print(f"[SR3 Sync] TV: US10Y={ten}, US02Y={two}, US03M={t3m}, 2s10s={round((ten-two)*100,1)}bp")
+    t3m = round(float(latest[col_3m]), 3) if col_3m and pd.notna(latest.get(col_3m)) else None
+    print(f"[SR3 Sync] TV: {d} US10Y={ten}, US02Y={two}, US03M={t3m}, 2s10s={round((ten-two)*100,1)}bp")
 
     # Write 2s10s.csv (TradingView format)
     for csv_path in [PROJECT_ROOT / "2s10s.csv"]:
@@ -534,7 +539,7 @@ def analyze(df, last_shock):
     ref_rate = shock_peak if use_formal else rpr
     ref_date = shock_date if use_formal else rpd
     ref_idx = si if use_formal else rpi
-    ref_label = "formal shock" if use_formal else "recent 60d peak"
+    ref_label = "Current Event Peak (Hike-over)" if use_formal else "recent 60d peak"
 
     cr = df.iloc[li]
     cnr = cr["near_rate"]
@@ -615,8 +620,16 @@ def analyze(df, last_shock):
     elif in_impulse:
         cls = "still_in_impulse"; reason = "Still in hawkish impulse phase"
     elif structural_easing:
-        cls = "structural_easing"; reason = (f"全线合约低于参考峰({ref_date.date() if hasattr(ref_date,'date') else ref_date})，"
-                                             f"但 5日累计仍正向 — 结构松动先于动能")
+        # 5d sum direction
+        fived = round(float(c5s), 2) if not pd.isna(c5s) else None
+        if fived is not None and fived < 0:
+            cls = "structural_easing_confirming"
+            reason = (f"全线合约低于参考峰({ref_date.date() if hasattr(ref_date,'date') else ref_date})，"
+                      f"且 5d累计转负({fived:.1f}bp) — 结构松动获得动能确认")
+        else:
+            cls = "structural_easing"
+            reason = (f"全线合约低于参考峰({ref_date.date() if hasattr(ref_date,'date') else ref_date})，"
+                      f"但动能信号仍不干净 — 结构松动先于动能")
 
     # State (descriptive only — research-only, not actionable)
     if cls == "benign_repair":
@@ -719,6 +732,13 @@ def analyze(df, last_shock):
                     "implied_chg_bp": round(chg_bp, 2) if chg_bp is not None else None,
                 })
 
+    # ── 当日变动：从合约差价表取近端合约的 implied_chg_bp（比 curve_move_bp 更可靠）──
+    contract_daily_bp = None
+    if contract_diffs:
+        for c in contract_diffs:
+            if c.get("implied_chg_bp") is not None:
+                contract_daily_bp = c["implied_chg_bp"]; break
+
     # ── 逐合约 FOMC 修复表：baseline (06-16) → peak (06-22) → now ──
     retracement = _compute_retracement(ld)
 
@@ -739,8 +759,11 @@ def analyze(df, last_shock):
                             "used_as_reference": not use_formal},
         "current": {"near_rate_pct": round(float(cnr), 4),
                     "curve_move_bp": round(float(cmv), 2) if not pd.isna(cmv) else None,
+                    "contract_daily_bp": contract_daily_bp,  # from contract_diffs (more reliable)
                     "curve_move_5d_sum_bp": round(float(c5s), 2) if not pd.isna(c5s) else None,
-                    "decline_from_ref_peak_bp": round(float((ref_rate - cnr) * 100), 2),
+                    # decline_from_ref_peak uses contract-matched struct comparison (not near_rate)
+                    "decline_from_ref_peak_bp": round(float(struct["avg_deviation_bp"]), 2) if struct else None,
+                    "near_contract": struct["detail"][0]["contract"] if struct and struct.get("detail") else None,
                     "on_elevated_plateau": bool(cnr > 3.5),
                     "hy_oas_bp": round(ho * 100, 1) if ho is not None else None,
                     "hy_oas_available": bool(lr.get("HY_OAS_available", False)) if not pd.isna(lr.get("HY_OAS_available")) else False,
@@ -842,7 +865,7 @@ def write_outputs(r):
     md = f"""# SR3 修复监控 — 当前状态
 
 > **生成时间**: {s['generated_at'][:19]} | **数据日**: {s['data_date']}（{s['data_age_days']}d ago）
-> **参考峰值**: {s['reference_mode']} | **状态**: Research-Only
+> **当前峰值口径**: {s['reference_mode']} | **状态**: Research-Only
 
 ---
 
@@ -857,7 +880,7 @@ def write_outputs(r):
 | # | 问题 | 答案 |
 |---|------|------|
 | 1 | 处于 hawkish impulse？ | **{'是 🔴' if st['in_hawkish_impulse'] else '否'}** |
-| 2 | 进入 deceleration？ | **{'是 🟡 — ' + (st['decel_start_date'] or '') if st['deceleration_detected'] else '否'}** |
+| 2 | 进入 deceleration / 结构松动？ | **{'是 🟡 — ' + (st['decel_start_date'] or ('structural_easing' if st['structural_easing_detected'] else '全线低于参考峰')) if (st['deceleration_detected'] or st['structural_easing_detected']) else '否'}** |
 | 3 | 发生 level repair？ | **{'是 🟢' if st['level_repair_detected'] else '否'}** |
 | 4 | 修复分类 | **{st['repair_classification']}** |
 
@@ -865,9 +888,9 @@ def write_outputs(r):
 
 ## 参考峰值
 
-| 来源 | 日期 | 距今 | near_rate | 高度 |
+| 来源 | 日期 | 距今 | ref_near_rate | 高度 |
 |------|------|------|-----------|------|
-| Formal Shock | {sh['date']} | {sh['days_ago']}d | {sh['peak_near_rate_pct']}% | {sh['shock_height_bp']}bp |
+| Current Event Peak (Hike-over) | {sh['date']} | {sh['days_ago']}d | {sh['peak_near_rate_pct']}% | {sh['shock_height_bp']}bp |
 | Recent 60d Peak | {rp['date']} | {rp['days_ago']}d | {rp['near_rate_pct']}% | — |
 
 当前使用: **{s['reference_mode']}**
@@ -879,14 +902,16 @@ def write_outputs(r):
 | 指标 | 值 |
 |------|-----|
 | near_rate | {cu['near_rate_pct']}% |
-| 较参考峰回落 | {cu['decline_from_ref_peak_bp']} bp |
-| 当日变动 | {cu['curve_move_bp']} bp |
+| 全曲线平均较峰值回落 | {cu['decline_from_ref_peak_bp']} bp |
+| 当日变动 | {(cu['contract_daily_bp'] or cu['curve_move_bp'])} bp |
 | 5d 累计 | {cu['curve_move_5d_sum_bp']} bp |
 | 高台 (>3.5%) | {'⚠️ 是' if cu['on_elevated_plateau'] else '否'} |
 | HY OAS | {cu['hy_oas_bp'] or 'N/A'} bp |
 | US10Y | {cu['us10y_pct'] or 'N/A'}% |
 | T10YIE | {cu['t10yie_pct'] or 'N/A'}% |
 | Real Yield (10Y-T10YIE) | {cu['real_yield_pct'] or 'N/A'}% |
+
+> * 当日变动来源：{'合约差价表 (contract-level)' if cu.get('contract_daily_bp') else 'sr3_curve_features.csv (near/far avg)'} — 若与下方合约表不一致，以合约表为准。
 
 ---
 
@@ -901,10 +926,11 @@ def write_outputs(r):
 |------|-----|
 | 分类 | **{st['repair_classification']}** |
 | 原因 | {st['repair_classification_reason']} |
-| level_repair | {'✅' if st['level_repair_detected'] else '❌'} |
-| repair | {'✅' if st['repair_detected'] else '❌'} |
-| 修复起始日 | {st['repair_start_date'] or 'N/A'} |
-| 修复幅度 | {st['repair_bp_from_peak']} bp |
+| 结构修复已启动 | {'✅' if (st.get('structural_easing_detected') or st.get('deceleration_detected')) else '❌'} |
+| formal repair | {'✅' if st['repair_detected'] else '❌'} |
+| level repair | {'✅' if st['level_repair_detected'] else '❌'} |
+| formal repair 起始日 | {st['repair_start_date'] or 'N/A'} |
+| formal repair 幅度 | {st['repair_bp_from_peak']} bp |
 
 {f'''⚠️ **注意**：当前分类为 `mixed_repair`，不代表买入信号；它只表示 SR3 冲击已钝化但尚未完成 level repair，且 benign repair 条件未完全满足。''' if st['repair_classification'] == 'mixed_repair' else ''}
 
@@ -1005,7 +1031,7 @@ def _write_web_json(r):
         "mixed_repair_warning": "mixed_repair 不是买入信号；它只表示 SR3 冲击已钝化但尚未完成 level repair，且 benign repair 条件未完全满足。" if st["repair_classification"] == "mixed_repair" else "",
         "near_rate": cu["near_rate_pct"],
         "drawdown_from_peak_bp": cu["decline_from_ref_peak_bp"],
-        "daily_change_bp": cu.get("curve_move_bp"),
+        "daily_change_bp": cu.get("contract_daily_bp") or cu.get("curve_move_bp"),
         "five_day_change_bp": cu.get("curve_move_5d_sum_bp"),
         "high_plateau": cu.get("on_elevated_plateau", False),
         "hy_oas": cu.get("hy_oas_bp"),
@@ -1022,7 +1048,7 @@ def _write_web_json(r):
             "deceleration_not_buy_signal": True,
         },
         "reference_peaks": [
-            {"source":"Formal Shock","date":sh["date"],"distance":f"{sh['days_ago']}d",
+            {"source":"Current Event Peak","date":sh["date"],"distance":f"{sh['days_ago']}d",
              "near_rate":sh["peak_near_rate_pct"],"height":f"{sh['shock_height_bp']}bp"},
             {"source":"Recent 60d Peak","date":rp["date"],"distance":f"{rp['days_ago']}d",
              "near_rate":rp["near_rate_pct"],"height":"—"},

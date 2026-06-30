@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-28T07:45:58.886819+00:00",
+  "generated_at": "2026-06-29T23:53:19.398391+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -32,7 +32,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target upper bound",
-      "n_obs": 1095
+      "n_obs": 1096
     },
     {
       "id": "DFEDTARL",
@@ -40,7 +40,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target lower bound",
-      "n_obs": 1095
+      "n_obs": 1096
     },
     {
       "id": "RRPONTSYD",
@@ -107,14 +107,6 @@
       "n_obs": 772
     },
     {
-      "id": "TEDRATE",
-      "label": "TED Spread (legacy)",
-      "layer": "L2",
-      "unit": "%",
-      "desc": "Discontinued but historical reference",
-      "n_obs": 0
-    },
-    {
       "id": "DGS2",
       "label": "2Y Treasury",
       "layer": "L3",
@@ -176,15 +168,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 743
-    },
-    {
-      "id": "GOLDAMGBD228NLBM",
-      "label": "Gold (LBMA AM)",
-      "layer": "L3",
-      "unit": "$/oz",
-      "desc": "London Bullion Market AM Fix",
-      "n_obs": 0
+      "n_obs": 742
     },
     {
       "id": "MORTGAGE30US",
@@ -192,15 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Freddie Mac 30Y fixed mortgage",
-      "n_obs": 157
-    },
-    {
-      "id": "DTWEXBGS",
-      "label": "Broad Dollar Index",
-      "layer": "L3",
-      "unit": "Idx",
-      "desc": "Trade-weighted broad dollar",
-      "n_obs": 744
+      "n_obs": 156
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -223,8 +199,16 @@
       "label": "MOVE Index",
       "layer": "L2",
       "unit": "",
-      "desc": "Bond market implied volatility",
-      "n_obs": 0
+      "desc": "Bond market implied volatility (via Yahoo ^MOVE)",
+      "n_obs": 745
+    },
+    {
+      "id": "GOLDAMGBD228NLBM",
+      "label": "Gold (via GLD ETF)",
+      "layer": "L3",
+      "unit": "$/share",
+      "desc": "Gold proxy via SPDR Gold Trust (GLD) - Yahoo",
+      "n_obs": 750
     },
     {
       "id": "SPY",
@@ -232,7 +216,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "S&P 500 ETF price - equity risk signal",
-      "n_obs": 751
+      "n_obs": 750
     },
     {
       "id": "HYG",
@@ -240,7 +224,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 751
+      "n_obs": 750
     },
     {
       "id": "FXY",
@@ -248,47 +232,23 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
-      "n_obs": 751
-    },
-    {
-      "id": "GLD",
-      "label": "GLD Close",
-      "layer": "L3",
-      "unit": "$",
-      "desc": "Gold ETF price - cross-asset risk signal",
-      "n_obs": 751
-    },
-    {
-      "id": "^VIX",
-      "label": "VIX",
-      "layer": "L2",
-      "unit": "",
-      "desc": "CBOE Volatility Index - equity fear gauge",
-      "n_obs": 752
+      "n_obs": 750
     },
     {
       "id": "^VIX3M",
       "label": "VIX 3-Month",
       "layer": "L2",
       "unit": "",
-      "desc": "VIX 3-month futures - VTS term structure denominator",
-      "n_obs": 751
+      "desc": "CBOE VIX 3-Month \u2014 \u00a70.8 VTS term structure",
+      "n_obs": 750
     },
     {
       "id": "^VIX9D",
       "label": "VIX 9-Day",
       "layer": "L2",
       "unit": "",
-      "desc": "VIX 9-day futures - VTS front-end signal numerator",
-      "n_obs": 751
-    },
-    {
-      "id": "^TNX",
-      "label": "10Y Treasury Yield",
-      "layer": "L1",
-      "unit": "%",
-      "desc": "CBOE 10-Year Treasury Note Yield - curve/carry context",
-      "n_obs": 751
+      "desc": "CBOE VIX 9-Day \u2014 \u00a70.8 VTS front-end signal",
+      "n_obs": 750
     },
     {
       "id": "GOLD_10Y_RATIO",
@@ -296,7 +256,7 @@
       "layer": "L3",
       "unit": "$/% ",
       "desc": "Gold price divided by 10Y yield - framework switch indicator",
-      "n_obs": 0
+      "n_obs": 745
     },
     {
       "id": "SOFR_IORB",
@@ -313,14 +273,6 @@
       "unit": "bp",
       "desc": "Reserve scarcity: positive = reserves scarce",
       "n_obs": 749
-    },
-    {
-      "id": "MORTGAGE_SPREAD",
-      "label": "30Y Mortgage \u2013 10Y",
-      "layer": "L3",
-      "unit": "bp",
-      "desc": "Real-economy credit transmission",
-      "n_obs": 157
     },
     {
       "id": "HY_IG_RATIO",
