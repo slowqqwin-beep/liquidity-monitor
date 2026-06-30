@@ -13,8 +13,8 @@
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/36/adp?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
-    "days_to_event": 3,
-    "score": 70
+    "days_to_event": 1,
+    "score": 80
   },
   {
     "uid": "ogeraj1iqk5hfhrss0cf2alrg0@google.com",
@@ -30,8 +30,8 @@
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
-    "days_to_event": 4,
-    "score": 65
+    "days_to_event": 2,
+    "score": 75
   },
   {
     "uid": "nfj4i56r9b1egf9bfpr0mn0210@google.com",
@@ -47,8 +47,8 @@
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
-    "days_to_event": 4,
-    "score": 65
+    "days_to_event": 2,
+    "score": 75
   },
   {
     "uid": "vu78o35omcpcfk45lemn8q7bmo@google.com",
@@ -64,25 +64,8 @@
     "link": "https://sc.macromicro.me/collections/8/us-industry-relative/54/ism?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 65,
-    "days_to_event": 3,
-    "score": 50
-  },
-  {
-    "uid": "vaqnlkqpt1rmv93u7279dhp4gs@google.com",
-    "date": "2026-07-06",
-    "time_utc": "2026-07-06T14:00:00+00:00",
-    "time_sg": "2026-07-06T22:00:00+08:00",
-    "country": "US",
-    "event": "美国-ISM服务业指数[Services PMI]",
-    "summary": "美国-ISM服务业指数[Services PMI]",
-    "forecast": "",
-    "previous": "54.5",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/8/us-industry-relative/55/ism-nonmanu?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 65,
-    "days_to_event": 8,
-    "score": 25
+    "days_to_event": 1,
+    "score": 60
   },
   {
     "uid": "han5rn7bi2sf0cof6u5292du28@google.com",
@@ -98,8 +81,25 @@
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 45,
-    "days_to_event": 4,
-    "score": 25
+    "days_to_event": 2,
+    "score": 35
+  },
+  {
+    "uid": "vaqnlkqpt1rmv93u7279dhp4gs@google.com",
+    "date": "2026-07-06",
+    "time_utc": "2026-07-06T14:00:00+00:00",
+    "time_sg": "2026-07-06T22:00:00+08:00",
+    "country": "US",
+    "event": "美国-ISM服务业指数[Services PMI]",
+    "summary": "美国-ISM服务业指数[Services PMI]",
+    "forecast": "",
+    "previous": "54.5",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/8/us-industry-relative/55/ism-nonmanu?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 65,
+    "days_to_event": 6,
+    "score": 35
   },
   {
     "uid": "g0o5qej72ua32b5uj7gutqek14@google.com",
@@ -115,8 +115,8 @@
     "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 3,
-    "score": 5
+    "days_to_event": 1,
+    "score": 15
   },
   {
     "uid": "55u3el20gskccot3828hdeng8c@google.com",
@@ -132,7 +132,24 @@
     "link": "https://sc.macromicro.me/collections/9/us-market-relative/48/target-rate?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 50,
-    "days_to_event": 10,
+    "days_to_event": 8,
+    "score": 10
+  },
+  {
+    "uid": "e3brb1vndfb888qsca1m468j6s@google.com",
+    "date": "2026-07-09",
+    "time_utc": "2026-07-09T12:30:00+00:00",
+    "time_sg": "2026-07-09T20:30:00+08:00",
+    "country": "US",
+    "event": "美国-初次申请失业救济金人数",
+    "summary": "美国-初次申请失业救济金人数",
+    "forecast": "",
+    "previous": "",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 45,
+    "days_to_event": 9,
     "score": 0
   },
   {
@@ -147,6 +164,23 @@
     "previous": "-6088.0k",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 20,
+    "days_to_event": 8,
+    "score": -20
+  },
+  {
+    "uid": "mb4aevh4438in204um8ug8g458@google.com",
+    "date": "2026-07-10",
+    "time_utc": "2026-07-10T16:00:00+00:00",
+    "time_sg": "2026-07-11T00:00:00+08:00",
+    "country": "US",
+    "event": "美国农业部供需预测报告",
+    "summary": "美国农业部供需预测报告",
+    "forecast": "",
+    "previous": "",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/52/agri-soybean?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
     "days_to_event": 10,
