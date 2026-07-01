@@ -1,78 +1,78 @@
 {
-  "generated_at": "2026-06-30T14:17:54",
-  "data_date": "2026-06-29",
+  "generated_at": "2026-07-01T08:27:26",
+  "data_date": "2026-06-30",
   "data_age_days": 1,
   "reference_mode": "Current Event Peak (Hike-over)",
   "last_formal_shock": {
     "date": "2026-06-22",
-    "days_ago": 6,
+    "days_ago": 7,
     "peak_near_rate_pct": 3.8025,
     "shock_height_bp": 13.5,
     "still_active": true
   },
   "recent_60d_peak": {
     "date": "2026-06-22",
-    "days_ago": 6,
+    "days_ago": 7,
     "near_rate_pct": 3.8025,
     "used_as_reference": false
   },
   "current": {
-    "near_rate_pct": 3.885,
-    "curve_move_bp": 5.88,
+    "near_rate_pct": 3.92,
+    "curve_move_bp": 9.12,
     "contract_daily_bp": 0.0,
-    "curve_move_5d_sum_bp": -2.12,
-    "decline_from_ref_peak_bp": -12.04,
+    "curve_move_5d_sum_bp": 8.25,
+    "decline_from_ref_peak_bp": -6.71,
     "near_contract": "SR3H2027",
     "on_elevated_plateau": true,
-    "hy_oas_bp": 283.0,
+    "hy_oas_bp": 280.0,
     "hy_oas_available": false,
-    "us10y_pct": 4.376,
-    "t10yie_pct": 2.22,
-    "real_yield_pct": 2.156
+    "us10y_pct": 4.465,
+    "t10yie_pct": 2.24,
+    "real_yield_pct": 2.225
   },
   "state": "State 2: Deceleration",
   "contract_diffs": [
     {
       "contract": "SR3M2026",
-      "close": 96.3025,
+      "close": 96.2975,
       "close_chg": 0.0,
-      "implied_rate_pct": 3.6975,
+      "implied_rate_pct": 3.7025,
       "implied_chg_bp": 0.0
     },
     {
       "contract": "SR3U2026",
-      "close": 96.115,
-      "close_chg": 0.0,
-      "implied_rate_pct": 3.885,
-      "implied_chg_bp": 0.0
+      "close": 96.08,
+      "close_chg": -0.005,
+      "implied_rate_pct": 3.92,
+      "implied_chg_bp": 0.5
     },
     {
       "contract": "SR3Z2026",
-      "close": 95.99,
-      "close_chg": 0.0,
-      "implied_rate_pct": 4.01,
-      "implied_chg_bp": 0.0
+      "close": 95.94,
+      "close_chg": -0.02,
+      "implied_rate_pct": 4.06,
+      "implied_chg_bp": 2.0
     },
     {
       "contract": "SR3H2027",
-      "close": 95.96,
-      "close_chg": 0.0,
-      "implied_rate_pct": 4.04,
-      "implied_chg_bp": 0.0
+      "close": 95.89,
+      "close_chg": -0.03,
+      "implied_rate_pct": 4.11,
+      "implied_chg_bp": 3.0
     },
     {
       "contract": "SR3M2027",
-      "close": 96.0,
-      "close_chg": 0.0,
-      "implied_rate_pct": 4.0,
-      "implied_chg_bp": 0.0
+      "close": 95.92,
+      "close_chg": -0.035,
+      "implied_rate_pct": 4.08,
+      "implied_chg_bp": 3.5
     },
     {
       "contract": "SR3U2027",
-      "close": 96.065,
-      "close_chg": 0.0,
-      "implied_rate_pct": 3.935,
-      "implied_chg_bp": 0.0
+      "close": 95.985,
+      "close_chg": -0.04,
+      "implied_rate_pct": 4.015,
+      "implied_chg_bp": 4.0
     }
   ],
   "retracement": [
@@ -80,102 +80,102 @@
       "contract": "SR3H2027",
       "baseline_pct": 3.94,
       "peak_pct": 4.19,
-      "now_pct": 4.04,
+      "now_pct": 4.11,
       "overshoot_bp": 25.0,
-      "retraced_bp": 15.0,
-      "repair_pct": 60.0
+      "retraced_bp": 8.0,
+      "repair_pct": 32.0
     },
     {
       "contract": "SR3M2026",
       "baseline_pct": 3.6675,
       "peak_pct": 3.72,
-      "now_pct": 3.6975,
-      "overshoot_bp": 5.2,
-      "retraced_bp": 2.2,
-      "repair_pct": 42.3
+      "now_pct": 3.7025,
+      "overshoot_bp": 5.3,
+      "retraced_bp": 1.7,
+      "repair_pct": 32.1
     },
     {
       "contract": "SR3M2027",
       "baseline_pct": 3.94,
       "peak_pct": 4.175,
-      "now_pct": 4.0,
+      "now_pct": 4.08,
       "overshoot_bp": 23.5,
-      "retraced_bp": 17.5,
-      "repair_pct": 74.5
+      "retraced_bp": 9.5,
+      "repair_pct": 40.4
     },
     {
       "contract": "SR3U2026",
       "baseline_pct": 3.76,
       "peak_pct": 3.965,
-      "now_pct": 3.885,
+      "now_pct": 3.92,
       "overshoot_bp": 20.5,
-      "retraced_bp": 8.0,
-      "repair_pct": 39.0
+      "retraced_bp": 4.5,
+      "repair_pct": 22.0
     },
     {
       "contract": "SR3U2027",
       "baseline_pct": 3.915,
       "peak_pct": 4.115,
-      "now_pct": 3.935,
+      "now_pct": 4.015,
       "overshoot_bp": 20.0,
-      "retraced_bp": 18.0,
-      "repair_pct": 90.0
+      "retraced_bp": 10.0,
+      "repair_pct": 50.0
     },
     {
       "contract": "SR3Z2026",
       "baseline_pct": 3.885,
       "peak_pct": 4.125,
-      "now_pct": 4.01,
+      "now_pct": 4.06,
       "overshoot_bp": 24.0,
-      "retraced_bp": 11.5,
-      "repair_pct": 47.9
+      "retraced_bp": 6.5,
+      "repair_pct": 27.1
     }
   ],
   "action": "短端预期：全线合约低于参考峰（结构松动），但动能信号仍在鹰派区；结构性下降领先",
   "curve_structure": {
     "ref_date": "2026-06-22",
-    "today_date": "2026-06-30",
+    "today_date": "2026-07-01",
     "n_contracts": 6,
     "n_below": 6,
     "n_above": 0,
-    "avg_deviation_bp": -12.04,
+    "avg_deviation_bp": -6.71,
     "all_below_ref": true,
     "detail": [
       {
         "contract": "SR3H2027",
-        "today_pct": 4.04,
+        "today_pct": 4.11,
         "ref_pct": 4.19,
-        "dev_bp": -15.0
-      },
-      {
-        "contract": "SR3M2026",
-        "today_pct": 3.6975,
-        "ref_pct": 3.72,
-        "dev_bp": -2.25
-      },
-      {
-        "contract": "SR3M2027",
-        "today_pct": 4.0,
-        "ref_pct": 4.175,
-        "dev_bp": -17.5
-      },
-      {
-        "contract": "SR3U2026",
-        "today_pct": 3.885,
-        "ref_pct": 3.965,
         "dev_bp": -8.0
       },
       {
+        "contract": "SR3M2026",
+        "today_pct": 3.7025,
+        "ref_pct": 3.72,
+        "dev_bp": -1.75
+      },
+      {
+        "contract": "SR3M2027",
+        "today_pct": 4.08,
+        "ref_pct": 4.175,
+        "dev_bp": -9.5
+      },
+      {
+        "contract": "SR3U2026",
+        "today_pct": 3.92,
+        "ref_pct": 3.965,
+        "dev_bp": -4.5
+      },
+      {
         "contract": "SR3U2027",
-        "today_pct": 3.935,
+        "today_pct": 4.015,
         "ref_pct": 4.115,
-        "dev_bp": -18.0
+        "dev_bp": -10.0
       },
       {
         "contract": "SR3Z2026",
-        "today_pct": 4.01,
+        "today_pct": 4.06,
         "ref_pct": 4.125,
-        "dev_bp": -11.5
+        "dev_bp": -6.5
       }
     ]
   },
@@ -189,9 +189,9 @@
     "deceleration_not_buy_signal": true
   },
   "field_warnings": [],
-  "us10y": 4.376,
-  "t10yie": 2.22,
-  "real_yield_nowcast": 2.156,
+  "us10y": 4.461,
+  "t10yie": 2.24,
+  "real_yield_nowcast": 2.225,
   "reference_peak": "Current Event Peak (Hike-over)",
   "status": "Research-Only",
   "state_title": "State 2: Deceleration",
@@ -199,25 +199,25 @@
   "hawkish_impulse": false,
   "deceleration": true,
   "level_repair": false,
-  "classification": "structural_easing_confirming",
-  "classification_reason": "全线合约低于参考峰(2026-06-22)，且 5d累计转负(-2.1bp) — 结构松动获得动能确认",
-  "near_rate": 3.885,
-  "daily_change_bp": 5.88,
-  "five_day_change_bp": -2.12,
+  "classification": "structural_easing",
+  "classification_reason": "全线合约低于参考峰(2026-06-22)，但动能信号仍不干净 — 结构松动先于动能",
+  "near_rate": 3.92,
+  "daily_change_bp": 9.12,
+  "five_day_change_bp": 8.25,
   "high_plateau": true,
-  "hy_oas": 283.0,
+  "hy_oas": 280.0,
   "reference_peaks": [
     {
       "source": "Current Event Peak (Hike-over)",
       "date": "2026-06-22",
-      "distance": "6d",
+      "distance": "7d",
       "near_rate": null,
       "height": "13.5bp"
     },
     {
       "source": "Recent 60d Peak",
       "date": "2026-06-22",
-      "distance": "6d",
+      "distance": "7d",
       "near_rate": null,
       "height": "—"
     }
@@ -347,9 +347,9 @@
       "date": "2026-06-30",
       "label": "2026-06-30",
       "rates": {
-        "Z26": 4.01,
-        "H27": 4.04,
-        "M27": 4.0
+        "Z26": 4.04,
+        "H27": 4.08,
+        "M27": 4.045
       }
     }
   ],
@@ -359,21 +359,21 @@
       "label": "Dec-26",
       "from_date": "2026-06-16",
       "to_date": "2026-06-30",
-      "bp_change": 12.5
+      "bp_change": 15.5
     },
     {
       "code": "H27",
       "label": "Mar-27",
       "from_date": "2026-06-16",
       "to_date": "2026-06-30",
-      "bp_change": 10.0
+      "bp_change": 14.0
     },
     {
       "code": "M27",
       "label": "Jun-27",
       "from_date": "2026-06-16",
       "to_date": "2026-06-30",
-      "bp_change": 6.0
+      "bp_change": 10.5
     }
   ],
   "curve_warning": null,
@@ -385,16 +385,16 @@
   "current_event_peak_avg_rate": 4.1633,
   "current_event_repair_start_date": "2026-06-23",
   "hike_over_shock_bp": 24.17,
-  "hike_over_repair_magnitude_bp": 14.67,
-  "hike_over_repair_ratio": 0.607,
-  "hike_over_remaining_bp": 9.5,
+  "hike_over_repair_magnitude_bp": 10.83,
+  "hike_over_repair_ratio": 0.4481,
+  "hike_over_remaining_bp": 13.33,
   "event_avg_level_repair": false,
   "event_strict_level_repair": false,
   "event_level_repair_date": null,
   "current_event_state": "hike_over_repair_started",
-  "current_event_note": "本轮不是简单 price-out 降息，而是 FOMC/沃什后曲线 price-over / hike-over。事件前基准 2026-06-16，hike-over 峰值 2026-06-22，冲击约 +24.2bp；当前已修复约 14.7bp（60.7%），距离事件前基准仍约 +9.5bp。当前事件修复启动不等于 level repair，也不是买入信号。",
-  "current_event_repair_magnitude_bp": 14.67,
-  "current_event_drawdown_from_peak_bp": -14.67,
+  "current_event_note": "本轮不是简单 price-out 降息，而是 FOMC/沃什后曲线 price-over / hike-over。事件前基准 2026-06-16，hike-over 峰值 2026-06-22，冲击约 +24.2bp；当前已修复约 10.8bp（44.8%），距离事件前基准仍约 +13.3bp。当前事件修复启动不等于 level repair，也不是买入信号。",
+  "current_event_repair_magnitude_bp": 10.83,
+  "current_event_drawdown_from_peak_bp": -10.83,
   "event_level_repair_tolerance_bp": 2.0,
   "twos10s_series": [
     {
@@ -2510,18 +2510,25 @@
       "ten_y": 4.376,
       "two_y": 4.107,
       "three_m": 3.772
+    },
+    {
+      "date": "2026-06-30",
+      "spread_bp": 29.1,
+      "ten_y": 4.461,
+      "two_y": 4.17,
+      "three_m": 3.828
     }
   ],
   "twos10s_latest": {
-    "latest_spread_bp": 26.9,
-    "change_1d_bp": -1.1,
-    "change_5d_bp": -0.7,
-    "d10_1d_bp": 0.0,
-    "d2_1d_bp": 1.1,
-    "widening_state": "缩窄 / Flattening",
-    "structure": "Mixed / 混合",
-    "structure_note": "2Y 与 10Y 方向不一致，曲线结构需结合 SR3、real yield 和信用利差再判断。",
-    "latest_date": "2026-06-29",
+    "latest_spread_bp": 29.1,
+    "change_1d_bp": 2.2,
+    "change_5d_bp": 1.2,
+    "d10_1d_bp": 8.5,
+    "d2_1d_bp": 6.3,
+    "widening_state": "阔开 / Steepening",
+    "structure": "熊陡",
+    "structure_note": "10Y 和 2Y 同上，但 10Y 上得更多，2s10s 阔开：长期利率/期限溢价压力更大，对长久期资产更不友好。",
+    "latest_date": "2026-06-30",
     "has_yields": true
   },
   "twos10s_source_file": "yfinance (^TNX + ZT=F)",
@@ -4314,20 +4321,26 @@
       "spread_bp": 33.5,
       "two_y": 4.107,
       "three_m": 3.772
+    },
+    {
+      "date": "2026-06-30",
+      "spread_bp": 34.2,
+      "two_y": 4.17,
+      "three_m": 3.828
     }
   ],
   "two3m_latest": {
-    "latest_spread_bp": 33.5,
-    "change_1d_bp": -0.9,
-    "change_5d_bp": -12.3,
+    "latest_spread_bp": 34.2,
+    "change_1d_bp": 0.7,
+    "change_5d_bp": -7.4,
     "d10_1d_bp": null,
     "d2_1d_bp": null,
     "widening_state": "稳定 / Stable",
     "structure": "Stable / 稳定",
     "structure_note": "2s10s 日度变化较小，曲线结构暂未给出强确认。",
-    "latest_date": "2026-06-29",
+    "latest_date": "2026-06-30",
     "has_yields": false,
-    "d3m_1d_bp": 2.0
+    "d3m_1d_bp": 5.6
   },
   "two3m_source": "TradingView CSV (US02Y + US03MY)"
 }

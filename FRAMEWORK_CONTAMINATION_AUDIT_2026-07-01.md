@@ -104,3 +104,81 @@ v3.5 clean signals:
 ```
 
 **v3.5.1 给出的 R4/P25-H45-C30 只能作为污染事件样本，不得作为有效 paper trade 仓位。**
+
+---
+
+## 7. §44: 2026-06-10 Audit Failure Mode
+
+The 2026-06-10 audit (`us_abcd_v35_audit_2026-06-10.md`) was technically high
+quality — it correctly fixed Reserve units, HY OAS arrows, VTS dual-ratio
+extraction, CASC FX column semantics, Mortgage stale labeling, and letter
+collision. **But it audited the wrong object.**
+
+| What 06-10 audited | What it should have audited |
+|---|---|
+| Display correctness of v3.5.1 stack | Strategic validity of v3.5.1 components |
+| Rendering bugs (units, arrows, labels) | Whether CASC/VTS/RCV/SSoT should be in position engine |
+| Field consistency | Whether 5/25 rejected signals had re-entered |
+
+**CHANGELOG v1.0 (2026-06-10) explicitly states:**
+> "paper_trade 已废弃，被 risk_dashboard 替代"
+
+This was not a stealth drift — it was an **explicit strategic replacement**
+of the 5/27 paper trade protocol, recorded in CHANGELOG, and then audited
+for display correctness rather than strategic validity.
+
+**This is the precise failure point of "engineering consistency ≠ strategy validity."**
+
+### Lesson for future Claude
+
+When CodeBuddy presents a professional-looking audit report, Claude's first
+task is NOT to endorse the specific fixes. It is to ask:
+1. "What is the scope of this audit?"
+2. "Does it challenge strategic validity, or only review rendering/consistency/units?"
+3. "Has the audit checked against the last archived promise (5/27 paper trade protocol)?"
+
+---
+
+## 8. §45: TLT Leg-2 — Independently Validated
+
+`docs/tlt_leg2_spec.md` v6 documents the credit veto signal (z⊕level).
+`data/credit_veto_validation.json` records **18 tests: 16 PASS / 0 FAIL / 2 DEFERRED**.
+
+| Metric | Result |
+|---|---|
+| P(veto) | 24.0% (1779/7422 days) |
+| GFC 09Q1 | 65/65 days high_floor reject ✅ |
+| 2021 false positive | 0/262 days (gate=400 suppressed all noise) ✅ |
+| SVB | 43.5% veto rate (weakest, but Phase 3 candidate) |
+
+**Status**: Tier 2 experimental. Phase 1+2 complete (spec + veto validation).
+Phase 3 (joint leg test with Leg-1 macro signal) deferred. Phase 4 (production
+integration) not started.
+
+TLT Leg-2 is the **only component** in the v3.5.1 stack that passed independent
+validation comparable to Task 5 standards. However, it requires Bonferroni
+correction before Tier 0 promotion, and it's a TLT-specific signal — not a
+general position engine mechanism.
+
+---
+
+## 9. §46: Signal Definition Clarification
+
+The original v3.0 §5 (2026-05-25) defines the 5 validated triggers as:
+
+| Signal | Threshold |
+|---|---|
+| HY OAS 20d Δ | > +20bp (★★★) |
+| FXY 5d | > +2.5% (★★) |
+| HY OAS 5d Δ | > +15bp (★) |
+| SPY | < 200MA |
+| T10YIE | > 2.30% (谨慎, T/X=0.66, not primary trigger) |
+
+**HYG 5d < -1.5%** is a **proxy** calibrated in Task 5.5. It matches
+HY OAS 20d Δ > +20bp (not the 5d Δ signal) because BAML OAS has only
+3 years of data. The HYG proxy enables 11-year coverage but is not a
+separate independent signal.
+
+The clean paper trade ledger must use the BAML-based signals (20d Δ and
+5d Δ) as primary, with HYG as a secondary confirmation proxy when BAML
+data is available.

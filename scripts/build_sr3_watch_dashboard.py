@@ -309,6 +309,13 @@ def parse_trade_date(value: Any) -> Optional[str]:
     except Exception:
         pass
 
+    # M/D/YYYY or MM/DD/YYYY (TradingView export)
+    try:
+        dt = datetime.strptime(raw, "%m/%d/%Y")
+        return dt.date().isoformat()
+    except Exception:
+        pass
+
     # Unix timestamp seconds
     try:
         ts = float(raw)

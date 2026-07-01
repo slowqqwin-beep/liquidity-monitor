@@ -7,10 +7,10 @@
 
 | 维度 | 信号 |
 |------|------|
-| 事件窗 | VIX9D/VIX=0.842 前端平静 | VIX=18.4 5dΔ+2.0 |
+| 事件窗 | VIX9D/VIX=nan 前端平静 | VIX=18.4 5dΔ+2.0 |
 | 风险性质 | 单资产技术性·CASC守卫 |
 | 市场信号 | 无跨资产确认 |
-| 利率路径 | US02Y−IORB=45.7bp 降息被price out / 加息风险 5dΔ-8.3bp |
+| 利率路径 | US02Y−IORB=45.2bp 降息被price out / 加息风险 5dΔ-8.8bp |
 
 ---
 ## ② 第一层传导
@@ -18,7 +18,7 @@
 | 端 | 指标 | 当前值 | 灯 | DUR5 | 状态 |
 |----|------|--------|------|------|------|
 | C 长端利率 | DFII10 | 2.18% | 🔴 | 5/5 ✅ | 贴现率压力 |
-| C Nowcast | Real Yield Nowcast | 2.17% | 🔴 | — | 官方DFII10滞后修正・实际利率高压 方向：基本持平 |
+| C Nowcast | Real Yield Nowcast | 2.16% | 🔴 | — | 官方DFII10滞后修正・实际利率高压 方向：基本持平 |
 | A 资金管道 | EFFR-IORB | -2.0bp | 🟠 | 5/5 ✅ | 资金管道偏紧 |
 | A 拆借 | SOFR-IORB | -3.0bp | 🟠 | — | 拆借市场 |
 
@@ -42,7 +42,7 @@
 | VTS | contango · 前端=前端平静 |
 | RCV | elevated-front-tilt · sev=elevated · tilt=front · 2y/30y=1.725 z=1.8 |
 | 互锁 | divergent — RCV热·VTS平→利率单资产技术性 |
-| C端 | 有序重定价·估值压缩 · 双探针:divergent |
+| C端 | 失序·利率管道应力 [phase-1打标·未接升档] · 双探针:divergent |
 | C Nowcast | 🔴 实际利率高压 · 方向基本持平 |
 
 > **最终判断**：VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。

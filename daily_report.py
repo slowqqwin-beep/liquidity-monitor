@@ -1181,8 +1181,17 @@ def compute_curve_regime(data: dict) -> dict:
     elif chg_spread_5d > 0: direction = "Steepening"
     else: direction = "Flattening"
 
-    if chg_10_5d < -2 and chg_2_5d < -2: bias = "Bull"
+    # 1D change for Bear/Bull (more responsive than 5D)
+    chg_10_1d, chg_2_1d = 0.0, 0.0
+    if len(hist) >= 2:
+        chg_10_1d = (y10 - hist[-2].get("ten_y", y10)) * 100
+        chg_2_1d = (y2 - hist[-2].get("two_y", y2)) * 100
+
+    if chg_10_1d > 2 and chg_2_1d > 2: bias = "Bear"
+    elif chg_10_1d < -2 and chg_2_1d < -2: bias = "Bull"
+    # fallback to 5D if 1D is mixed
     elif chg_10_5d > 2 and chg_2_5d > 2: bias = "Bear"
+    elif chg_10_5d < -2 and chg_2_5d < -2: bias = "Bull"
     else: bias = ""
 
     regime = f"{bias} {direction}" if bias else direction
