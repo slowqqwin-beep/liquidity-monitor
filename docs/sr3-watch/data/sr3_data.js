@@ -189,7 +189,7 @@ window.SR3_DATA = {
     "deceleration_not_buy_signal": true
   },
   "field_warnings": [],
-  "us10y": 4.475,
+  "us10y": 4.483,
   "t10yie": 2.23,
   "real_yield_nowcast": 2.253,
   "reference_peak": "Current Event Peak (Hike-over)",
@@ -2533,25 +2533,18 @@ window.SR3_DATA = {
       "ten_y": 4.483,
       "two_y": 4.178,
       "three_m": 3.792
-    },
-    {
-      "date": "2026-07-02",
-      "spread_bp": 33.5,
-      "ten_y": 4.475,
-      "two_y": 4.14,
-      "three_m": null
     }
   ],
   "twos10s_latest": {
-    "latest_spread_bp": 33.5,
-    "change_1d_bp": 3.0,
-    "change_5d_bp": 4.3,
-    "d10_1d_bp": -0.8,
-    "d2_1d_bp": -3.8,
+    "latest_spread_bp": 30.5,
+    "change_1d_bp": 1.4,
+    "change_5d_bp": 0.6,
+    "d10_1d_bp": 2.2,
+    "d2_1d_bp": 0.8,
     "widening_state": "阔开 / Steepening",
-    "structure": "牛陡",
-    "structure_note": "10Y 和 2Y 同下，但 2Y 下得更多，2s10s 阔开：市场在交易降息/增长压力。",
-    "latest_date": "2026-07-02",
+    "structure": "熊陡",
+    "structure_note": "10Y 和 2Y 同上，但 10Y 上得更多，2s10s 阔开：长期利率/期限溢价压力更大，对长久期资产更不友好。",
+    "latest_date": "2026-07-01",
     "has_yields": true
   },
   "twos10s_source_file": "yfinance (^TNX + ZT=F)",
