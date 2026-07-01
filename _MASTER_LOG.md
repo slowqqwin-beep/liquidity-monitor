@@ -447,4 +447,10 @@ repair_type = benign / malign / mixed / unavailable
 
 ---
 
-*封版日期: 2026-06-23 21:05 | 最后更新: 2026-06-23 (SR3 Watch Dashboard v7 + 2s10s fix + fetch_data path fix + _patch.py) | 下次运行窗口: 周三 06-24 | v3.5 / v3.5.1 + TLT Leg-2 + SR3 Watch*
+*封版日期: 2026-06-23 21:05 | 最后更新: 2026-07-02 | 下次运行窗口: 周五 07-03 | v3.5 / v3.5.1 + TLT Leg-2 + SR3 Watch*
+
+### 2026-07-02 管线修复
+
+- **fetch_data.py → pipeline 第一步**：删缓存后必须先跑 `fetch_data.py` 更新 `series.json`，再跑后续。之前的顺序导致 FRED/Yahoo 数据滞后 2 天。
+- **treasury_yields_cache 持久化**：`sr3_repair_watch.py` 的 `_sync_treasury_from_tv()` 现在检查 cache 为空时自动从 `twos10s_history.csv` 重建 304+ 行历史，删缓存后曲线图不再丢失。
+- **2s10s 历史数据源**：`twos10s_history.csv`（`docs/sr3-watch/data/`）是 2s10s 历史曲线的持久备份，永不删除。`treasury_yields_cache.json` 是运行时缓存，丢失可从 CSV 重建。`tv_companion.json` 仅存最新一行，不承载历史。
