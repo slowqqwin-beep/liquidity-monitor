@@ -178,11 +178,27 @@ def _sync_treasury_from_tv(raw: pd.DataFrame):
             w = _csv.DictWriter(f, ["date", "two_y", "three_m", "spread_bp"])
             w.writeheader(); w.writerows(existing_3m)
 
-    # Update cache
+    # Update cache — rebuild from twos10s_history.csv if empty
     try:
         cache = json.loads(CACHE_JSON_PATH.read_text("utf-8")) if CACHE_JSON_PATH.exists() else {"series": []}
     except Exception:
         cache = {"series": []}
+    if not cache.get("series"):
+        # Cache empty (e.g. deleted) — rebuild from persistent history CSV
+        try:
+            h2_path = PROJECT_ROOT / "docs" / "sr3-watch" / "data" / "twos10s_history.csv"
+            if h2_path.exists():
+                with open(h2_path, "r", encoding="utf-8-sig") as f:
+                    for r in _csv.DictReader(f):
+                        cache["series"].append({
+                            "date": r["date"],
+                            "ten_y": float(r["ten_y"]),
+                            "two_y": float(r["two_y"]),
+                            "spread_bp": float(r["spread_bp"]),
+                        })
+                print(f"[SR3 Sync] Rebuilt treasury_yields_cache from twos10s_history.csv ({len(cache['series'])} rows)")
+        except Exception:
+            pass
     for s in cache.get("series", []):
         if s["date"] == d:
             s["ten_y"] = ten; s["two_y"] = two; s["spread_bp"] = round((ten - two) * 100, 1); break
