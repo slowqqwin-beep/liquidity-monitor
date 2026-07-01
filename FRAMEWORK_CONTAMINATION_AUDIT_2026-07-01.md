@@ -182,3 +182,72 @@ separate independent signal.
 The clean paper trade ledger must use the BAML-based signals (20d Δ and
 5d Δ) as primary, with HYG as a secondary confirmation proxy when BAML
 data is available.
+
+---
+
+## 10. §47: New Signal Intake Discipline — The RYS Case (2026-07-01)
+
+The Real Yield Spread diagnostic module was the first new signal proposed
+**after** the framework contamination audit. Its intake path serves as a
+template for how new ideas enter without becoming contamination.
+
+### 10.1 Intake Timeline
+
+| Step | What happened | Lesson |
+|---|---|---|
+| 1. Suspicion | "DFII10 being used as regim trigger — isn't that rejected?" | Start from the rejected registry, not from the idea |
+| 2. Decomposition | DFII10 → Gordon Growth → RYS = E/P − RF | Don't ban data fields — ban how they're used |
+| 3. Spec with guards | §0 (diagnostic only) + §5 (red-flag self-check) | Write constraints before code, not after |
+| 4. Implementation | `real_yield_spread_diagnostic.py` | Code against spec, not against "what would be useful" |
+| 5. Audit #1 | Threshold leak check — zero violations | Grep for `if RYS >` in non-comment lines |
+| 6. Data quality found | "0/5 tickers PE available" — traced to SNOW negative EPS | Insufficient is a valid answer, not a failure |
+| 7. Substitution attempted | "Use IGV ETF PE for portfolio" | Same pattern as filling missing growth with market average — caught by §5 |
+| 8. Three-tier gradient | CRM/MSFT mature, DDOG/OKTA barely-profitable, SNOW unprofitable | Real structure > clean number |
+| 9. Freeze | Diagnostic only, human-read, not in clean ledger | Ship and stop |
+
+### 10.2 Rules Extracted
+
+**What made this intake clean (not contamination):**
+
+1. **Started from REJECTED_SIGNALS.md, not from "this would be useful"**
+   The question was "is DFII10 being revived?" not "let's build a real yield dashboard"
+
+2. **Spec had hard guardrails before a single line of code**
+   §0: "诊断层,不进 paper trade,不做自动触发器"
+   §5: "阈值化/合并分数/编造数据/自动调仓 — 四件事红旗自查"
+
+3. **Every audit round found real issues, none were deflected**
+   - Audit #1: growth data was None, not fabricated
+   - Audit #2: "0/5 PE" wasn't a bug — it was a genuine finding about the portfolio
+   - Audit #3: IGV substitution proposal was correctly identified as the same pattern §1.3 forbids
+   - Audit #4: "双峰" was imprecise; "三段梯度" is structurally correct
+
+4. **Never entered the position engine or paper trade ledger**
+   No path from RYS to any position decision exists in the code
+
+**What would have made this intake contaminated:**
+
+- Adding `if RYS < 0: flag = "equity expensive"`
+- Merging RYS and 2s10s into a "monetary conditions index"
+- Filling missing PE with sector average
+- Writing `RYS_portfolio` into `paper_trade_v3_5_clean.csv`
+- Calling it "v3.6 candidate" and slipping it into daily report output
+
+### 10.3 Template for Future Intake
+
+When a new signal or diagnostic is proposed:
+
+```
+1. Check REJECTED_SIGNALS.md — is this a renamed version of something rejected?
+2. Write spec with §0 (scope) + §5 (red flags) BEFORE code
+3. Implement against spec, not against usefulness
+4. Audit: grep for threshold comparisons, composite scores, data fabrication
+5. Test data quality edge case (force missing data, verify "insufficient" not "average")
+6. Freeze — diagnostic only, human-read, no position authority
+7. Archive the intake as §N+1 in this document
+```
+
+**The RYS case proves: new ideas don't need to "look useful" to get in.**
+They need to survive being taken apart. If they survive, they enter clean.
+
+The opposite — "it works, let's activate it" — is exactly how 6/10-6/15 happened.
