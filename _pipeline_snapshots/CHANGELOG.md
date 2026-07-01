@@ -9,6 +9,7 @@
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| [v1.3](.) | 2026-07-01 (22:10) | 新增 RYS (Real Yield Spread) 诊断模块：DFII10 → Gordon Growth 拆解 → RYS = E/P − RF。三条市场参考线 (SPY/QQQ/IGV) + 组合层三段梯度 (CRM/MSFT 成熟盈利, DDOG/OKTA 刚转正薄利, SNOW 未转正)。纯诊断层，不进 clean ledger，不设阈值触发器。详见 `FRAMEWORK_CONTAMINATION_AUDIT_2026-07-01.md` §47 |
 | [v1.2](.) | 2026-06-20 (21:20) | 新增 2s10s 曲线结构节：format_markdown_report 渲染 curve 数据（2Y/10Y/30Y、2s10s/5s30s spread、Regime、5dΔ），之前 compute_curve_regime 算好但被遗漏 |
 | [v1.1](./v1.1/) | 2026-06-10 (19:47) | 审计修复版：Reserve 单位、HY OAS 箭头、§②/§③ 字母碰撞、VTS 双比率等 7 项 |
 | [v1.0](./v1.0/) | 2026-06-10 | 初始归档：ABCD 四端框架 + 风险看板 PNG + 风险演化流程图 HTML v4 |
