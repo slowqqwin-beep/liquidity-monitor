@@ -1,0 +1,2 @@
+date,fred_date,HY_OAS_20d_bp,HY_OAS_trigger,HYG_5d_pct,HYG_trigger,FXY_5d_pct,FXY_trigger,SPY_vs_200MA,SPY_trigger,VIX,SOFR_IORB_bp,Meltdown_trigger,trigger_count,hypothetical_position,important_null_note
+2026-07-01,2026-06-29,8.0,False,0.1,False,-0.6,False,N,False,,-3.0,False,0,55/25/20,important null: 0 信号触发，市场平静
