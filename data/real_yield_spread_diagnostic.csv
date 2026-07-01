@@ -1,0 +1,4 @@
+date,DFII10,RYS_market_SPY,RYS_market_QQQ,RYS_portfolio,RYS_growth_market,RYS_growth_portfolio,RYS_market_20d_change,RYS_portfolio_20d_change,data_quality_flag,notes
+2026-07-01,2.16,,,,,,,,insufficient,growth errors: 5/7
+2026-07-01,2.16,,,,,,,,insufficient,growth errors: 5/7
+2026-07-01,2.16,1.58,0.8,,,,,,insufficient,growth errors: 0/7
