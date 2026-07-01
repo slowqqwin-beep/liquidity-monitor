@@ -252,18 +252,32 @@ uv run python scripts/sync_historical_data.py
 uv run python scripts/build_macro_research_panel.py
 ```
 
-### 本地一键运行
+### 本地一键运行（2026-07-02 更新：fetch_data.py 必须在最前面）
 
 ```powershell
 cd D:\liquidity-dashboard\v3.5
 
-# 只出报告（不抓数据）
+# ── 清除缓存 ──
+del data\treasury_yields_cache.json
+del data\tv_companion.json
+
+# ── 1. 先更新 FRED/Yahoo 数据源（必须第一步）──
+uv run python -X utf8 fetch_data.py
+
+# ── 2. SR3 Watch ──
+uv run python -X utf8 scripts/sr3_repair_watch.py
+uv run python -X utf8 scripts/build_sr3_watch_dashboard.py
+
+# ── 3. Daily + Risk Dashboard + Site ──
 uv run python -X utf8 daily_report.py --md
+uv run python -X utf8 generate_risk_dashboard.py
+Copy-Item report\risk_dashboard_$(Get-Date -Format yyyy-MM-dd).md risk_dashboard_latest.md -Force
+uv run python -X utf8 scripts/build_site.py
 
-# 完整数据抓取+报告
-uv run python run_daily.py
+# ── 4. Clean v3.5 Paper Trade ──
+uv run python paper_trade_v35.py
 
-# 快照归档
+# ── 快照归档 ──
 copy to _pipeline_snapshots/v1.x/
 ```
 
