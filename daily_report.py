@@ -1345,7 +1345,7 @@ def compute_v35_triggers(data: dict) -> dict:
         "hyg_5d_ret_pct": round(hyg_5d_ret, 1) if hyg_5d_ret is not None else None,
         "hyg_20d_ret_pct": round(hyg_20d_ret, 1) if hyg_20d_ret is not None else None,
         "hyg_dd_pct": round(hyg_dd_pct, 1) if hyg_dd_pct is not None else None,
-        "hyg_trigger": hyg_trigger,
+        "hyg_trigger": hyg_trigger,  # diagnostic only, not a paper trade trigger
         "fxy_price": round(fxy_val, 1) if fxy_val else None,
         "fxy_5d_ret_pct": round(fxy_5d_ret, 1) if fxy_5d_ret is not None else None,
         "fxy_trigger": fxy_trigger,
@@ -2665,7 +2665,7 @@ def compute_trigger_proximity(abcd: dict, data: dict) -> list[dict]:
         dist_bp = round((dfii10 - 2.00) * 100, 0) if dfii10 >= 2.00 else round((2.00 - dfii10) * 100, 0)
         status = f"已越线+{dist_bp:.0f}bp" if dfii10 >= 2.00 else f"距触发{dist_bp:.0f}bp"
         trend = trend_arrow(dfii_s, 5) if dfii_s else "?"
-        action = "✅ 已确认→R3" if dur5_dfii >= 5 else f"DUR5 {dur5_dfii}/5"
+        action = "✅ 已确认" if dur5_dfii >= 5 else f"DUR5 {dur5_dfii}/5"
         rows.append({"priority": "P1", "indicator": "DFII10 🔴", "value": f"{dfii10:.2f}%",
                      "trigger": "2.00%", "distance": status, "dur": f"{dur5_dfii}/5",
                      "trend": trend, "action": action})
@@ -2756,10 +2756,11 @@ def compute_checklist(abcd: dict, pos: dict) -> list[str]:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  SSoT read_ssot_position — 从 Risk OS Orchestrator 读取唯一权威仓位
+#  DEPRECATED_TIER3 — SSoT Orchestrator = Tier 3 governance violation (§37/§39)
+#  Function body preserved for archaeology only. DO NOT reconnect to pipeline.
 # ═══════════════════════════════════════════════════════════════════════════
 
-def read_ssot_position(es_path: Path | None = None) -> dict | None:
+def DEPRECATED_TIER3_read_ssot_position(es_path: Path | None = None) -> dict | None:
     """从 SSoT (docs/risk/assets/event_state.json) 读取权威仓位。
 
     【保护1】文件不存在/读取失败 → 打印醒目横幅，返回 None（调用方回退备用裁决）
@@ -2897,6 +2898,25 @@ def _ssot_banner(msg: str):
     print(f"  → 本期仓位来自 compute_position 备用裁决，非权威")
     print(f"{sep}\n")
 
+
+def _run_banned_check():
+    """Run §39/§40 banned pattern check on latest output.
+    
+    Non-blocking for script errors (encoding, missing file).
+    BLOCKING for actual banned pattern detections — will sys.exit(1).
+    """
+    import subprocess as _sp
+    try:
+        chk = Path(__file__).resolve().parent / "scripts" / "_check_banned_patterns.py"
+        if chk.exists():
+            r = _sp.run([sys.executable, str(chk)], capture_output=True, timeout=5)
+            out = r.stdout.decode(errors="replace")
+            if r.returncode != 0:
+                print("[BANNED PATTERN CHECK] BLOCKING — fix before presenting:")
+                print(out[:500])
+                sys.exit(1)
+    except Exception as e:
+        print(f"[BANNED PATTERN CHECK] script error (non-blocking): {e}")
 
 def _ssot_fallback_note():
     """切换后 compute_position 仅作对照用，已在 main() 走 SSoT 优先路径时标注。"""
@@ -3861,7 +3881,7 @@ def format_markdown_report(
         "D": _compute_d_consume(abcd),
     }
 
-    lines.append("| 端 | 灯色 | DUR 确认 | 仓位消费？ |")
+    lines.append("| 端 | 灯色 | DUR 确认 | 跨域影响 |")
     lines.append("|----|------|---------|----------|")
     for dk in ["A", "B", "C", "D"]:
         light = abcd[dk]["light"]
@@ -3890,10 +3910,12 @@ def format_markdown_report(
     lines.append(f"| 信号 | 状态 | 指标 |")
     lines.append(f"|------|------|------|")
     lines.append(f"| Drawdown Warning | {dd} | HY OAS={v35['hy_oas_pct']*100:.0f}bp, 20dΔ={v35['hy_oas_20d_delta_bp']:+.1f}bp |")
-    hyg_s = f"!! {v35['hyg_5d_ret_pct']:+.1f}% !!" if v35["hyg_trigger"] else f"OK ({v35['hyg_5d_ret_pct']:+.1f}%)" if v35['hyg_5d_ret_pct'] is not None else "N/A"
+    hyg_s = f"OK ({v35['hyg_5d_ret_pct']:+.1f}%)" if v35['hyg_5d_ret_pct'] is not None else "N/A"  # diagnostic only, not trigger
     fxy_s = f"!! {v35['fxy_5d_ret_pct']:+.1f}% !!" if v35["fxy_trigger"] else f"OK ({v35['fxy_5d_ret_pct']:+.1f}%)" if v35['fxy_5d_ret_pct'] is not None else "N/A"
     spy_s = f"!! SPY={v35['spy_price']} < 200MA={v35['spy_200ma']} !!" if v35["spy_below_200ma"] else f"OK"
-    lines.append(f"| HYG 5d <-1.5% | {hyg_s} | HYG={v35['hyg_price']} |")
+    hy_oas_5d_bp = v35.get("hy_oas_5d_delta_bp")
+    hy_oas_5d_s = f"OK ({hy_oas_5d_bp:+.1f}bp)" if hy_oas_5d_bp is not None and hy_oas_5d_bp <= 15 else (f"!! TRIGGER ({hy_oas_5d_bp:+.1f}bp) !!" if hy_oas_5d_bp is not None else "N/A")
+    lines.append(f"| HY OAS 5dΔ >+15bp | {hy_oas_5d_s} | {hy_oas_5d_bp or 'N/A'}bp |")
     lines.append(f"| FXY 5d >+2.5% | {fxy_s} | FXY={v35['fxy_price']} |")
     lines.append(f"| SPY < 200MA | {spy_s} | — |")
     lines.append(f"| Extreme Meltdown | {ex} | VIX={v35['vix']}, SOFR-IORB={v35['sofr_iorb_bp']}bp |")
@@ -4087,24 +4109,18 @@ def format_markdown_report(
     # ====== 触发距离 ======
     lines.append("## 触发距离")
     lines.append("")
-    lines.append("| 优先级 | 指标 | 当前值 | 触发线 | 距离 | DUR 计数 | 趋势 | 动作 |")
+    lines.append("| 优先级 | 指标 | 当前值 | 触发线 | 距离 | DUR 计数 | 趋势 | DUR状态 |")
     lines.append("|--------|------|--------|--------|------|---------|------|------|")
     for r in prox:
         lines.append(f"| {r['priority']} | {r['indicator']} | {r['value']} | {r['trigger']} | {r['distance']} | {r['dur']} | {r['trend']} | {r['action']} |")
     lines.append("")
 
-    # ====== 仓位动作 ======
-    lines.append("## 仓位动作（Step-by-step 审计版）")
+    # ====== 仓位参考（clean v3.5 paper trade 是唯一有效仓位来源） ======
+    lines.append("## 仓位参考")
     lines.append("")
-    lines.append("| Step | 来源 | Primary | Hedge | Cash | 说明 |")
-    lines.append("|------|------|---------|-------|------|------|")
-    for step in pos["steps"]:
-        prefix = "**" if step["step"] == "终点" else ""
-        suffix = "**" if step["step"] == "终点" else ""
-        lines.append(f"| {step['step']} | {step['source']} | {prefix}{step['primary']}%{suffix} | {prefix}{step['hedge']}%{suffix} | {prefix}{step['cash']}%{suffix} | {step['note']} |")
-
-    # Endpoint row
-    lines.append(f"| **终点** | — | **{pos['Primary']}%** | **{pos['Hedge']}%** | **{pos['Cash']}%** | {pos['label']} |")
+    lines.append("> **本报告的 ABCD/CASC/VTS/RCV 为诊断 overlay，不构成仓位建议。**")
+    lines.append("> 仓位唯一有效来源：`paper_trade_v3_5_clean.csv`（v3.5 clean 5信号，7/1–7/31 验证窗口）。")
+    lines.append("> 自动仓位裁决系统 / DUR5 / DFII10>2% / EFFR-IORB 触发：§37/§39 永久禁入 position engine。")
     lines.append("")
 
     # ====== 明日检查 ======
@@ -4180,6 +4196,19 @@ def main():
     vintages = compute_vintages(raw)
     stale_warnings = check_staleness(raw)
 
+    # BAML freshness: check that latest HY OAS data is within 1 bus day of today
+    # BAML posts T+1 evening US time; if lag > 1 bus day, fetch_data may have run too early
+    hy_items = raw.get(HY_OAS_ID, [])
+    if hy_items:
+        hy_last_dt = date.fromisoformat(hy_items[-1]["date"]) if hy_items[-1].get("date") else None
+        if hy_last_dt:
+            hy_lag = _biz_days_between(hy_last_dt, date.today())
+            if hy_lag > 1:
+                stale_warnings.append(
+                    f"⚠️  BAML HY OAS 滞后 {hy_lag} 个工作日 "
+                    f"(latest={hy_last_dt.isoformat()}, T+1 expected). "
+                    f"fetch_data.py 可能跑早了——建议重跑.")
+
     # Compute all regimes
     curve    = compute_curve_regime(raw)
     hy_stress = compute_hy_stress(raw)
@@ -4193,16 +4222,13 @@ def main():
     casc     = compute_casc(raw, v35, abcd)
     abcd     = apply_casc_gate(abcd, casc)
 
-    # ── SSoT 唯一裁决 (v3.5.1) ──
-    # read_ssot_position() 读 Risk OS Orchestrator 权威仓位。
-    # P1(不存在)/P2(过期) → 回退 compute_position() + 横幅；
-    # P3(字段坏) → 抛异常阻断。
-    pos = read_ssot_position()
-    if pos is None:
-        pos = compute_position(abcd, v35, casc=casc)
-        _ssot_fallback_note()
-    else:
-        print(f"[✓ SSoT 权威仓位: {pos['regime_key']} P={pos['Primary']}/H={pos['Hedge']}/C={pos['Cash']}]")
+    # ── Regime label (diagnostic only, not a position) ──
+    # SSoT Orchestrator position computation REMOVED per §37/§39.
+    # Clean v3.5 paper trade ledger is the only valid position source.
+    pos = {"regime_key": abcd.get("regime", "N/A"), "label": "Diagnostic only",
+           "Primary": None, "Hedge": None, "Cash": None, "steps": [],
+           "red_count": abcd.get("red_count", 0),
+           "cross_domain_signals": abcd.get("cross_domain_signals", 0)}
 
     prox     = compute_trigger_proximity(abcd, raw)
     chk      = compute_checklist(abcd, pos)
@@ -4348,10 +4374,17 @@ def main():
         else:
             print(f"[WARN] Event extraction failed: {r.stderr.decode(errors='replace')[:200]}")
 
+        # ── §39/§40 banned pattern check (auto-run, non-blocking) ──
+        _run_banned_check()
+
         return 0
 
     # --- Default: text report ---
     print(format_text_report(curve, hy_stress, v35, fw, liq, abcd, pos, prox, chk, data_date, rate_path=rate_path, casc=casc))
+
+    # ── §39/§40 banned pattern check (auto-run, non-blocking) ──
+    _run_banned_check()
+
     return 0
 
 

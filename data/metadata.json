@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-01T23:52:45.855626+00:00",
+  "generated_at": "2026-07-02T10:45:34.703634+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1097
+      "n_obs": 1096
     },
     {
       "id": "EFFR",
@@ -32,7 +32,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target upper bound",
-      "n_obs": 1096
+      "n_obs": 1095
     },
     {
       "id": "DFEDTARL",
@@ -40,7 +40,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Fed funds target lower bound",
-      "n_obs": 1096
+      "n_obs": 1095
     },
     {
       "id": "RRPONTSYD",
@@ -208,7 +208,7 @@
       "layer": "L3",
       "unit": "$/share",
       "desc": "Gold proxy via SPDR Gold Trust (GLD) - Yahoo",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "SPY",
@@ -216,7 +216,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "S&P 500 ETF price - equity risk signal",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "HYG",
@@ -224,7 +224,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "FXY",
@@ -232,7 +232,7 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "^VIX3M",

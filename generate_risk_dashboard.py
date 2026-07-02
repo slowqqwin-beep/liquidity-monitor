@@ -105,13 +105,14 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
         "systemic": "系统已进入系统性风险阶段。VTS倒挂+RCV长端/全曲线→Role B确认触发。激进降风险。",
         "pre-systemic": "前端压力积聚，未进系统性。等RCV翻long-led或acute-broad叠VTS倒挂→升档。",
         "front": "双探针前端一致·近端事件非系统性。等CPI/Fed落地看前端是fade还是扩散。要盯的翻转点：RCV→long-led/acute-broad叠VTS倒挂→agree-systemic。",
-        "divergent": "VTS热·RCV平→单资产技术性。无双探针共振，不触发额外系统性仓位动作。",
-        "calm": "双端平静·无双探针共振。系统性风险维度=低，不触发额外动作。",
+        "divergent": "VTS热·RCV平→单资产技术性。无双探针共振。",
+        "calm": "双端平静·无双探针共振。系统性风险维度=低。",
     }
 
     lines = []
     lines.append(f"# 🛡️ 前端风险 → 系统性风险 演化看板\n")
-    lines.append(f"> **{run_date}** | Regime: **{reg}** | P={pos['Primary']}% / H={pos['Hedge']}% / C={pos['Cash']}% | 跨域信号={cross} | 🔴={red_n}\n")
+    lines.append(f"> **{run_date}** | Regime: **{reg}** | 跨域信号={cross} | 🔴={red_n}")
+    lines.append(f"> 仓位唯一有效来源：`paper_trade_v3_5_clean.csv`（v3.5 clean 5信号）| 本文为诊断 overlay\n")
 
     # ① Near-term event risk
     lines.append("---\n## ① 近端事件风险\n")
@@ -186,9 +187,7 @@ def format_dashboard_md(data_date, run_date, abcd, pos, v35, casc, vts, rcv, loc
     lines.append("---\n## ④ 系统性风险阶段与最终判断\n")
     lines.append(f"| 项目 | 状态 |")
     lines.append(f"|------|------|")
-    lines.append(f"| 当前阶段 | {stage_c} **{stage_l}** |")
     lines.append(f"| Regime | **{reg}**({reg_key}) · 跨域={cross} · 🔴={red_n} |")
-    lines.append(f"| 仓位 | P={pos['Primary']}% / H={pos['Hedge']}% / C={pos['Cash']}% |")
     lines.append(f"| VTS | {vts.get('structure','N/A')} · 前端={vts.get('front_structure','N/A')} |")
     rcv_ratio = rcv.get('ratio_2y_30y')
     rcv_zratio = rcv.get('z_ratio')
@@ -273,7 +272,7 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
     # 0: Header
     ax0 = fig.add_subplot(gs[0],facecolor="#161B22"); ax0.set_xlim(0,10); ax0.set_ylim(0,6); ax0.axis("off")
     txt(ax0,0.3,5.2,f"FRONT-RISK → SYSTEMIC-RISK EVOLUTION DASHBOARD",14,blue,True)
-    txt(ax0,0.3,3.8,f"{run_date}  |  Regime: {reg} ({reg_key})  |  P={pos['Primary']}% / H={pos['Hedge']}% / C={pos['Cash']}%  |  Cross={cross}  |  RED={red_n}",10.5,tc_dim)
+    txt(ax0,0.3,3.8,f"{run_date}  |  Regime: {reg} ({reg_key})  |  Cross={cross}  |  RED={red_n}",10.5,tc_dim)
     txt(ax0,0.3,2.5,f"Data: FRED(T-0) + Yahoo(T-1)  |  CASC v3.5 + VTS x RCV Interlock",9,tc_dim)
     ax0.add_patch(plt.Rectangle((0.3,0.2),9.4,0.06,facecolor="#FF8C00",alpha=0.4))
 
@@ -349,7 +348,6 @@ def generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path
     y0 = 8.5
     metrics = [
         (f"Regime: {reg} ({reg_key})", f"Cross={cross} * RED={red_n}"),
-        (f"Position: P={pos['Primary']}% / H={pos['Hedge']}% / C={pos['Cash']}%", f"Baseline: R2=55/25/20"),
         (f"VTS: {vts.get('structure','N/A')} · Front={vts.get('front_structure','N/A')}", f"VIX/VIX3M={vts_r_str}"),
         (f"RCV: {rcv.get('character','N/A')} · 2y/30y={rcv.get('ratio_2y_30y','N/A')}", f"sev={rcv.get('severity','N/A')} tilt={rcv.get('tilt','N/A')}"),
         (f"Interlock: {lock_state}", lock.get('state_label','N/A')),
@@ -408,6 +406,22 @@ def main():
     # 2) PNG
     png_path = REPORT_DIR / f"risk_dashboard_{run_date}.png"
     generate_png(data_date, run_date, abcd, pos, casc, vts, rcv, lock, rate_path, str(png_path))
+
+    # ── §39/§40 banned pattern check ──
+    import subprocess as _sp, sys as _sys, pathlib as _pl
+    try:
+        chk = _pl.Path(__file__).resolve().parent / "scripts" / "_check_banned_patterns.py"
+        if chk.exists():
+            r = _sp.run([_sys.executable, str(chk)], capture_output=True, timeout=5)
+            out = r.stdout.decode(errors="replace")
+            if r.returncode != 0:
+                print("[BANNED PATTERN CHECK] BLOCKING — fix before presenting:")
+                print(out[:500])
+                _sys.exit(1)
+    except _sp.TimeoutExpired:
+        print("[BANNED PATTERN CHECK] timeout — non-blocking")
+    except Exception as e:
+        print(f"[BANNED PATTERN CHECK] script error (non-blocking): {e}")
 
     print("Done: risk dashboard generated (MD + PNG)")
 
