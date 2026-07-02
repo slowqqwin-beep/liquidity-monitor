@@ -1,4 +1,3 @@
 ﻿date,fred_date,HY_OAS_20d_bp,HY_OAS_20d_trigger,HY_OAS_5d_bp,HY_OAS_5d_trigger,HYG_5d_pct,FXY_5d_pct,FXY_trigger,SPY_vs_200MA,SPY_trigger,VIX,SOFR_IORB_bp,Meltdown_trigger,trigger_count,hypothetical_position,important_null_note
-2026-07-01,2026-06-30,4.0,False,4.0,False,0.1,-0.5,False,N,False,16.45,3.0,False,0,55/25/20,important null: 0 信号触发，市场平静. 已知缺口: Meltdown仅查2/5(VIX+SOFR-IORB)
-2026-07-02,2026-06-30,4.0,False,4.0,False,0.1,-0.5,False,N,False,16.45,3.0,False,0,55/25/20,important null: 0 信号触发，市场平静. 已知缺口: Meltdown仅查2/5(VIX+SOFR-IORB)
-2026-07-02,2026-06-30,4.0,False,4.0,False,0.1,-0.5,False,N,False,16.45,3.0,False,0,55/25/20,important null: 0 信号触发，市场平静
+2026-07-01,2026-06-30,4.0,False,4.0,False,0.1,-0.5,False,N,False,16.45,3.0,False,0,55/25/20,"important null: 0 信号触发，市场平静. 已知缺口: Meltdown仅查2/5(VIX+SOFR-IORB). A端盲区: SOFR-IORB=+3bp(翻正), ON RRP=$1.0B(近归零) — 不在v3.5 5信号scope内(v3.5.1 pipeline输出,非NY Fed一手数据). 7/2审计: 7/1当天5信号有3个bug(HYG→HY_OAS/#4 SP500 key不存在/#5 VIX key不存在),net仍是0/5但非当时算对"
+2026-07-02,2026-06-30,4.0,False,4.0,False,0.1,-0.5,False,N,False,16.45,3.0,False,0,55/25/20,"important null: 0 信号触发，市场平静. 已知缺口: Meltdown仅查2/5(VIX+SOFR-IORB). A端盲区: SOFR-IORB=+3bp(翻正), ON RRP=$1.0B(近归零) — 不在v3.5 5信号scope内(v3.5.1 pipeline输出,非NY Fed一手数据)"
