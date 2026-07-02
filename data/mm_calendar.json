@@ -1,16 +1,16 @@
 [
   {
-    "uid": "bftq43st5pthk8ok0bctl7cblk@google.com",
-    "date": "2026-07-01",
-    "time_utc": "2026-07-01T12:15:00+00:00",
-    "time_sg": "2026-07-01T20:15:00+08:00",
+    "uid": "ogeraj1iqk5hfhrss0cf2alrg0@google.com",
+    "date": "2026-07-02",
+    "time_utc": "2026-07-02T12:30:00+00:00",
+    "time_sg": "2026-07-02T20:30:00+08:00",
     "country": "US",
-    "event": "美国-ADP非农就业人口 (月变动)",
-    "summary": "美国-ADP非农就业人口 (月变动)",
-    "forecast": "118000.0",
-    "previous": "122000.0",
+    "event": "美国-非农就业人数(月变动)",
+    "summary": "美国-非农就业人数(月变动)",
+    "forecast": "114.0",
+    "previous": "172.0k",
     "actual": "",
-    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/36/adp?utm_medium=calendar",
+    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
     "days_to_event": 0,
@@ -30,42 +30,8 @@
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 85,
-    "days_to_event": 1,
-    "score": 80
-  },
-  {
-    "uid": "ogeraj1iqk5hfhrss0cf2alrg0@google.com",
-    "date": "2026-07-02",
-    "time_utc": "2026-07-02T12:30:00+00:00",
-    "time_sg": "2026-07-02T20:30:00+08:00",
-    "country": "US",
-    "event": "美国-非农就业人数(月变动)",
-    "summary": "美国-非农就业人数(月变动)",
-    "forecast": "114.0",
-    "previous": "172.0k",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/6/employment-condition?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 85,
-    "days_to_event": 1,
-    "score": 80
-  },
-  {
-    "uid": "vu78o35omcpcfk45lemn8q7bmo@google.com",
-    "date": "2026-07-01",
-    "time_utc": "2026-07-01T14:00:00+00:00",
-    "time_sg": "2026-07-01T22:00:00+08:00",
-    "country": "US",
-    "event": "美国-ISM制造业指数[PMI]",
-    "summary": "美国-ISM制造业指数[PMI]",
-    "forecast": "53.8",
-    "previous": "54.0",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/8/us-industry-relative/54/ism?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 65,
     "days_to_event": 0,
-    "score": 65
+    "score": 85
   },
   {
     "uid": "vaqnlkqpt1rmv93u7279dhp4gs@google.com",
@@ -81,8 +47,8 @@
     "link": "https://sc.macromicro.me/collections/8/us-industry-relative/55/ism-nonmanu?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 65,
-    "days_to_event": 5,
-    "score": 40
+    "days_to_event": 4,
+    "score": 45
   },
   {
     "uid": "han5rn7bi2sf0cof6u5292du28@google.com",
@@ -98,25 +64,8 @@
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 45,
-    "days_to_event": 1,
-    "score": 40
-  },
-  {
-    "uid": "g0o5qej72ua32b5uj7gutqek14@google.com",
-    "date": "2026-07-01",
-    "time_utc": "2026-07-01T14:30:00+00:00",
-    "time_sg": "2026-07-01T22:30:00+08:00",
-    "country": "US",
-    "event": "美国-原油库存(周变动)",
-    "summary": "美国-原油库存(周变动)",
-    "forecast": "-2900.0k",
-    "previous": "-6088.0k",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 20,
     "days_to_event": 0,
-    "score": 20
+    "score": 45
   },
   {
     "uid": "55u3el20gskccot3828hdeng8c@google.com",
@@ -132,8 +81,8 @@
     "link": "https://sc.macromicro.me/collections/9/us-market-relative/48/target-rate?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 50,
-    "days_to_event": 7,
-    "score": 15
+    "days_to_event": 6,
+    "score": 20
   },
   {
     "uid": "e3brb1vndfb888qsca1m468j6s@google.com",
@@ -149,8 +98,8 @@
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 45,
-    "days_to_event": 8,
-    "score": 5
+    "days_to_event": 7,
+    "score": 10
   },
   {
     "uid": "ri1m98p8cl8i3ec66h72rrmbdk@google.com",
@@ -166,8 +115,8 @@
     "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 7,
-    "score": -15
+    "days_to_event": 6,
+    "score": -10
   },
   {
     "uid": "mb4aevh4438in204um8ug8g458@google.com",
@@ -183,7 +132,7 @@
     "link": "https://sc.macromicro.me/collections/52/agri-soybean?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 9,
-    "score": -25
+    "days_to_event": 8,
+    "score": -20
   }
 ]
