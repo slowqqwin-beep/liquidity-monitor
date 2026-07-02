@@ -251,3 +251,88 @@ When a new signal or diagnostic is proposed:
 They need to survive being taken apart. If they survive, they enter clean.
 
 The opposite — "it works, let's activate it" — is exactly how 6/10-6/15 happened.
+
+---
+
+## 11. §48: Clean Ledger Deep Audit — The July 2 Round (2026-07-02)
+
+### 11.1 Trigger
+
+The audit began with a single question: "Is HYG 5d < -1.5% in the clean v3.5
+paper trade actually the signal §40 locked, or has the DFII10 contamination
+pattern recurred under a different name?"
+
+It was not. The discovery cascaded into the largest bug-hunt in this project's
+history.
+
+### 11.2 Bugs Found
+
+| # | Bug | Location | Originally Showed | Root Cause |
+|---|-----|----------|------------------|------------|
+| 1 | Signal #2 used HYG 5d < -1.5%, not HY OAS 5dΔ > +15bp | `paper_trade_v35.py:55` | "OK" (benign by coincidence) | Wrong signal definition from first version |
+| 2 | SPY data key was "SP500" (doesn't exist in series.json) | `paper_trade_v35.py:32` | "OK" (silently returned None→False) | Key mismatch, never tested against actual data |
+| 3 | VIX data key was "VIX" (doesn't exist; actual key is "VIXCLS") | `paper_trade_v35.py:45` | "OK" (silently returned None) | Same key mismatch pattern |
+| 4 | fetch_data ran before FRED BAML T+1 posting | Pipeline timing | 7/1 20dΔ=8.0bp (should be 4.0bp) | No BAML freshness check; fetch ran too early |
+
+**Critical pattern**: Bugs #2, #3, and the first version of #1 all produced
+"OK" not because conditions weren't met, but because data couldn't be read.
+The system silently collapsed "unknown" into "benign zero" — the exact failure
+mode warned about in §41's "未知状态坍缩为良性零" principle. This wasn't a
+theoretical risk — it was found operating in production.
+
+### 11.3 Rebuild Script Defect
+
+The `_final.py` rebuild script computed both 7/1 and 7/2 rows with the same
+`idx=-1` parameter, producing identical row content for two different dates.
+VIX=16.45 being identical on consecutive days was the smoking gun that exposed
+this. Fixed by independent recomputation for each date.
+
+### 11.4 Schema Violation
+
+`HYG_5d_pct` was present in the CSV schema despite not appearing in the §40
+field list. §40 describes HYG 5d only as a proxy fallback for the 20d signal
+(BAML data gaps), not as a schema column. Removed.
+
+### 11.5 New Guards Deployed
+
+| Guard | Mechanism | Verified? |
+|---|---|---|
+| BAML freshness check | Added to daily_report.py `stale_warnings`. Lags >1 business day trigger warning. | ✅ Replayed 7/1 scenario — `_biz_days_between(06-29, 07-01)=2` would have fired |
+| Banned pattern blocker | `scripts/_check_banned_patterns.py` hooks into both `daily_report.py` and `generate_risk_dashboard.py`. `sys.exit(1)` on detection. | ✅ Injected "SSoT 唯一裁决" into live output — exit=1 confirmed |
+| as_of_date reproducibility | `n_day_chg()` and `pct_5d()` now accept `as_of_idx` parameter. Default -1 preserves backward compatibility. Historical backfills can specify exact data cutoffs. | ✅ Default behavior unchanged; parameter available for backfills |
+| DEPRECATED function naming | `read_ssot_position` → `DEPRECATED_TIER3_read_ssot_position`. Zero residual callers confirmed by grep. | ✅ Grep verified |
+
+### 11.6 Methodology Crystallized
+
+This round produced the most rigorous audit trail in the project's history.
+The pattern was consistent:
+
+1. **Suspicion** → "Is X actually what it claims to be?"
+2. **Decompose** → Break the claim into falsifiable sub-questions
+3. **Demand raw evidence** → Not summaries, not "logic says it should work," but actual terminal output, actual CSV rows, actual grep results
+4. **Test edge cases** → Inject banned patterns, replay historical scenarios, force data gaps
+
+The round itself demonstrated the method: it took three attempts before the
+"raw CSV content" was actually raw terminal output rather than a description
+of it. The process caught its own evidence gap — proving the method works
+even when the operator stumbles.
+
+### 11.7 Key Principle
+
+**"当时对" and "现在核对后对" are different things.**
+
+7/1's 0/5 trigger count was correct in net, but 3 of 5 signals were computed
+wrong (HYG instead of HY_OAS, null SPY key, null VIX key). The conclusion
+happened to survive the bugs, but the ledger now records that it did so by
+accident, not by design.
+
+### 11.8 Files Modified
+
+| File | Changes |
+|---|---|
+| `paper_trade_v35.py` | Signal #2 fixed (HYG→HY_OAS), #4 key (SP500→SPY), #5 key (VIX→VIXCLS), HYG_5d_pct removed, as_of_idx support, DEPRECATED prefix |
+| `daily_report.py` | Position table removed, SSoT computation stopped, DEPRECATED prefix, column headers de-positionified, BAML freshness check, banned check auto-run |
+| `generate_risk_dashboard.py` | P/H/C removed from header/table/PNG, position row removed, verdicts de-positionified, banned check auto-run |
+| `scripts/_check_banned_patterns.py` | Created — P/H/C, SSoT, DUR5, HYG 5d pattern detection, blocking mode |
+| `paper_trade_v3_5_clean.csv` | Rebuilt — all 5 signals from correct keys, 7/1 audit trail, BAML lag note, known gaps recorded, HYG_5d_pct removed |
+| `FRAMEWORK_CONTAMINATION_AUDIT_2026-07-01.md` | §44-§47 added (6/10 audit failure mode, TLT Leg-2, signal definitions, RYS intake) |

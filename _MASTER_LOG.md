@@ -447,7 +447,7 @@ repair_type = benign / malign / mixed / unavailable
 
 ---
 
-*封版日期: 2026-06-23 21:05 | 最后更新: 2026-07-02 | 下次运行窗口: 周五 07-03 | v3.5 / v3.5.1 + TLT Leg-2 + SR3 Watch*
+*封版日期: 2026-06-23 21:05 | 最后更新: 2026-07-02 (Clean Ledger Deep Audit) | 下次运行窗口: 周五 07-03 | v3.5 paper trade | §48 audit closed*
 
 ### 2026-07-02 管线修复
 
