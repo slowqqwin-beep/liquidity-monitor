@@ -66,8 +66,8 @@ signals["HY_OAS_trigger"] = hy_oas_20d > 0.20 if hy_oas_20d else False
 signals["HY_OAS_5d_bp"] = round(hy_oas_5d * 100, 1) if hy_oas_5d is not None else None
 signals["HY_OAS_5d_trigger"] = (hy_oas_5d > 0.15) if hy_oas_5d is not None else False
 
-# HYG 5d — diagnostic field only, NOT a trigger (proxy for 20d when BAML missing)
-signals["HYG_5d_pct"] = round(hyg_5d, 1) if hyg_5d else None
+# HYG 5d — diagnostic only, NOT a trigger (proxy for 20d when BAML missing, §40)
+hyg_5d = pct_5d("HYG")
 
 # #3: FXY 5d > +2.5% (★★ D-end cross-border)
 signals["FXY_5d_pct"] = round(fxy_5d, 1) if fxy_5d else None
@@ -114,7 +114,7 @@ row = {
     "HY_OAS_20d_trigger": signals["HY_OAS_trigger"],
     "HY_OAS_5d_bp": signals["HY_OAS_5d_bp"],
     "HY_OAS_5d_trigger": signals["HY_OAS_5d_trigger"],
-    "HYG_5d_pct": signals["HYG_5d_pct"],
+    # TODO: align field names to §40 — add _delta suffix (HY_OAS_20d_delta_bp etc)
     "FXY_5d_pct": signals["FXY_5d_pct"],
     "FXY_trigger": signals["FXY_trigger"],
     "SPY_vs_200MA": "Y" if spy_below_200 else "N",
@@ -140,8 +140,8 @@ print(f"  #2 HY OAS 5d: {signals['HY_OAS_5d_bp']}bp {'⚠️' if signals['HY_OAS
 print(f"  #3 FXY 5d: {signals['FXY_5d_pct']}% {'⚠️' if signals['FXY_trigger'] else 'OK'}")
 print(f"  #4 SPY vs 200MA: {signals['SPY_200MA']} {'⚠️' if spy_below_200 else 'OK'}")
 print(f"  #5 Meltdown: VIX={signals['VIX']}, SOFR-IORB={signals['SOFR_IORB_bp']}bp {'⚠️' if meltdown else 'OK'}")
-print(f"  HYG 5d (diagnostic): {signals['HYG_5d_pct']}%")
-print(f"  Triggers: {trigger_count}/5")
+    print(f"  HYG 5d (diagnostic, not in CSV): {hyg_5d:.1f}%" if hyg_5d else "  HYG 5d: N/A")
+    print(f"  Triggers: {trigger_count}/5")
 print(f"  Triggers: {trigger_count}/5")
 print(f"  Position: P={pos.split('/')[0]}% H={pos.split('/')[1]}% C={pos.split('/')[2]}%")
 print(f"  Note: {note}")
