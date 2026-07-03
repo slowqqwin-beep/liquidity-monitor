@@ -140,7 +140,10 @@ print(f"  #2 HY OAS 5d: {signals['HY_OAS_5d_bp']}bp {'⚠️' if signals['HY_OAS
 print(f"  #3 FXY 5d: {signals['FXY_5d_pct']}% {'⚠️' if signals['FXY_trigger'] else 'OK'}")
 print(f"  #4 SPY vs 200MA: {signals['SPY_200MA']} {'⚠️' if spy_below_200 else 'OK'}")
 print(f"  #5 Meltdown: VIX={signals['VIX']}, SOFR-IORB={signals['SOFR_IORB_bp']}bp {'⚠️' if meltdown else 'OK'}")
-    print(f"  HYG 5d (diagnostic, not in CSV): {hyg_5d:.1f}%" if hyg_5d else "  HYG 5d: N/A")
+if hyg_5d is not None:
+    print(f"  HYG 5d (diagnostic): {hyg_5d:.1f}%")
+else:
+    print("  HYG 5d: N/A")
     print(f"  Triggers: {trigger_count}/5")
 print(f"  Triggers: {trigger_count}/5")
 print(f"  Position: P={pos.split('/')[0]}% H={pos.split('/')[1]}% C={pos.split('/')[2]}%")

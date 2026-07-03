@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-02T18:45:38.096646",
+  "generated_at": "2026-07-03T09:30:10.448494",
   "data_date": "2026-07-01",
-  "data_age_days": 1,
+  "data_age_days": 2,
   "reference_mode": "Current Event Peak (Hike-over)",
   "last_formal_shock": {
     "date": "2026-06-22",
@@ -17,18 +17,18 @@
     "used_as_reference": false
   },
   "current": {
-    "near_rate_pct": 3.9,
-    "curve_move_bp": 6.75,
-    "contract_daily_bp": -0.25,
-    "curve_move_5d_sum_bp": 10.12,
-    "decline_from_ref_peak_bp": -6.62,
+    "near_rate_pct": 3.81,
+    "curve_move_bp": 0.0,
+    "contract_daily_bp": -1.25,
+    "curve_move_5d_sum_bp": 3.38,
+    "decline_from_ref_peak_bp": -10.38,
     "near_contract": "SR3H2027",
     "on_elevated_plateau": true,
-    "hy_oas_bp": 275.0,
+    "hy_oas_bp": 274.0,
     "hy_oas_available": false,
-    "us10y_pct": 4.483,
+    "us10y_pct": 4.485,
     "t10yie_pct": 2.23,
-    "real_yield_pct": 2.253
+    "real_yield_pct": 2.255
   },
   "state": {
     "state_number": 2,
@@ -47,45 +47,73 @@
   "contract_diffs": [
     {
       "contract": "SR3M2026",
-      "close": 96.3025,
-      "close_chg": 0.0025,
-      "implied_rate_pct": 3.6975,
-      "implied_chg_bp": -0.25
+      "close": 96.3125,
+      "close_chg": 0.0125,
+      "implied_rate_pct": 3.6875,
+      "implied_chg_bp": -1.25
+    },
+    {
+      "contract": "SR3N2026",
+      "close": 96.2525,
+      "close_chg": 0.0275,
+      "implied_rate_pct": 3.7475,
+      "implied_chg_bp": -2.75
+    },
+    {
+      "contract": "SR3Q2026",
+      "close": 96.19,
+      "close_chg": 0.035,
+      "implied_rate_pct": 3.81,
+      "implied_chg_bp": -3.5
     },
     {
       "contract": "SR3U2026",
-      "close": 96.1,
-      "close_chg": 0.005,
-      "implied_rate_pct": 3.9,
-      "implied_chg_bp": -0.5
+      "close": 96.145,
+      "close_chg": 0.05,
+      "implied_rate_pct": 3.855,
+      "implied_chg_bp": -5.0
+    },
+    {
+      "contract": "SR3V2026",
+      "close": 96.08,
+      "close_chg": 0.05,
+      "implied_rate_pct": 3.92,
+      "implied_chg_bp": -5.0
+    },
+    {
+      "contract": "SR3X2026",
+      "close": 96.035,
+      "close_chg": 0.05,
+      "implied_rate_pct": 3.965,
+      "implied_chg_bp": -5.0
     },
     {
       "contract": "SR3Z2026",
-      "close": 95.94,
-      "close_chg": -0.005,
-      "implied_rate_pct": 4.06,
-      "implied_chg_bp": 0.5
+      "close": 96.0,
+      "close_chg": 0.055,
+      "implied_rate_pct": 4.0,
+      "implied_chg_bp": -5.5
     },
     {
       "contract": "SR3H2027",
-      "close": 95.88,
-      "close_chg": -0.01,
-      "implied_rate_pct": 4.12,
-      "implied_chg_bp": 1.0
+      "close": 95.945,
+      "close_chg": 0.055,
+      "implied_rate_pct": 4.055,
+      "implied_chg_bp": -5.5
     },
     {
       "contract": "SR3M2027",
-      "close": 95.91,
-      "close_chg": -0.01,
-      "implied_rate_pct": 4.09,
-      "implied_chg_bp": 1.0
+      "close": 95.965,
+      "close_chg": 0.045,
+      "implied_rate_pct": 4.035,
+      "implied_chg_bp": -4.5
     },
     {
       "contract": "SR3U2027",
-      "close": 95.975,
-      "close_chg": -0.01,
-      "implied_rate_pct": 4.025,
-      "implied_chg_bp": 1.0
+      "close": 96.02,
+      "close_chg": 0.035,
+      "implied_rate_pct": 3.98,
+      "implied_chg_bp": -3.5
     }
   ],
   "retracement": [
@@ -93,102 +121,162 @@
       "contract": "SR3H2027",
       "baseline_pct": 3.94,
       "peak_pct": 4.19,
-      "now_pct": 4.12,
+      "now_pct": 4.055,
       "overshoot_bp": 25.0,
-      "retraced_bp": 7.0,
-      "repair_pct": 28.0
+      "retraced_bp": 13.5,
+      "repair_pct": 54.0
     },
     {
       "contract": "SR3M2026",
       "baseline_pct": 3.6675,
       "peak_pct": 3.72,
-      "now_pct": 3.6975,
+      "now_pct": 3.6875,
       "overshoot_bp": 5.3,
-      "retraced_bp": 2.2,
-      "repair_pct": 41.5
+      "retraced_bp": 3.3,
+      "repair_pct": 62.3
     },
     {
       "contract": "SR3M2027",
       "baseline_pct": 3.94,
       "peak_pct": 4.175,
-      "now_pct": 4.09,
+      "now_pct": 4.035,
       "overshoot_bp": 23.5,
-      "retraced_bp": 8.5,
-      "repair_pct": 36.2
+      "retraced_bp": 14.0,
+      "repair_pct": 59.6
+    },
+    {
+      "contract": "SR3N2026",
+      "baseline_pct": 3.7025,
+      "peak_pct": 3.8025,
+      "now_pct": 3.7475,
+      "overshoot_bp": 10.0,
+      "retraced_bp": 5.5,
+      "repair_pct": 55.0
+    },
+    {
+      "contract": "SR3Q2026",
+      "baseline_pct": 3.73,
+      "peak_pct": 3.88,
+      "now_pct": 3.81,
+      "overshoot_bp": 15.0,
+      "retraced_bp": 7.0,
+      "repair_pct": 46.7
     },
     {
       "contract": "SR3U2026",
       "baseline_pct": 3.76,
       "peak_pct": 3.965,
-      "now_pct": 3.9,
+      "now_pct": 3.855,
       "overshoot_bp": 20.5,
-      "retraced_bp": 6.5,
-      "repair_pct": 31.7
+      "retraced_bp": 11.0,
+      "repair_pct": 53.7
     },
     {
       "contract": "SR3U2027",
       "baseline_pct": 3.915,
       "peak_pct": 4.115,
-      "now_pct": 4.025,
+      "now_pct": 3.98,
       "overshoot_bp": 20.0,
-      "retraced_bp": 9.0,
-      "repair_pct": 45.0
+      "retraced_bp": 13.5,
+      "repair_pct": 67.5
+    },
+    {
+      "contract": "SR3V2026",
+      "baseline_pct": 3.82,
+      "peak_pct": 4.035,
+      "now_pct": 3.92,
+      "overshoot_bp": 21.5,
+      "retraced_bp": 11.5,
+      "repair_pct": 53.5
+    },
+    {
+      "contract": "SR3X2026",
+      "baseline_pct": 3.855,
+      "peak_pct": 4.085,
+      "now_pct": 3.965,
+      "overshoot_bp": 23.0,
+      "retraced_bp": 12.0,
+      "repair_pct": 52.2
     },
     {
       "contract": "SR3Z2026",
       "baseline_pct": 3.885,
       "peak_pct": 4.125,
-      "now_pct": 4.06,
+      "now_pct": 4.0,
       "overshoot_bp": 24.0,
-      "retraced_bp": 6.5,
-      "repair_pct": 27.1
+      "retraced_bp": 12.5,
+      "repair_pct": 52.1
     }
   ],
   "action": "短端预期：全线合约低于参考峰（结构松动），但动能信号仍在鹰派区；结构性下降领先",
   "curve_structure": {
     "ref_date": "2026-06-22",
     "today_date": "2026-07-02",
-    "n_contracts": 6,
-    "n_below": 6,
+    "n_contracts": 10,
+    "n_below": 10,
     "n_above": 0,
-    "avg_deviation_bp": -6.62,
+    "avg_deviation_bp": -10.38,
     "all_below_ref": true,
     "detail": [
       {
         "contract": "SR3H2027",
-        "today_pct": 4.12,
+        "today_pct": 4.055,
         "ref_pct": 4.19,
-        "dev_bp": -7.0
+        "dev_bp": -13.5
       },
       {
         "contract": "SR3M2026",
-        "today_pct": 3.6975,
+        "today_pct": 3.6875,
         "ref_pct": 3.72,
-        "dev_bp": -2.25
+        "dev_bp": -3.25
       },
       {
         "contract": "SR3M2027",
-        "today_pct": 4.09,
+        "today_pct": 4.035,
         "ref_pct": 4.175,
-        "dev_bp": -8.5
+        "dev_bp": -14.0
+      },
+      {
+        "contract": "SR3N2026",
+        "today_pct": 3.7475,
+        "ref_pct": 3.8025,
+        "dev_bp": -5.5
+      },
+      {
+        "contract": "SR3Q2026",
+        "today_pct": 3.81,
+        "ref_pct": 3.88,
+        "dev_bp": -7.0
       },
       {
         "contract": "SR3U2026",
-        "today_pct": 3.9,
+        "today_pct": 3.855,
         "ref_pct": 3.965,
-        "dev_bp": -6.5
+        "dev_bp": -11.0
       },
       {
         "contract": "SR3U2027",
-        "today_pct": 4.025,
+        "today_pct": 3.98,
         "ref_pct": 4.115,
-        "dev_bp": -9.0
+        "dev_bp": -13.5
+      },
+      {
+        "contract": "SR3V2026",
+        "today_pct": 3.92,
+        "ref_pct": 4.035,
+        "dev_bp": -11.5
+      },
+      {
+        "contract": "SR3X2026",
+        "today_pct": 3.965,
+        "ref_pct": 4.085,
+        "dev_bp": -12.0
       },
       {
         "contract": "SR3Z2026",
-        "today_pct": 4.06,
+        "today_pct": 4.0,
         "ref_pct": 4.125,
-        "dev_bp": -6.5
+        "dev_bp": -12.5
       }
     ]
   },
