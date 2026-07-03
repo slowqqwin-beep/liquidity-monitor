@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-02",
+  "generated_at": "2026-07-03",
   "generator": "Risk OS Orchestrator v2.0 — SSoT",
   "_version": "v2.0",
   "_note": "⚠️ 唯一权威状态输出。三套输入系统(Fed Reaction/ABCD/risk_dashboard) 降级为信号提供层，不得输出最终结论。下游只能读取 risk_os_final，不得重算。",
-  "date": "2026-07-02",
+  "date": "2026-07-03",
   "regime": "R4 防御",
   "regime_key": "R4",
   "systemic_classification": "NON-SYSTEMIC WATCH",
@@ -16,7 +16,7 @@
   "cross_domain_signals": 3,
   "red_count": 2,
   "risk_os_final": {
-    "date": "2026-07-02",
+    "date": "2026-07-03",
     "final_regime": "R4 防御",
     "final_regime_key": "R4",
     "final_systemic_classification": "NON-SYSTEMIC WATCH",
@@ -83,7 +83,7 @@
       "credit": {
         "active": false,
         "label": "未触发",
-        "evidence": "HY OAS=274bp，仍在自满区"
+        "evidence": "HY OAS=275bp，仍在自满区"
       },
       "liquidity": {
         "active": true,

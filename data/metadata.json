@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-02T23:11:10.885624+00:00",
+  "generated_at": "2026-07-03T23:07:40.598939+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -8,7 +8,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Secured Overnight Financing Rate",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "IORB",
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1100
+      "n_obs": 1099
     },
     {
       "id": "EFFR",
@@ -48,7 +48,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "Overnight Reverse Repo balance ($B)",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "WRESBAL",
@@ -104,7 +104,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 774
+      "n_obs": 773
     },
     {
       "id": "TEDRATE",
@@ -120,7 +120,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "2-Year Treasury constant maturity",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "DGS5",
@@ -128,7 +128,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "5-Year Treasury",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "DGS10",
@@ -136,7 +136,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10-Year Treasury",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "DGS30",
@@ -144,7 +144,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "30-Year Treasury",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "DFII10",
@@ -152,7 +152,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10-Year inflation-indexed (real yield)",
-      "n_obs": 749
+      "n_obs": 748
     },
     {
       "id": "T10YIE",
@@ -160,7 +160,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10Y breakeven inflation",
-      "n_obs": 750
+      "n_obs": 749
     },
     {
       "id": "T5YIFR",
@@ -168,7 +168,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Cleanest long-term inflation expectation",
-      "n_obs": 750
+      "n_obs": 749
     },
     {
       "id": "THREEFYTP10",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 746
+      "n_obs": 745
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 747
+      "n_obs": 746
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -264,7 +264,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Plumbing stress: positive = banks lending into repo",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "EFFR_IORB",
@@ -296,7 +296,7 @@
       "layer": "L2",
       "unit": "bp",
       "desc": "20d rolling std of daily DGS2/DGS10 bp changes (33/67 blend), annualized \u2014 fallback when MOVE index unavailable",
-      "n_obs": 729
+      "n_obs": 728
     }
   ]
 }
