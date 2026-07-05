@@ -447,7 +447,25 @@ repair_type = benign / malign / mixed / unavailable
 
 ---
 
-*封版日期: 2026-06-23 21:05 | 最后更新: 2026-07-02 (Clean Ledger Deep Audit) | 下次运行窗口: 周五 07-03 | v3.5 paper trade | §48 audit closed*
+*封版日期: 2026-06-23 21:05 | 最后更新: 2026-07-05 (CROWD v0.1.1 建成 + v3.5 §48 audit) | 下次运行窗口: 周一 07-06 | v3.5 paper trade + CROWD soak*
+
+### 2026-07-05 日志：CROWD v0.1.1 建成 + v3.5 三天 important null
+
+**CROWD v0.1.1**（独立仓库 `crowd-monitor/`）：
+- AI 硬件链挤压强度监视看板，人眼研究工具，对标 SR3
+- 面板一：链内相对强度矩阵（MEM/OPT 剪刀差 + GPU/NCLOUD 比值）
+- 面板四：信息节点日历 + ICS 订阅（Google 日历零凭证同步）
+- N1-N11 十一条负向测试全通过，11/11 PASS
+- 首个官方读数：MEM ratio=7.90（经 buy-and-hold vs 日频再平衡手工对账验证）
+- GitHub Pages 已部署，ICS 订阅已添加
+- 三个解读纪律：看形态不看水平、剪刀差方向是第一指标、z-score≥2 仅高亮不附建议
+- 三方工作流新规则：bug 报告必须带 git 证据（commit hash/diff），叙事性状态陈述不作为审计输入
+- soak 期 07-06 → 07-10，验收#6（Google 端测）待明天确认
+
+**v3.5**：
+- 7/1-7/3 连续 0/5 important null
+- §48 clean ledger deep audit：4 bug + 1 重建缺陷 + 5 守卫
+- 7/3 SOFR-IORB 回落至 +1bp，FRED BAML 前进至 07-01
 
 ### 2026-07-02 管线修复
 
