@@ -7,13 +7,30 @@
     "country": "US",
     "event": "美国-ISM服务业指数[Services PMI]",
     "summary": "美国-ISM服务业指数[Services PMI]",
-    "forecast": "",
+    "forecast": "54.2",
     "previous": "54.5",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/8/us-industry-relative/55/ism-nonmanu?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 65,
-    "days_to_event": 3,
+    "days_to_event": 1,
+    "score": 60
+  },
+  {
+    "uid": "jrpfoomj8e7q4hmpbhffvaa3ls@google.com",
+    "date": "2026-07-14",
+    "time_utc": "2026-07-14T12:30:00+00:00",
+    "time_sg": "2026-07-14T20:30:00+08:00",
+    "country": "US",
+    "event": "美国-消费者物价指数[CPI] (NSA, 同比)",
+    "summary": "美国-消费者物价指数[CPI] (NSA, 同比)",
+    "forecast": "",
+    "previous": "4.25%",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/5/us-price-relative/10/cpi?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 95,
+    "days_to_event": 9,
     "score": 50
   },
   {
@@ -30,8 +47,8 @@
     "link": "https://sc.macromicro.me/collections/9/us-market-relative/48/target-rate?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 50,
-    "days_to_event": 5,
-    "score": 25
+    "days_to_event": 3,
+    "score": 35
   },
   {
     "uid": "e3brb1vndfb888qsca1m468j6s@google.com",
@@ -41,14 +58,31 @@
     "country": "US",
     "event": "美国-初次申请失业救济金人数",
     "summary": "美国-初次申请失业救济金人数",
-    "forecast": "",
+    "forecast": "218000.0",
     "previous": "215000.0",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 45,
-    "days_to_event": 6,
-    "score": 15
+    "days_to_event": 4,
+    "score": 25
+  },
+  {
+    "uid": "knbbovukeuiennobgf8so76md4@google.com",
+    "date": "2026-07-15",
+    "time_utc": "2026-07-15T12:30:00+00:00",
+    "time_sg": "2026-07-15T20:30:00+08:00",
+    "country": "US",
+    "event": "美国-生产者物价指数[PPI] (NSA,同比)",
+    "summary": "美国-生产者物价指数[PPI] (NSA,同比)",
+    "forecast": "",
+    "previous": "6.46%",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/5/us-price-relative/26/price-index?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 70,
+    "days_to_event": 10,
+    "score": 20
   },
   {
     "uid": "ri1m98p8cl8i3ec66h72rrmbdk@google.com",
@@ -64,8 +98,8 @@
     "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 5,
-    "score": -5
+    "days_to_event": 3,
+    "score": 5
   },
   {
     "uid": "mb4aevh4438in204um8ug8g458@google.com",
@@ -81,7 +115,41 @@
     "link": "https://sc.macromicro.me/collections/52/agri-soybean?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 7,
-    "score": -15
+    "days_to_event": 5,
+    "score": -5
+  },
+  {
+    "uid": "c1gvd34ghgt807sta8ee80t1ns@google.com",
+    "date": "2026-07-15",
+    "time_utc": "2026-07-15T18:00:00+00:00",
+    "time_sg": "2026-07-16T02:00:00+08:00",
+    "country": "US",
+    "event": "美国美联储褐皮书",
+    "summary": "美国美联储褐皮书",
+    "forecast": "",
+    "previous": "",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/2/us-gdp-relative?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 20,
+    "days_to_event": 10,
+    "score": -30
+  },
+  {
+    "uid": "emmkcv6m63qakausd69to15l8k@google.com",
+    "date": "2026-07-15",
+    "time_utc": "2026-07-15T14:30:00+00:00",
+    "time_sg": "2026-07-15T22:30:00+08:00",
+    "country": "US",
+    "event": "美国-原油库存(周变动)",
+    "summary": "美国-原油库存(周变动)",
+    "forecast": "",
+    "previous": "",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 20,
+    "days_to_event": 10,
+    "score": -30
   }
 ]
