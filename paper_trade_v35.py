@@ -54,6 +54,12 @@ sofr_iorb = (last_val("SOFR") or 0) - (last_val("IORB") or 0)
 vix = last_val("VIXCLS")
 
 today = datetime.now().strftime("%Y-%m-%d")
+today_dt = datetime.now()
+# Non-trading day guard: skip ledger write on weekends/US holidays
+if today_dt.weekday() >= 5:
+    print(f"[SKIP] {today} is weekend — no paper trade row written")
+    exit(0)
+
 fred_date = data.get("BAMLH0A0HYM2", [{}])[-1].get("date", "N/A")
 
 # Signal evaluations
@@ -126,6 +132,9 @@ row = {
     "hypothetical_position": pos,
     "important_null_note": note,
 }
+
+# ── Known structural gaps (reference only, see KNOWN_GAPS.md for details) ──
+row["important_null_note"] = row["important_null_note"] + ". 已知缺口记录见KNOWN_GAPS.md v1"
 
 file_exists = LEDGER.exists()
 with open(LEDGER, "a", newline="", encoding="utf-8") as f:

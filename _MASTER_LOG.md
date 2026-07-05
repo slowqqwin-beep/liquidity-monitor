@@ -466,6 +466,8 @@ repair_type = benign / malign / mixed / unavailable
 - 7/1-7/3 连续 0/5 important null
 - §48 clean ledger deep audit：4 bug + 1 重建缺陷 + 5 守卫
 - 7/3 SOFR-IORB 回落至 +1bp，FRED BAML 前进至 07-01
+- SR3 note：7/3起合约覆盖从6扩到10(数据源扩展)，此前"6/6全线低于参考峰"的"全线"指当时监控的6只
+- VTS/RCV stale concern：MOVE/^VIX3M/^VIX9D 停在 06-26(8天)，"calm"结论未降级，下次审计(7/15)重点核查
 
 ### 2026-07-02 管线修复
 

@@ -325,8 +325,9 @@ _YAHOO_VINTAGE_IDS = [SPY_ID, HYG_ID, FXY_ID, "GLD", "^MOVE", "^VIX", "^VIX3M", 
 def compute_vintages(data: dict) -> dict:
     """Return FRED & Yahoo vintage dates + T-N (trading days behind today)."""
     today = date.today()
+    _fred_vintage_ids = [sid for sid in _FRED_VINTAGE_IDS if sid not in ("IORB", "EFFR", "SOFR")]
     fred_latest = max(
-        (last_date(data.get(sid, [])) for sid in _FRED_VINTAGE_IDS if data.get(sid)),
+        (last_date(data.get(sid, [])) for sid in _fred_vintage_ids if data.get(sid)),
         default=None
     )
     yahoo_latest = max(
@@ -336,10 +337,16 @@ def compute_vintages(data: dict) -> dict:
     fred_d = _clamp_weekday(date.fromisoformat(fred_latest)) if fred_latest else today
     yahoo_d = _clamp_weekday(date.fromisoformat(yahoo_latest)) if yahoo_latest else today
 
+    # Guard: future dates → BLOCK, not clamp (downstream freshness checks depend on this)
+    if fred_d > today:
+        raise SystemExit(f"[FATAL] FRED vintage {fred_d} is in the future. Check series.json for misdated entries. Aborting.")
+    if yahoo_d > today:
+        raise SystemExit(f"[FATAL] Yahoo vintage {yahoo_d} is in the future. Check series.json for misdated entries. Aborting.")
+
     return {
         "fred_date": fred_d.isoformat(),
         "yahoo_date": yahoo_d.isoformat(),
-        "fred_tn": _biz_days_between(fred_d, today) if fred_d < today else 0,
+        "fred_tn": _biz_days_between(fred_d, today) if fred_d < today else (_biz_days_between(fred_d, today) if fred_d == today else 0),
         "yahoo_tn": _biz_days_between(yahoo_d, today) if yahoo_d < today else 0,
     }
 
@@ -1898,6 +1905,19 @@ VTS_NORM_DAYS   = 3      # 持续 ≥3 交易日的 contango 才算正常化
 
 VTS_FRONT_CALM   = 0.95  # VIX9D/VIX < 0.95 = 前端平静
 VTS_FRONT_TENSE  = 1.05  # VIX9D/VIX ≥ 0.95 = 前端紧张; > 1.05 = 前端急性
+
+def _vts_inputs_stale(raw: dict) -> int:
+    """Return max days any VTS/RCV/interlock input is behind today. 0 = all fresh."""
+    today = date.today()
+    max_lag = 0
+    for key in ("MOVE", "^MOVE", "^VIX3M", "^VIX9D"):
+        items = raw.get(key, [])
+        if items:
+            d = date.fromisoformat(items[-1]["date"]) if items[-1].get("date") else today
+            lag = (today - d).days
+            if lag > max_lag:
+                max_lag = lag
+    return max_lag
 
 
 def compute_vts(data: dict) -> dict:
@@ -3567,7 +3587,9 @@ def format_text_report(
         if vts:
             vts_r = vts.get("ratio_vix_vix3m")
             vts_rs = f"({vts_r:.3f})" if vts_r is not None else "(N/A)"
-            lines.append(f"  [VTS §0.8: {vts.get('structure','N/A')}{vts_rs} · 再入场={vts.get('re_entry_gate','未启用')}]")
+            vts_stale = _vts_inputs_stale(raw)
+            vts_str = f"stale({vts_stale}d)-不可用" if vts_stale >= 3 else vts.get('structure','N/A')
+            lines.append(f"  [VTS §0.8: {vts_str}{vts_rs} · 再入场={vts.get('re_entry_gate','未启用')}]")
         # RCV status
         rcv = casc.get("rcv", {})
         if rcv and not rcv.get("abstain", True):
@@ -4024,7 +4046,10 @@ def format_markdown_report(
         # ── VTS+RCV interlock line ──
         lock_md = casc.get("vts_rcv_lock", {})
         if lock_md and lock_md.get("state", "N/A") != "N/A":
-            lines.append(f"> [双探针互锁 §0.8+0.9: {lock_md.get('state','N/A')} — {lock_md.get('state_label','')}]")
+            lk_stale = _vts_inputs_stale(raw)
+            lk_state = "stale-不可用" if lk_stale >= 3 else lock_md.get('state','N/A')
+            lk_label = "" if lk_stale >= 3 else lock_md.get('state_label','')
+            lines.append(f"> [双探针互锁 §0.8+0.9: {lk_state} — {lk_label}]")
         # ── 空行 ──
             lines.append("")
 
@@ -4225,10 +4250,20 @@ def main():
     # ── Regime label (diagnostic only, not a position) ──
     # SSoT Orchestrator position computation REMOVED per §37/§39.
     # Clean v3.5 paper trade ledger is the only valid position source.
-    pos = {"regime_key": abcd.get("regime", "N/A"), "label": "Diagnostic only",
+    # §3.1 B: R1-R4 retained as cross-domain count labels only, not position guidance.
+    _red = abcd.get("red_count", 0)
+    _cross = abcd.get("cross_domain_signals", 0)
+    if _red >= 3: _label = f"多域红灯×{_red}"
+    elif _red >= 2: _label = f"双域红灯×{_red}"
+    elif _cross >= 3: _label = f"多域计数×{_cross}"
+    elif _red >= 1: _label = "单域红灯"
+    elif _cross >= 2: _label = "跨域计数=2"
+    elif _cross == 1: _label = "跨域计数=1"
+    else: _label = "全域绿"
+    pos = {"regime_key": f"R{_red}" if _red > 0 else "R0", "label": _label,
            "Primary": None, "Hedge": None, "Cash": None, "steps": [],
-           "red_count": abcd.get("red_count", 0),
-           "cross_domain_signals": abcd.get("cross_domain_signals", 0)}
+           "red_count": _red, "cross_domain_signals": _cross}
+    pos["label"] = pos["label"] + "（仅诊断计数，非仓位建议）"
 
     prox     = compute_trigger_proximity(abcd, raw)
     chk      = compute_checklist(abcd, pos)

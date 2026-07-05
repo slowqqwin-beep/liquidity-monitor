@@ -388,7 +388,10 @@ def main():
     abcd = compute_abcd_signals(raw)
     casc = compute_casc(raw, v35, abcd)
     abcd = apply_casc_gate(abcd, casc)
-    pos = compute_position(abcd, v35, casc=casc)
+    pos = {"regime_key": "N/A", "label": "Diagnostic only",
+           "red_count": abcd.get("red_count", 0),
+           "cross_domain_signals": abcd.get("cross_domain_signals", 0),
+           "Primary": None, "Hedge": None, "Cash": None}
     rate_path = compute_rate_path_proxy(raw)
 
     vts = casc.get("vts", compute_vts(raw))
