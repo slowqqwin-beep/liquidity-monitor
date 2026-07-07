@@ -3858,6 +3858,7 @@ def format_markdown_report(
     rate_path: dict | None = None,
     casc: dict | None = None,
     nowcast: dict | None = None,
+    raw: dict | None = None,
 ) -> str:
     """Markdown report in ABCD v3.5 诊断简报 format."""
     lines = []
@@ -4303,7 +4304,7 @@ def main():
     if args.md:
         md = format_markdown_report(curve, hy_stress, v35, fw, liq, abcd, pos, prox, chk, data_date,
                                      vintages=vintages, stale_warnings=stale_warnings, rate_path=rate_path,
-                                     casc=casc, nowcast=nowcast)
+                                     casc=casc, nowcast=nowcast, raw=raw)
         print(md)
 
         # Save daily report

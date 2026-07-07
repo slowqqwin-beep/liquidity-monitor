@@ -76,6 +76,29 @@ def _clean_tv_columns(df: pd.DataFrame) -> pd.DataFrame:
 CACHE_JSON_PATH = PROJECT_ROOT / "data" / "treasury_yields_cache.json"
 
 
+def _upsert_tv_aux_into_series(d: str, col_v9d, col_v3m, col_move, latest):
+    """Write MOVE/VIX9D/VIX3M from TV CSV into series.json for VTS/RCV."""
+    series_path = PROJECT_ROOT / "data" / "series.json"
+    if not series_path.exists():
+        return
+    sdata = json.loads(series_path.read_text("utf-8"))
+    updates = []
+    if col_v9d:
+        updates.append(("^VIX9D", round(float(latest[col_v9d]), 2)))
+    if col_v3m:
+        updates.append(("^VIX3M", round(float(latest[col_v3m]), 2)))
+    if col_move:
+        updates.append(("MOVE", round(float(latest[col_move]), 2)))
+    for key, val in updates:
+        items = sdata.get(key, [])
+        if items and items[-1].get("date") == d:
+            items[-1]["value"] = val
+        else:
+            items.append({"date": d, "value": val})
+        sdata[key] = items
+    series_path.write_text(json.dumps(sdata, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"[SR3 Sync] Upserted MOVE/VIX9D/VIX3M into series.json from TV")
+
 def _sync_treasury_from_tv(raw: pd.DataFrame):
     """Extract US10Y/US02Y/US03M/VIX9D/VIX3M/MOVE from TradingView CSV.
     Updates 2s10s.csv, 2s3m_history.csv, treasury_yields_cache.json, and tv_companion.json."""
@@ -225,6 +248,9 @@ def _sync_treasury_from_tv(raw: pd.DataFrame):
     existing.sort(key=lambda x: x["date"])
     companion_path.write_text(json.dumps(existing, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"[SR3 Sync] TV companion: {tv_data}")
+
+    # Upsert MOVE/VIX9D/VIX3M into series.json so VTS/RCV get fresh data
+    _upsert_tv_aux_into_series(d, col_v9d, col_v3m, col_move, latest)
 
 
 def _sync_from_tradingview():

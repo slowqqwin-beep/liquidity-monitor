@@ -462,6 +462,8 @@ repair_type = benign / malign / mixed / unavailable
 - 三方工作流新规则：bug 报告必须带 git 证据（commit hash/diff），叙事性状态陈述不作为审计输入
 - soak 期 07-06 → 07-10，验收#6（Google 端测）待明天确认
 
+- **MOVE/VIX9D/VIX3M 数据源优先级**：TradingView CSV (100-CME_DL_SR3M2026) > Yahoo > FRED。`sr3_repair_watch.py` 的 `_upsert_tv_aux_into_series()` 在 `fetch_data.py` 之后运行，覆盖 series.json 中 Yahoo 写入的值。管线执行顺序即优先规则。
+
 **v3.5**：
 - 7/1-7/3 连续 0/5 important null
 - §48 clean ledger deep audit：4 bug + 1 重建缺陷 + 5 守卫
