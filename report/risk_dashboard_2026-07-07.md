@@ -8,20 +8,20 @@
 
 | 维度 | 信号 |
 |------|------|
-| 事件窗 | VIX9D/VIX=nan 前端平静 | VIX=15.6 5dΔ-2.8 |
+| 事件窗 | VIX9D/VIX=nan 前端平静 | VIX=16.1 5dΔ-1.5 |
 | 风险性质 | 平静 |
 | 市场信号 | 无跨资产确认 |
-| 利率路径 | US02Y−IORB=46.8bp 降息被price out / 加息风险 5dΔ2.8bp |
+| 利率路径 | US02Y−IORB=46.8bp 降息被price out / 加息风险 5dΔ4.8bp |
 
 ---
 ## ② 第一层传导
 
 | 端 | 指标 | 当前值 | 灯 | DUR5 | 状态 |
 |----|------|--------|------|------|------|
-| C 长端利率 | DFII10 | 2.26% | 🔴 | 5/5 ✅ | 贴现率压力 |
-| C Nowcast | Real Yield Nowcast | 2.24% | 🔴 | — | 官方DFII10滞后修正・实际利率高压 方向：基本持平 |
+| C 长端利率 | DFII10 | 2.24% | 🔴 | 5/5 ✅ | 贴现率压力 |
+| C Nowcast | Real Yield Nowcast | 2.23% | 🔴 | — | 官方DFII10滞后修正・实际利率高压 方向：小幅回落 |
 | A 资金管道 | EFFR-IORB | -2.0bp | 🟠 | 5/5 ✅ | 资金管道偏紧 |
-| A 拆借 | SOFR-IORB | -1.0bp | 🟠 | — | 拆借市场 |
+| A 拆借 | SOFR-IORB | -2.0bp | 🟠 | — | 拆借市场 |
 
 ---
 ## ③ 系统性风险触发器
@@ -39,10 +39,10 @@
 |------|------|
 | Regime | **Diagnostic only**(N/A) · 跨域=2 · 🔴=1 |
 | VTS | contango · 前端=前端平静 |
-| RCV | balanced/calm · sev=calm · tilt=N/A · 2y/30y=1.513 z=1.0 |
+| RCV | balanced/calm · sev=calm · tilt=N/A · 2y/30y=1.509 z=0.9 |
 | 互锁 | calm — 探针平静 |
 | C端 | 失序·利率管道应力 [phase-1打标·未接升档] |
-| C Nowcast | 🔴 实际利率高压 · 方向基本持平 |
+| C Nowcast | 官方🔴红灯·Nowcast边际回落 → 估值压力边际缓和 |
 
 > **最终判断**：双端平静·无双探针共振。系统性风险维度=低。
 

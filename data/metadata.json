@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-07T00:45:46.326324+00:00",
+  "generated_at": "2026-07-08T02:39:09.006190+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -8,7 +8,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Secured Overnight Financing Rate",
-      "n_obs": 745
+      "n_obs": 746
     },
     {
       "id": "IORB",
@@ -24,7 +24,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Effective Federal Funds Rate",
-      "n_obs": 749
+      "n_obs": 750
     },
     {
       "id": "DFEDTARU",
@@ -48,7 +48,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "Overnight Reverse Repo balance ($B)",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "WRESBAL",
@@ -80,7 +80,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US High Yield OAS",
-      "n_obs": 784
+      "n_obs": 785
     },
     {
       "id": "BAMLC0A0CM",
@@ -88,7 +88,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA US Corp OAS",
-      "n_obs": 783
+      "n_obs": 784
     },
     {
       "id": "BAMLEMCBPIOAS",
@@ -96,7 +96,7 @@
       "layer": "L2",
       "unit": "%",
       "desc": "ICE BofA EM Corporate OAS",
-      "n_obs": 784
+      "n_obs": 785
     },
     {
       "id": "VIXCLS",
@@ -104,7 +104,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 771
+      "n_obs": 772
     },
     {
       "id": "DGS2",
@@ -112,7 +112,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "2-Year Treasury constant maturity",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "DGS5",
@@ -120,7 +120,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "5-Year Treasury",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "DGS10",
@@ -128,7 +128,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10-Year Treasury",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "DGS30",
@@ -136,7 +136,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "30-Year Treasury",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "DFII10",
@@ -144,7 +144,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10-Year inflation-indexed (real yield)",
-      "n_obs": 746
+      "n_obs": 747
     },
     {
       "id": "T10YIE",
@@ -152,7 +152,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "10Y breakeven inflation",
-      "n_obs": 747
+      "n_obs": 748
     },
     {
       "id": "T5YIFR",
@@ -160,7 +160,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Cleanest long-term inflation expectation",
-      "n_obs": 747
+      "n_obs": 748
     },
     {
       "id": "THREEFYTP10",
@@ -168,7 +168,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 742
+      "n_obs": 746
     },
     {
       "id": "MORTGAGE30US",
@@ -208,7 +208,7 @@
       "layer": "L3",
       "unit": "$/share",
       "desc": "Gold proxy via SPDR Gold Trust (GLD) - Yahoo",
-      "n_obs": 750
+      "n_obs": 751
     },
     {
       "id": "SPY",
@@ -216,7 +216,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "S&P 500 ETF price - equity risk signal",
-      "n_obs": 750
+      "n_obs": 751
     },
     {
       "id": "HYG",
@@ -224,7 +224,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 750
+      "n_obs": 751
     },
     {
       "id": "FXY",
@@ -232,7 +232,7 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
-      "n_obs": 750
+      "n_obs": 751
     },
     {
       "id": "^VIX3M",
@@ -256,7 +256,7 @@
       "layer": "L3",
       "unit": "$/% ",
       "desc": "Gold price divided by 10Y yield - framework switch indicator",
-      "n_obs": 744
+      "n_obs": 745
     },
     {
       "id": "SOFR_IORB",
@@ -264,7 +264,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Plumbing stress: positive = banks lending into repo",
-      "n_obs": 745
+      "n_obs": 746
     },
     {
       "id": "EFFR_IORB",
@@ -272,7 +272,7 @@
       "layer": "L1",
       "unit": "bp",
       "desc": "Reserve scarcity: positive = reserves scarce",
-      "n_obs": 749
+      "n_obs": 750
     },
     {
       "id": "HY_IG_RATIO",
@@ -280,7 +280,7 @@
       "layer": "L2",
       "unit": "x",
       "desc": "Risk-tier divergence",
-      "n_obs": 783
+      "n_obs": 784
     },
     {
       "id": "MOVE_PROXY",
@@ -288,7 +288,7 @@
       "layer": "L2",
       "unit": "bp",
       "desc": "20d rolling std of daily DGS2/DGS10 bp changes (33/67 blend), annualized \u2014 fallback when MOVE index unavailable",
-      "n_obs": 726
+      "n_obs": 727
     }
   ]
 }

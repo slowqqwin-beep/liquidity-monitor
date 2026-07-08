@@ -4116,6 +4116,44 @@ def format_markdown_report(
     curve_reason = curve.get("reason")
     if curve_reason:
         lines.append(f"> ⚠️ {curve_reason}")
+
+    # ====== RYS 实际利差 (spec §4, 并排2s10s) ======
+    if nowcast is None:
+        try:
+            nowcast = {}
+        except:
+            nowcast = {}
+    rys_csv = DATA_DIR / "real_yield_spread_diagnostic.csv"
+    if rys_csv.exists():
+        import csv as _csv
+        try:
+            with rys_csv.open("r", encoding="utf-8-sig") as f:
+                rows = list(_csv.DictReader(f))
+            if rows:
+                r = rows[-1]
+                lines.append("")
+                lines.append("## RYS 实际利差 (g−r) · 诊断层")
+                lines.append("")
+                spy_r = r.get("RYS_market_SPY", "—")
+                qqq_r = r.get("RYS_market_QQQ", "—")
+                igv_r = r.get("RYS_market_IGV", "—")
+                chg = r.get("RYS_market_20d_change", "—")
+                lines.append(f"| 口径 | RYS (E/P − DFII10) | PE |")
+                lines.append(f"|------|---------------------|-----|")
+                pe_s = r.get("trailingPE_SPY", "—")
+                pe_q = r.get("trailingPE_QQQ", "—")
+                pe_i = r.get("trailingPE_IGV", "—")
+                lines.append(f"| SPY | {spy_r}% | {pe_s}x |")
+                lines.append(f"| QQQ | {qqq_r}% | {pe_q}x |")
+                lines.append(f"| IGV | {igv_r}% | {pe_i}x |")
+                lines.append(f"| **20日变化** | **{chg}%** | — |")
+                lines.append(f"| Portfolio RYS | {r.get('RYS_portfolio','—')} | (PE三段梯度) |")
+                lines.append(f"| 数据质量 | {r.get('data_quality_flag','—')} | 最后更新: {r.get('date','—')} |")
+                lines.append("")
+                lines.append(f"> 读数非信号，诊断 overlay。Portfolio RYS=None 因未盈利/PE失真不可填补。")
+                lines.append("")
+        except Exception as e:
+            pass
         lines.append("")
 
     # ====== C_RealYield_Nowcast ======

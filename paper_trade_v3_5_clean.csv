@@ -3,3 +3,4 @@
 2026-07-02,2026-06-30,4.0,False,4.0,False,-0.5,False,N,False,16.45,3.0,False,0,55/25/20,"important null: 0 信号触发，市场平静. 已知缺口: Meltdown仅查2/5(VIX+SOFR-IORB). A端盲区: SOFR-IORB=+3bp, ON RRP=$1.0B(近归零) — 不在v3.5 5信号scope内(v3.5.1 pipeline输出,非NY Fed一手数据). BAML滞后: fred_date=06-30, 07/01数据FRED尚未发布(Yahoo HYG/FXY/SPY已更新至07-01). TODO: 字段名加_delta后缀对齐§40"
 2026-07-03,2026-07-01,-1.0,False,-2.0,False,0.5,False,N,False,16.59,1.0,False,0,55/25/20,important null: 0 信号触发，市场平静
 2026-07-07,2026-07-03,-2.0,False,-9.0,False,-0.2,False,N,False,15.81,-1.0,False,0,55/25/20,important null: 0 信号触发，市场平静. 已知缺口记录见KNOWN_GAPS.md v1
+2026-07-08,2026-07-06,-3.0,False,-8.0,False,-0.1,False,N,False,15.57,-2.0,False,0,55/25/20,important null: 0 信号触发，市场平静. 已知缺口记录见KNOWN_GAPS.md v1
