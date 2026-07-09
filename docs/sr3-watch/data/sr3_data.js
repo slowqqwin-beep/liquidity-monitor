@@ -1,6 +1,6 @@
 window.SR3_DATA = {
   "generated_at": "2026-07-09T21:40:04",
-  "data_date": "2026-07-07",
+  "data_date": "2026-07-08",
   "data_age_days": 2,
   "reference_mode": "Current Event Peak (Hike-over)",
   "last_formal_shock": {
