@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-08T10:39:12.438366",
+  "generated_at": "2026-07-09T21:13:00.428959",
   "data_date": "2026-07-06",
-  "data_age_days": 2,
+  "data_age_days": 3,
   "reference_mode": "Current Event Peak (Hike-over)",
   "last_formal_shock": {
     "date": "2026-06-22",
@@ -24,7 +24,7 @@
     "decline_from_ref_peak_bp": 2.53,
     "near_contract": "SR3H2027",
     "on_elevated_plateau": true,
-    "hy_oas_bp": 272.0,
+    "hy_oas_bp": 267.0,
     "hy_oas_available": false,
     "us10y_pct": 4.551,
     "t10yie_pct": 2.25,
