@@ -784,9 +784,8 @@ def analyze(df, last_shock):
     # ── 逐合约 FOMC 修复表：baseline (06-16) → peak (06-22) → now ──
     retracement = _compute_retracement(ld)
 
-    # US trade date: China morning download → previous day's US close
-    # TradingView bar labeled N = US trading day N-1 (from China timezone perspective)
-    us_trade_date = (ld - pd.Timedelta(days=1)).date()
+    # US trade date: use CSV last date directly (TradingView bar labels match US trading dates)
+    us_trade_date = ld.date()
     return {
         "generated_at": datetime.now().isoformat(),
         "data_date": str(us_trade_date),
