@@ -13,25 +13,8 @@
     "link": "https://sc.macromicro.me/collections/5/us-price-relative/10/cpi?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 95,
-    "days_to_event": 5,
-    "score": 70
-  },
-  {
-    "uid": "e3brb1vndfb888qsca1m468j6s@google.com",
-    "date": "2026-07-09",
-    "time_utc": "2026-07-09T12:30:00+00:00",
-    "time_sg": "2026-07-09T20:30:00+08:00",
-    "country": "US",
-    "event": "美国-初次申请失业救济金人数",
-    "summary": "美国-初次申请失业救济金人数",
-    "forecast": "218000.0",
-    "previous": "215000.0",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 45,
-    "days_to_event": 0,
-    "score": 45
+    "days_to_event": 2,
+    "score": 85
   },
   {
     "uid": "knbbovukeuiennobgf8so76md4@google.com",
@@ -47,8 +30,8 @@
     "link": "https://sc.macromicro.me/collections/5/us-price-relative/26/price-index?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 70,
-    "days_to_event": 6,
-    "score": 40
+    "days_to_event": 3,
+    "score": 55
   },
   {
     "uid": "2de99g4rhgeqkeju91hhb04ks4@google.com",
@@ -64,25 +47,8 @@
     "link": "https://sc.macromicro.me/collections/3/us-consumption-relative/86/retail-sales?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 60,
-    "days_to_event": 7,
-    "score": 25
-  },
-  {
-    "uid": "mb4aevh4438in204um8ug8g458@google.com",
-    "date": "2026-07-10",
-    "time_utc": "2026-07-10T16:00:00+00:00",
-    "time_sg": "2026-07-11T00:00:00+08:00",
-    "country": "US",
-    "event": "美国农业部供需预测报告",
-    "summary": "美国农业部供需预测报告",
-    "forecast": "",
-    "previous": "",
-    "actual": "",
-    "link": "https://sc.macromicro.me/collections/52/agri-soybean?utm_medium=calendar",
-    "source": "MacroMicro",
-    "weight": 20,
-    "days_to_event": 1,
-    "score": 15
+    "days_to_event": 4,
+    "score": 40
   },
   {
     "uid": "5c02nkndahs7jkep0cnf1jc84g@google.com",
@@ -92,14 +58,14 @@
     "country": "US",
     "event": "美国-初次申请失业救济金人数",
     "summary": "美国-初次申请失业救济金人数",
-    "forecast": "",
-    "previous": "",
+    "forecast": "215000.0",
+    "previous": "215000.0",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/4/us-employ-relative/19/initial-jobless-claims?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 45,
-    "days_to_event": 7,
-    "score": 10
+    "days_to_event": 4,
+    "score": 25
   },
   {
     "uid": "llpo946uee7r9ova2oeu1pq9i8@google.com",
@@ -109,14 +75,14 @@
     "country": "US",
     "event": "美国-密大消费者信心指数",
     "summary": "美国-密大消费者信心指数",
-    "forecast": "",
+    "forecast": "51.4",
     "previous": "49.5",
     "actual": "",
     "link": "https://sc.macromicro.me/collections/3/us-consumption-relative/22/consumer-confidence?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 45,
-    "days_to_event": 8,
-    "score": 5
+    "days_to_event": 5,
+    "score": 20
   },
   {
     "uid": "c1gvd34ghgt807sta8ee80t1ns@google.com",
@@ -132,8 +98,8 @@
     "link": "https://sc.macromicro.me/collections/2/us-gdp-relative?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 6,
-    "score": -10
+    "days_to_event": 3,
+    "score": 5
   },
   {
     "uid": "emmkcv6m63qakausd69to15l8k@google.com",
@@ -149,7 +115,24 @@
     "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
     "source": "MacroMicro",
     "weight": 20,
-    "days_to_event": 6,
-    "score": -10
+    "days_to_event": 3,
+    "score": 5
+  },
+  {
+    "uid": "f3ocd7psmha2nc3eoms4paas00@google.com",
+    "date": "2026-07-22",
+    "time_utc": "2026-07-22T14:30:00+00:00",
+    "time_sg": "2026-07-22T22:30:00+08:00",
+    "country": "US",
+    "event": "美国-原油库存(周变动)",
+    "summary": "美国-原油库存(周变动)",
+    "forecast": "",
+    "previous": "2998.0k",
+    "actual": "",
+    "link": "https://sc.macromicro.me/collections/19/mm-oil-price/178/us-oil-inventory?utm_medium=calendar",
+    "source": "MacroMicro",
+    "weight": 20,
+    "days_to_event": 10,
+    "score": -30
   }
 ]
