@@ -55,12 +55,21 @@ vix = last_val("VIXCLS")
 
 today = datetime.now().strftime("%Y-%m-%d")
 today_dt = datetime.now()
-# Non-trading day guard: skip ledger write on weekends/US holidays
-if today_dt.weekday() >= 5:
-    print(f"[SKIP] {today} is weekend — no paper trade row written")
-    exit(0)
-
+# Non-trading day guard: skip only if NO new data exists (weekend runs with stale data are fine
+# when catching up on missed days — the data itself is from the last trading day)
+# We check if the FRED date has advanced since the last row in the ledger
 fred_date = data.get("BAMLH0A0HYM2", [{}])[-1].get("date", "N/A")
+
+last_ledger_date = None
+if LEDGER.exists():
+    import csv as _csv
+    rows = list(_csv.reader(open(LEDGER, "r", encoding="utf-8")))
+    if len(rows) > 1:
+        last_ledger_date = rows[-1][0]  # date column
+
+if last_ledger_date and fred_date <= last_ledger_date:
+    print(f"[SKIP] No new FRED data since ledger last date {last_ledger_date} (FRED: {fred_date})")
+    exit(0)
 
 # Signal evaluations
 signals = {}
