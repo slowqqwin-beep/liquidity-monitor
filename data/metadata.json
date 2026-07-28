@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-27T23:05:25.811748+00:00",
+  "generated_at": "2026-07-28T23:03:00.413673+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 742
+      "n_obs": 746
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -216,7 +216,7 @@
       "layer": "L3",
       "unit": "$",
       "desc": "Alternative monetary asset",
-      "n_obs": 365
+      "n_obs": 366
     },
     {
       "id": "MOVE",
@@ -240,7 +240,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 750
+      "n_obs": 749
     },
     {
       "id": "FXY",
@@ -248,7 +248,7 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
-      "n_obs": 750
+      "n_obs": 749
     },
     {
       "id": "GOLD_10Y_RATIO",
