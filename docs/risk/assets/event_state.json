@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-29",
+  "generated_at": "2026-07-30",
   "generator": "Risk OS Orchestrator v2.0 — SSoT",
   "_version": "v2.0",
   "_note": "⚠️ 唯一权威状态输出。三套输入系统(Fed Reaction/ABCD/risk_dashboard) 降级为信号提供层，不得输出最终结论。下游只能读取 risk_os_final，不得重算。",
-  "date": "2026-07-29",
+  "date": "2026-07-30",
   "regime": "R4 防御",
   "regime_key": "R4",
   "systemic_classification": "NON-SYSTEMIC WATCH",
@@ -16,7 +16,7 @@
   "cross_domain_signals": 3,
   "red_count": 2,
   "risk_os_final": {
-    "date": "2026-07-29",
+    "date": "2026-07-30",
     "final_regime": "R4 防御",
     "final_regime_key": "R4",
     "final_systemic_classification": "NON-SYSTEMIC WATCH",
@@ -36,7 +36,7 @@
       "note": "数据质量正常"
     },
     "source_votes": {
-      "fed_reaction": "hawkish pressure (DGS2-IORB high) | vol calm | credit gate: complacent/improving",
+      "fed_reaction": "hawkish pressure (DGS2-IORB high) | credit gate: complacent/improving",
       "abcd": "C端=🔴 A端=🟠 B端=🟢 D端=🟢 → R3警惕",
       "risk_dashboard": "前端事件:red | 实际利率高压 | 流动性缓冲变薄 | 部分触发·非系统性"
     }
@@ -44,23 +44,24 @@
   "_detail_inputs": {
     "front_event_risk": {
       "active": true,
-      "type": "rate_event",
+      "type": "mixed_event",
       "sources": [
-        "DGS2−IORB=61.0bp 前端利率事件 · 5d+0.0bp(方向一致：短期上行)"
+        "DGS2−IORB=57.0bp 前端利率事件 · 5d-9.0bp(方向背离：短期下行)",
+        "VIX=20.7"
       ],
       "intensity": "red",
       "label": "前端急性",
       "evidence": {
-        "vix": 18.2,
-        "dgs2_iorb_bp": 61.0
+        "vix": 20.7,
+        "dgs2_iorb_bp": 57.0
       }
     },
     "rate_shock": {
       "active": true,
       "dfii10_official": 2.41,
-      "dfii10_nowcast": 2.35,
-      "gap_bp": -6,
-      "direction": "小幅回落",
+      "dfii10_nowcast": 2.4,
+      "gap_bp": -1,
+      "direction": "基本持平",
       "method": "DGS10 − 10Y BEI",
       "quality_note": "官方DFII10滞后修正，Nowcast更实时",
       "dur5_dfii": 5,
@@ -83,7 +84,7 @@
       "credit": {
         "active": false,
         "label": "未触发",
-        "evidence": "HY OAS=284bp，仍在自满区"
+        "evidence": "HY OAS=287bp，仍在自满区"
       },
       "liquidity": {
         "active": true,
