@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-30T23:10:49.250747+00:00",
+  "generated_at": "2026-07-31T23:03:53.254244+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1097
+      "n_obs": 1099
     },
     {
       "id": "EFFR",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 746
+      "n_obs": 745
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 747
+      "n_obs": 746
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -216,7 +216,7 @@
       "layer": "L3",
       "unit": "$",
       "desc": "Alternative monetary asset",
-      "n_obs": 366
+      "n_obs": 365
     },
     {
       "id": "MOVE",
@@ -280,7 +280,7 @@
       "layer": "L3",
       "unit": "bp",
       "desc": "Real-economy credit transmission",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "HY_IG_RATIO",
