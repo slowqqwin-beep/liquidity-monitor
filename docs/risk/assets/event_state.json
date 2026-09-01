@@ -51,15 +51,15 @@
       "intensity": "red",
       "label": "前端急性",
       "evidence": {
-        "vix": 14.4,
+        "vix": 14.9,
         "dgs2_iorb_bp": 69.0
       }
     },
     "rate_shock": {
       "active": true,
-      "dfii10_official": 2.42,
-      "dfii10_nowcast": 2.42,
-      "gap_bp": 0,
+      "dfii10_official": 2.44,
+      "dfii10_nowcast": 2.4,
+      "gap_bp": -4,
       "direction": "基本持平",
       "method": "DGS10 − 10Y BEI",
       "quality_note": "官方DFII10滞后修正，Nowcast更实时",
@@ -73,7 +73,7 @@
       "real_yield_pressure": true,
       "liquidity_buffer_thinning": true,
       "effr_iorb_bp": -2.0,
-      "sofr_iorb_bp": 0.0,
+      "sofr_iorb_bp": 3.0,
       "dur5_effr_iorb": 3,
       "dur5_confirmed": true,
       "main_path": "C先红 → A偏紧 → B未坏 → D未动",
@@ -83,7 +83,7 @@
       "credit": {
         "active": false,
         "label": "未触发",
-        "evidence": "HY OAS=260bp，仍在自满区"
+        "evidence": "HY OAS=263bp，仍在自满区"
       },
       "liquidity": {
         "active": true,
