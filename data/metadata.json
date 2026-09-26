@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T00:20:51.607486+00:00",
+  "generated_at": "2026-09-26T00:25:55.443008+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1096
+      "n_obs": 1098
     },
     {
       "id": "EFFR",
@@ -104,7 +104,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 772
+      "n_obs": 771
     },
     {
       "id": "TEDRATE",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 745
+      "n_obs": 744
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 746
+      "n_obs": 745
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -240,7 +240,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "FXY",
@@ -248,7 +248,7 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "GOLD_10Y_RATIO",
@@ -280,7 +280,7 @@
       "layer": "L3",
       "unit": "bp",
       "desc": "Real-economy credit transmission",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "HY_IG_RATIO",
