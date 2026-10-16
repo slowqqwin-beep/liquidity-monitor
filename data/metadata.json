@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T00:20:23.320415+00:00",
+  "generated_at": "2026-10-16T00:08:40.294360+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -56,7 +56,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "Reserves with Fed Reserve Banks ($B)",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "WTREGEN",
@@ -64,7 +64,7 @@
       "layer": "L1",
       "unit": "$B",
       "desc": "TGA balance at Fed ($B)",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "WALCL",
@@ -72,7 +72,7 @@
       "layer": "L1",
       "unit": "$M",
       "desc": "Total Fed balance sheet",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "BAMLH0A0HYM2",
@@ -176,7 +176,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "NY Fed ACM term premium estimate",
-      "n_obs": 747
+      "n_obs": 746
     },
     {
       "id": "GOLDAMGBD228NLBM",
@@ -192,7 +192,7 @@
       "layer": "L3",
       "unit": "%",
       "desc": "Freddie Mac 30Y fixed mortgage",
-      "n_obs": 156
+      "n_obs": 157
     },
     {
       "id": "DTWEXBGS",
@@ -200,7 +200,7 @@
       "layer": "L3",
       "unit": "Idx",
       "desc": "Trade-weighted broad dollar",
-      "n_obs": 748
+      "n_obs": 747
     },
     {
       "id": "STABLECOIN_MCAP_B",
@@ -208,7 +208,7 @@
       "layer": "L3",
       "unit": "$B",
       "desc": "Aggregate non-sovereign dollar liquidity",
-      "n_obs": 365
+      "n_obs": 366
     },
     {
       "id": "BTC_USD",
