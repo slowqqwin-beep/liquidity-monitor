@@ -2,11 +2,11 @@ name: Build & Deploy Pages
 
 on:
   workflow_dispatch:
-  schedule:
-    # Every hour — catch MM calendar updates promptly
-    - cron: "0 * * * *"
-    # Also run at Singapore market hours: 08:00 & 20:00 SGT (00:00 & 12:00 UTC)
-    - cron: "0 0,12 * * *"
+  # schedule:
+  #   # Every hour — catch MM calendar updates promptly
+  #   - cron: "0 * * * *"
+  #   # Also run at Singapore market hours: 08:00 & 20:00 SGT (00:00 & 12:00 UTC)
+  #   - cron: "0 0,12 * * *"
   push:
     branches: [main, master]
     paths:
