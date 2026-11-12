@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-11T01:45:24.148572+00:00",
+  "generated_at": "2026-11-12T02:45:03.349146+00:00",
   "lookback_years": 3,
   "series": [
     {
@@ -16,7 +16,7 @@
       "layer": "L1",
       "unit": "%",
       "desc": "Interest On Reserve Balances",
-      "n_obs": 1097
+      "n_obs": 1096
     },
     {
       "id": "EFFR",
@@ -104,7 +104,7 @@
       "layer": "L2",
       "unit": "",
       "desc": "CBOE Volatility Index",
-      "n_obs": 772
+      "n_obs": 773
     },
     {
       "id": "TEDRATE",
@@ -232,7 +232,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "S&P 500 ETF price - equity risk signal",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "HYG",
@@ -240,7 +240,7 @@
       "layer": "L2",
       "unit": "$",
       "desc": "High Yield Bond ETF price - credit risk signal",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "FXY",
@@ -248,7 +248,7 @@
       "layer": "D",
       "unit": "$",
       "desc": "Japanese Yen ETF price - FX risk signal",
-      "n_obs": 751
+      "n_obs": 752
     },
     {
       "id": "GOLD_10Y_RATIO",
